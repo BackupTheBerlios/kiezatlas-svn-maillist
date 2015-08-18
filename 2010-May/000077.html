@@ -1,0 +1,640 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r89 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r89%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C201005181147.o4IBl7AC028708%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000078.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r89 - in trunk: docs pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r89%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C201005181147.o4IBl7AC028708%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r89 - in trunk: docs pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue May 18 13:47:07 CEST 2010</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000078.html">[Kiezatlas-svn] r90 - in trunk: config/default	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77">[ date ]</a>
+              <a href="thread.html#77">[ thread ]</a>
+              <a href="subject.html#77">[ subject ]</a>
+              <a href="author.html#77">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-05-18 13:42:20 +0200 (Tue, 18 May 2010)
+New Revision: 89
+
+Modified:
+   trunk/docs/session.txt
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/GeoObjectList.jsp
+   trunk/pages/ImportsHome.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ImportServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ImportWorker.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+Log:
+Extended and polishd Kiez Service
+* new method getWorkspaceInfo(topicId)
+* improved html string to json conversion, thanks to jri
+* introduces a new field originId in a Slim GeoObject which is currently specific to one workspace, which is  known to produce a very little overhad for other workspaces
+
+Extended Importer
+* keeps the originId of each imported project for a topic-project lookup
+
+Extended Standard Browse CityMap Interface 
+* searchByCategory has now a back button
+
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/docs/session.txt	2010-05-18 11:42:20 UTC (rev 89)
+@@ -16,7 +16,7 @@
+ map					BaseTopic
+ mapImage			String
+ criterias			array of SearchCriteria
+-defaultCriteria		number of selected Criteria. Just set if an additional param e.g. '&amp;1' was appended to the citymap alias
++defaultCriteria			number of the currently selected Criteriaset, e.g. if an additional param e.g. '&amp;1' was appended to the citymap alias
+ instType			TypeTopic
+ shapeTypes			Vector of ShapeType
+ shapes				Vector of Shape
+@@ -150,6 +150,16 @@
+ emailList			Liste von Email-Adressen (Vector of String)
+ 
+ 
++Import
++------
++workerThread		String carrying the Threads curent state
++workerThreadTime	String carrying the Threads starting time
++timingInterval		String varrying the Timing Interval in Milliseconds
++importCriterias		Vector of BaseTopics which represent the criterias of the configured workspace
++unusableGeoObjects	Vector of GeoObjectTopics which are from the workspaces &quot;institutionType&quot; which have no WGS 84 coordinates
++geoObjects		Vector of BaseTopics containing all imported GeoObjects
++importWorksapces        currently BaseTopic of one Importer Workspace
++importCriteraias        Vector of Criterias related to the improter Workspace
+ 
+ GeoObjectAdminForm
+ ------------------
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/pages/GeoObjectInfo.jsp	2010-05-18 11:42:20 UTC (rev 89)
+@@ -18,13 +18,13 @@
+ 	topicBean.removeFieldsContaining(&quot;Birthday&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Gender&quot;);
+ 	topicBean.removeField(&quot;Person / Mobile Number&quot;);
+-    topicBean.removeField(&quot;LONG&quot;);
+-    topicBean.removeField(&quot;LAT&quot;);
++	topicBean.removeField(&quot;LONG&quot;);
++	topicBean.removeField(&quot;LAT&quot;);
+ 	topicBean.removeField(&quot;Person / Fax Number&quot;);
+ 	topicBean.removeField(&quot;Person / Phone Number&quot;);
+ 	topicBean.removeField(&quot;Person / Webpage&quot;);
+ 	topicBean.removeField(&quot;Forum / Aktivierung&quot;);
+-    topicBean.removeField(&quot;Timestamp&quot;);
++	topicBean.removeField(&quot;Timestamp&quot;);
+ 	// --- image ---
+ 	String imageFile = topicBean.getValue(&quot;Image / File&quot;);
+ 	if (!imageFile.equals(&quot;&quot;)) {
+
+Modified: trunk/pages/GeoObjectList.jsp
+===================================================================
+--- trunk/pages/GeoObjectList.jsp	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/pages/GeoObjectList.jsp	2010-05-18 11:42:20 UTC (rev 89)
+@@ -8,11 +8,15 @@
+ 	Hashtable addresses = (Hashtable) session.getAttribute(&quot;addresses&quot;);
+ 	String searchMode = (String) session.getAttribute(&quot;searchMode&quot;);
+ 	String searchValue = (String) session.getAttribute(&quot;searchValue&quot;);
++	String selectedCriteria = (String) session.getAttribute(&quot;defaultCriteria&quot;);
+ 	// --- heading ---
+ 	if (searchMode.equals(KiezAtlas.SEARCHMODE_BY_NAME)) {
+ 		out.println(&quot;Suchergebnis &quot;);
+ 	}
+-	out.println(&quot;&lt;b&gt;&quot; + searchValue + &quot;&lt;/b&gt;&lt;div class=\&quot;small\&quot;&gt;&quot; + insts.size() + &quot; Objekte&lt;/div&gt;&quot;);
++        // --- ### align new back button at the right side
++	out.println(&quot;&lt;b&gt;&quot; + searchValue + &quot;&lt;/b&gt;&nbsp;&nbsp;&nbsp;&lt;a class=\&quot;small\&quot; href==\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;&gt;zur&uuml;ck&lt;/a&gt;&quot;);
++        out.println(&quot;&lt;div class=\&quot;small\&quot;&gt;&quot; + insts.size() + &quot; Objekte &quot;);
++	out.println(&quot;&lt;/div&gt;&quot;);
+ 	out.println(&quot;&lt;p&gt;&quot;);
+ 	// --- list of institutions ---
+ 	out.println(&quot;&lt;table cellpadding=\&quot;4\&quot; cellspacing=\&quot;0\&quot;&gt;&quot;);
+
+Modified: trunk/pages/ImportsHome.jsp
+===================================================================
+--- trunk/pages/ImportsHome.jsp	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/pages/ImportsHome.jsp	2010-05-18 11:42:20 UTC (rev 89)
+@@ -2,12 +2,12 @@
+ 
+ &lt;% begin(KiezAtlas.SERVLET_IMPORT, session, out); %&gt;
+ &lt;%
+-	String membership = (String) session.getAttribute(&quot;membership&quot;);
+-	String timingInterval = (String) session.getAttribute(&quot;timingInterval&quot;);
+-	String workerThreadState = (String) session.getAttribute(&quot;workerThread&quot;);
+-	String workerThreadTime = (String) session.getAttribute(&quot;workerThreadTime&quot;);
++    String membership = (String) session.getAttribute(&quot;membership&quot;);
++    String timingInterval = (String) session.getAttribute(&quot;timingInterval&quot;);
++    String workerThreadState = (String) session.getAttribute(&quot;workerThread&quot;);
++    String workerThreadTime = (String) session.getAttribute(&quot;workerThreadTime&quot;);
+     BaseTopic user = (BaseTopic) session.getAttribute(&quot;user&quot;);
+-    BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspaces&quot;);
++    BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;importWorkspaces&quot;);
+     Hashtable criterias = (Hashtable) session.getAttribute(&quot;importCriterias&quot;);
+     Vector geoObjects = (Vector) session.getAttribute(&quot;geoObjects&quot;);
+     Vector unusableGeoObjects = (Vector) session.getAttribute(&quot;unusableGeoObjects&quot;);
+@@ -26,14 +26,14 @@
+                 out.println(key.toString() + &quot; (&quot; +critInNumbers.toString()+ &quot;)&quot;);
+             out.println(&quot;&lt;/dd&gt;&quot;);
+ 		}
++            // out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_RESET_CRITERIAS+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt; resetCategories&lt;/a&gt;&lt;/dd&gt;&quot;);
+         out.println(&quot;&lt;/dl&gt;&quot;);
+-        out.println(&quot;&nbsp; &lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_RESET_CRITERIAS+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt; resetCategories&lt;/a&gt;&lt;br/&gt;&quot;);
+-        out.println(&quot;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_DO_IMPORT+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt;&gt; kickoffImport&lt;/a&gt;&quot;);
+         if (workerThreadState.equals(&quot;NEW&quot;)) {
+             out.println(&quot;&lt;p&gt;&lt;i&gt;&quot;);
+             out.println(&quot;The Import Worker for this workspace was kicked off at &quot; + workerThreadTime + &quot; and is currently working / sleeping. &quot;);
+             out.println(&quot;&lt;br/&gt; Import Intervall is set to &quot; +timingInterval+ &quot; min.&lt;/i&gt;&lt;p/&gt;&quot;);
+         } else {
++            out.println(&quot;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_DO_IMPORT+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt;&gt; kickoff Import&lt;/a&gt;&quot;);
+             out.println(&quot;&lt;p&gt;&lt;i&gt;&quot;);
+             out.println(&quot;The Import Worker for this Workspace was NOT kicked off yet.&quot;);
+             out.println(&quot;&lt;/i&gt;&lt;p/&gt;&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2010-05-18 11:42:20 UTC (rev 89)
+@@ -55,7 +55,7 @@
+ 					pathInfo = pathInfo.substring(0, additionParam);
+ 				} else {
+ 					// no external criteria link in
+-					session.setAttribute(&quot;defaultCriteria&quot;, null);
++					session.setAttribute(&quot;defaultCriteria&quot;, &quot;0&quot;);
+ 				}
+ 				// error check
+ 				if (pathInfo == null || pathInfo.length() == 1) {
+@@ -100,6 +100,7 @@
+ 					if (criteria != null) {
+ 						setSearchMode(criteria, session);
+ 					} else {
++						session.setAttribute(&quot;defaultCriteria&quot;, &quot;0&quot;);
+ 						setSearchMode(&quot;0&quot;, session);	// ### was SEARCHMODE_BY_CATEGORY
+ 					}
+ 					return PAGE_CATEGORY_LIST; 
+@@ -121,6 +122,7 @@
+ 		} else if (action.equals(ACTION_SHOW_CATEGORIES)) {
+ 			String critNr = params.getValue(&quot;critNr&quot;);
+ 			setSearchMode(critNr, session);
++			session.setAttribute(&quot;defaultCriteria&quot;, critNr);
+ 			return PAGE_CATEGORY_LIST;
+ 		// select
+ 		} else if (action.equals(ACTION_SELECT_CATEGORY)) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ImportServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ImportServlet.java	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/src/de/kiezatlas/deepamehta/ImportServlet.java	2010-05-18 11:42:20 UTC (rev 89)
+@@ -28,8 +28,8 @@
+ 
+     private ImportWorker worker = null;
+ 
+-    // private final long UPDATE_INTERVAL = 86000000;
+-    public static final long UPDATE_INTERVAL = 600000;
++    public static final long UPDATE_INTERVAL = 86000000; // approximately 24 hours
++    // public static final long UPDATE_INTERVAL = 600000; // approximately 10 mines
+     // 
+     public static final String ENGAGEMENT_WORKSPACE = &quot;t-331306&quot;;
+     public static final String CITYMAP_TO_PUBLISH = &quot;t-331302&quot;;
+@@ -40,6 +40,10 @@
+     public static final String TOPICTYPE_ENG_EINSATZBEREICH = &quot;t-331321&quot;;
+     public static final String TOPICTYPE_ENG_MERKMAL = &quot;t-331325&quot;;
+     public static final String TOPICTYPE_ENG_BEZIRK = &quot;t-331327&quot;;
++    //
++    public static final String PROPERTY_PROJECT_ORIGIN_ID = &quot;OriginId&quot;;
++    public static final String PROPERTY_PROJECT_LAST_MODIFIED = &quot;Timestamp&quot;;
++    public static final String PROPERTY_PROJECT_ORGANISATION = &quot;Organisation&quot;;
+ 
+ 	protected String performAction(String action, RequestParameter params, Session session, CorporateDirectives directives)
+ 																									throws ServletException {
+@@ -97,7 +101,7 @@
+             //
+             return PAGE_IMPORTS_HOME;
+         } else if (action.equals(ACTION_DO_IMPORT)) {
+-            BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspaces&quot;);
++            BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;importWorkspaces&quot;);
+             if (session == null || workspace == null) {
+                 return PAGE_IMPORTS_LOGIN;
+             }
+@@ -127,7 +131,7 @@
+                 critWithNumbers.put(topic.getName(), instancesOfTopic.size());
+             }
+             Vector geoObjects = getGeoObjectInformation(ENGAGEMENT_WORKSPACE);
+-			session.setAttribute(&quot;workspaces&quot;, workspace);
++			session.setAttribute(&quot;importWorkspaces&quot;, workspace);
+             session.setAttribute(&quot;importCriterias&quot;, critWithNumbers);
+             session.setAttribute(&quot;geoObjects&quot;, geoObjects);
+ 		} else if (page.equals(PAGE_REPORT_HOME)) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ImportWorker.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ImportWorker.java	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/src/de/kiezatlas/deepamehta/ImportWorker.java	2010-05-18 11:42:20 UTC (rev 89)
+@@ -12,8 +12,8 @@
+ import de.deepamehta.topics.TypeTopic;
+ import de.deepamehta.util.DeepaMehtaUtils;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
++import de.kiezatlas.deepamehta.ImportServlet;
+ import java.io.BufferedReader;
+-import java.io.IOException;
+ import java.io.InputStreamReader;
+ import java.io.StringReader;
+ import java.net.URL;
+@@ -32,9 +32,12 @@
+ import org.xml.sax.SAXParseException;
+ 
+ /**
+- * Ehrenamt Schnittstelle 0.9a
++ * Ehrenamt Schnittstelle 0.9b
++ * is a thread based worker which imports single projects and all occuring criterias resp. categories
++ * from an xml interface into one kiezatlas workspace - it reuses topics (e.g. addresstopics) known to
++ * the cm (by name), triggers a geolocation on each project with nice address
+  * 
+- * @author <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
++ * @author Malte Rei&#223;ig (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>)
+  */
+ public class ImportWorker extends Thread implements DeepaMehtaConstants, KiezAtlas {
+ 
+@@ -117,7 +120,7 @@
+     }
+ 
+     private void publishData(Vector topicIds) {
+-        //System.out.println(&quot;[ImportWorker] prePublishing \&quot;&quot;+topicIds.size()+&quot;\&quot; topics data info: &quot; + cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getName() + &quot; &quot; +
++        System.out.println(&quot;[ImportWorker] is starting to gather coordinates and publish \&quot;&quot;+topicIds.size()+&quot;\&quot; topics into : &quot; + cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getName());// + &quot; &quot; +
+           //      &quot;/ &quot; + cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getID() + &quot; ofType: &quot; +cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getType());
+         // BaseTopic cityMap = as.getLiveTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1);
+         // System.out.println(&quot;&gt;&gt;&gt; before corrupting everything, we publish into topic: &quot; + cityMap.getName() + &quot; of type &quot; + cityMap.getType());
+@@ -204,8 +207,8 @@
+         for (int k = 0; k &lt; allRelatedTopics.size(); k++) {
+             BaseTopic relTopic = (BaseTopic) allRelatedTopics.get(k);
+             //
+-            if (cm.getAssociationIDs(relTopic.getID(), 1).size() &gt; 1) {
+-               System.out.println(&quot;&gt;&gt;&gt; relTopic (&quot;+relTopic.getID()+&quot;) \&quot;&quot;+relTopic.getName()+&quot;\&quot; not to delete, has &quot;+cm.getAssociationIDs(relTopic.getID(), 1).size()+&quot; other associations&quot;);
++            if (cm.getAssociationIDs(relTopic.getID(), 1).size() &gt; 0) {
++               // System.out.println(&quot;&gt;&gt;&gt; relTopic (&quot;+relTopic.getID()+&quot;) \&quot;&quot;+relTopic.getName()+&quot;\&quot; not to delete, has &quot;+cm.getAssociationIDs(relTopic.getID(), 1).size()+&quot; other associations&quot;);
+             } else {
+                directiveDeletion(relTopic.getID());
+             }
+@@ -255,7 +258,7 @@
+         // iterate over projects
+         for(int p = 0; p &lt; amountOfProjects; p++) {
+             // fields of each project
+-            String projectName = &quot;&quot;, contactPerson = &quot;&quot;, projectUrl = &quot;&quot;, postcode = &quot;&quot;, streetNr = &quot;&quot;, bezirk = &quot;&quot;, orgaName = &quot;&quot;,
++            String projectName = &quot;&quot;, originId = &quot;&quot;, contactPerson = &quot;&quot;, projectUrl = &quot;&quot;, postcode = &quot;&quot;, streetNr = &quot;&quot;, bezirk = &quot;&quot;, orgaName = &quot;&quot;,
+                     orgaWebsite = &quot;&quot;, orgaContact = &quot;&quot;, timeStamp = &quot;&quot;;
+             Vector merkmale = new Vector();
+             Vector taetigkeiten = new Vector();
+@@ -337,6 +340,9 @@
+                                     } else if (detailNode.getNodeName().equals(&quot;url&quot;)) {
+                                         // System.out.println(&quot;&gt;projectpage at : &quot; + contentNode.getNodeValue());
+                                         orgaWebsite = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;id&quot;)) {
++                                        // System.out.println(&quot;&gt;projectpage at : &quot; + contentNode.getNodeValue());
++                                        originId = contentNode.getNodeValue();
+                                     }
+                                     //System.out.println(&quot;data is: &quot; + contentNode.getNodeValue());
+                                 }
+@@ -347,7 +353,7 @@
+             }
+             // projectData was gathered
+             // store information per project now
+-            String topicID = saveProjectData(projectName, contactPerson, projectUrl, postcode, streetNr, bezirk,
++            String topicID = saveProjectData(originId, projectName, contactPerson, projectUrl, postcode, streetNr, bezirk,
+                         orgaName, orgaWebsite, orgaContact, timeStamp,
+                     merkmale, taetigkeiten, zielgruppen, einsatzbereiche);
+             //if (topicID == null) {
+@@ -382,7 +388,7 @@
+      *  reusing existing addresses, webpages and persons
+      *  building up the categorySystem by each item which is in some categories
+      */
+-    private String saveProjectData(String projectName, String contactPerson, String projectUrl, String postcode, String streetNr, String bezirk, String orgaName,
++    private String saveProjectData(String originId, String projectName, String contactPerson, String projectUrl, String postcode, String streetNr, String bezirk, String orgaName,
+             String orgaWebsite, String orgaContact, String timeStamp, Vector merkmale, Vector taetigkeiten, Vector zielgruppen, Vector einsatzbereiche) {
+         String topicId = &quot;&quot;;
+         String address = streetNr + &quot;, &quot; + postcode + &quot; &quot; + bezirk;
+@@ -391,10 +397,9 @@
+         LiveTopic geoObjectTopic = as.createLiveTopic(as.getNewTopicID(), geoTypeId, projectName, null);
+         //
+         as.setTopicProperty(geoObjectTopic, PROPERTY_NAME, projectName);
+-        // as.setTopicProperty(geoObjectTopic, PROPERTY_CITY, &quot;Berlin&quot;);
+-        as.setTopicProperty(geoObjectTopic, &quot;Organisation&quot;, orgaName);
+-        // as.setTopicProperty(geoObjectTopic, &quot;Kontakt&quot;, orgaContact);
+-        as.setTopicProperty(geoObjectTopic, &quot;Timestamp&quot;, timeStamp); // instead of Zuletzt ge&#228;ndert
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_PROJECT_ORGANISATION, orgaName);
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_PROJECT_ORIGIN_ID, originId);
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_PROJECT_LAST_MODIFIED, timeStamp);
+         as.setTopicProperty(geoObjectTopic, PROPERTY_LOCKED_GEOMETRY, &quot;off&quot;);
+         //
+         LiveTopic webpageTopic;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-03-30 19:31:23 UTC (rev 88)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-05-18 11:42:20 UTC (rev 89)
+@@ -1,11 +1,14 @@
+ package de.kiezatlas.deepamehta;
+ 
+ import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.service.*;
+ import de.deepamehta.service.web.JSONRPCServlet;
+ import de.deepamehta.topics.TypeTopic;
+ import java.util.Hashtable;
+ import java.util.Vector;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
+ 
+ 
+ public class KiezServlet extends JSONRPCServlet implements KiezAtlas {
+@@ -21,6 +24,8 @@
+             result = getGeoObjectInfo(params);
+         } else if(remoteMethod.equals(&quot;getWorkspaceCriterias&quot;)) {
+             result = getWorkspaceCriterias(params);
++        } else if(remoteMethod.equals(&quot;getWorkspaceInfos&quot;)) {
++            result = getWorkspaceInfos(params);
+         } else if(remoteMethod.equals(&quot;searchGeoObjects&quot;)) {
+             result = searchTopics(params, directives);
+         }
+@@ -32,7 +37,7 @@
+         session.setAttribute(&quot;info&quot;, &quot;&lt;h3&gt;Willkommen zu dem Kiezatlas Dienst unter &quot;+as.getCorporateWebBaseURL()+&quot;&lt;/h3&gt;&quot; +
+                 &quot;&lt;br&gt;F&uuml;r die Nutzung des Dienstes steht Entwicklern &quot; +
+                 &quot;&lt;a href=\&quot;<A HREF="http://www.deepamehta.de/wiki/en/Application:_Web_Service\">http://www.deepamehta.de/wiki/en/Application:_Web_Service\</A>&quot;&gt;hier&lt;/a&gt; die Software Dokumentation zur Verf&#252;gung. &quot; +
+-                &quot;Ein Beispiel zur Nutzung eines Kiezatlas Dienstes ist &lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/maps/interface.php?topicId=t-ka-schoeneberg&amp;workspaceId=t-ka-workspace\">http://www.kiezatlas.de/maps/interface.php?topicId=t-ka-schoeneberg&amp;workspaceId=t-ka-workspace\</A>&quot;&gt;hier&lt;/a&gt; bereits abrufbar.&quot;);
++                &quot;Ein Beispiel zur Nutzung eines Kiezatlas Dienstes ist &lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/maps/map.php?topicId=t-ka-schoeneberg&amp;workspaceId=t-ka-workspace\">http://www.kiezatlas.de/maps/map.php?topicId=t-ka-schoeneberg&amp;workspaceId=t-ka-workspace\</A>&quot;&gt;hier&lt;/a&gt; abrufbar.&quot;);
+         return PAGE_SERVE;
+     }
+ 
+@@ -48,18 +53,27 @@
+         String topicId = params.substring(2,params.length()-2);
+         System.out.println(&quot;&gt;&gt;&gt;&gt; getGeoObjectInfo(&quot; + topicId + &quot;)&quot;);
+         // String parameters[] = params.split(&quot;,&quot;);
+-        StringBuffer messages = null;
++        StringBuffer messages = new StringBuffer(&quot;\&quot;&quot;);
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+-        BaseTopic t = cm.getTopic(topicId, 1);
+         String geoObjectString;
+-        if (t.getType().equals(&quot;tt-user&quot;)) {
+-            System.out.println(&quot;*** KiezServlet.SecurityAccessDenied: not allowed to access user information&quot;);
+-            messages = new StringBuffer(&quot;Access Denied&quot;);
+-            geoObjectString= &quot;\&quot;\&quot;&quot;;
+-        } else {
+-            geoObjectString = createGeoObjectBean(t, messages);
++        try {
++            BaseTopic t = cm.getTopic(topicId, 1);
++            if (t != null &amp;&amp; t.getType().equals(&quot;tt-user&quot;)) {
++                System.out.println(&quot;*** KiezServlet.SecurityAccessDenied: not allowed to access user information&quot;);
++                messages = new StringBuffer(&quot;Access Denied&quot;);
++                geoObjectString= &quot;\&quot;\&quot;&quot;;
++            } else if (t != null) {
++                geoObjectString = createGeoObjectBean(t, messages);
++            } else {
++                geoObjectString = &quot;{}&quot;;
++                messages.append(&quot;404 - Topic not found&quot;);
++            }
++        } catch (Exception tex) {
++            geoObjectString = &quot;{}&quot;;
++            messages.append(&quot;&quot;+toJSON(tex.toString())+&quot; - 404 - Topic not found&quot;);
+         }
+         result.append(geoObjectString);
++        messages.append(&quot;\&quot;&quot;);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         // System.out.println(&quot;result: &quot;+ result.toString());
+         return result.toString();
+@@ -86,6 +100,25 @@
+     }
+ 
+     /**
++     * Serializes Workspace Infos into JSON
++     *
++     * @param params
++     * @return
++     */
++    private String getWorkspaceInfos(String params)
++    {
++        System.out.println(&quot;&gt;&gt;&gt;&gt; getWorkspaceInfos(&quot; + params + &quot;)&quot;);
++        String parameters[] = params.split(&quot;:&quot;);
++        String workspaceId = parameters[0];
++        StringBuffer messages = null;
++        StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
++        String infos = createWorkspaceInfos(workspaceId.substring(2, workspaceId.length()-2));
++        result.append(infos);
++        result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
++        return result.toString();
++    }
++
++    /**
+      * search for topic property name and returns a list of slim geo objects as
+      * results
+      *
+@@ -193,23 +226,49 @@
+     // --- Utility Methods
+     // -------------------
+ 
++    private String createWorkspaceInfos(String workspaceId)
++    {
++        // System.out.println(&quot;&gt;&gt;&gt; createWorkspaceInfos(&quot; + workspaceId+&quot;) ...&quot;);
++        StringBuffer object = new StringBuffer();
++        String workspaceName = as.getTopicProperty(workspaceId, 1, PROPERTY_NAME);
++        String logoURL = &quot;&quot;;
++        String impressumURL = &quot;&quot;;
++        String homepageURL = &quot;&quot;;
++        //
++        BaseTopic logo = as.getRelatedTopic(workspaceId, ASSOCTYPE_ASSOCIATION, TOPICTYPE_IMAGE, 2, true);
++        if (logo != null) logoURL = as.getTopicProperty(logo, PROPERTY_FILE);
++        BaseTopic homepage = as.getRelatedTopic(workspaceId, KiezAtlas.ASSOCTYPE_HOMEPAGE_LINK, TOPICTYPE_WEBPAGE, 2, true);
++        if (homepage != null) homepageURL = as.getTopicProperty(homepage, PROPERTY_URL);
++        BaseTopic impressum = as.getRelatedTopic(workspaceId, KiezAtlas.ASSOCTYPE_IMPRESSUM_LINK, TOPICTYPE_WEBPAGE, 2, true);
++        if (impressum != null) impressumURL = as.getTopicProperty(impressum, PROPERTY_URL);
++        //
++        object.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + workspaceName + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;logo\&quot;: \&quot;&quot; + logoURL + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;imprint\&quot;: \&quot;&quot; + impressumURL + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;homepage\&quot;: \&quot;&quot; + homepageURL + &quot;\&quot;&quot;);
++        object.append(&quot;}&quot;);
++        // System.out.println(&quot;workspaceInfos are imp:&quot; + impressumURL + &quot; home:&quot; + homepageURL + &quot; logo:&quot; + logoURL);
++        return object.toString();
++    }
++
+     private String createSlimGeoObject(BaseTopic topic, Vector criterias, StringBuffer messages)
+     {
+         StringBuffer object = new StringBuffer();
+         //
+-        String latitude = as.getTopicProperty(topic, &quot;LAT&quot;);
+-        String longnitude = as.getTopicProperty(topic, &quot;LONG&quot;);
++        String latitude = as.getTopicProperty(topic, &quot;LAT&quot;); // ### get an interface place for this final string value
++        String longnitude = as.getTopicProperty(topic, &quot;LONG&quot;); // ### get an interface place for this final string value
++        String originId = as.getTopicProperty(topic, ImportServlet.PROPERTY_PROJECT_ORIGIN_ID);
+         if(latitude.equals(&quot;&quot;) &amp;&amp; longnitude.equals(&quot;&quot;))
+         {
+             latitude = &quot;0.0&quot;;
+             longnitude = &quot;0.0&quot;;
+         }
+         String name = topic.getName();
+-        if (hasQuotationMarks(name)) {
+-            name = convertHTMLForJSON(name);
+-        }
++        name = toJSON(name);
++        //}
+         object.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + name + &quot;\&quot;,&quot;);
+         object.append(&quot;\&quot;id\&quot;: \&quot;&quot; + topic.getID() + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;originId\&quot;: \&quot;&quot; + originId + &quot;\&quot;,&quot;);
+         object.append(&quot;\&quot;lat\&quot;: \&quot;&quot; + latitude + &quot;\&quot;,&quot;);
+         object.append(&quot;\&quot;long\&quot;: \&quot;&quot; + longnitude + &quot;\&quot;,&quot;);
+         // System.out.println(&quot;&gt;&gt;&gt; createCritCatList(&quot; + topic.getID()+&quot;) ...&quot;);
+@@ -243,11 +302,7 @@
+             bean.append(&quot;\&quot;label\&quot;: \&quot;&quot; + field.label + &quot;\&quot;, &quot;);
+             if(field.type == 0) {
+                 String value = field.value;
+-                if(hasQuotationMarks(value)) {
+-                    // preparing java string for json
+-                    value = convertHTMLForJSON(value);
+-                    value = removeControlChars(value);
+-                }
++                value = toJSON(value);
+                 bean.append(&quot;\&quot;value\&quot;:  \&quot;&quot; + value + &quot;\&quot;&quot;);
+             } else {
+                 Vector relatedFields = field.values;
+@@ -257,13 +312,21 @@
+                     bean.append(&quot;\&quot;values\&quot;: [&quot;);
+                     for (int r = 0; r &lt; relatedFields.size(); r++) {
+                         BaseTopic relatedTopic = (BaseTopic) relatedFields.get(r);
+-                        bean.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
+-                        // ### geoObject has it's own icon ?
+-                        bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getLiveTopic(relatedTopic).getIconfile() + &quot;\&quot;}&quot;);
+-                        if (r == relatedFields.size()-1)  {
+-                            bean.append(&quot;]&quot;);
++                        if ( relatedTopic == null ) {
++                            System.out.println(&quot;[ERROR] no topic in values[&quot;+r+&quot;]... &quot; + topicBean.getValue(&quot;Name&quot;));
+                         } else {
+-                            bean.append(&quot;, &quot;);
++                            bean.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
++                            // ### geoObject has it's own icon ?
++                            try {
++                                bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getLiveTopic(relatedTopic).getIconfile() + &quot;\&quot;}&quot;);
++                            } catch (Exception lex) {
++                                System.out.println(&quot;[ERROR] liveException at &quot; + lex.toString() + topicBean.getValue(&quot;Name&quot;));
++                            }
++                            if ( r == relatedFields.size()-1 )  {
++                                bean.append(&quot;]&quot;);
++                            } else {
++                                bean.append(&quot;, &quot;);
++                            }
+                         }
+                     }
+                 }
+@@ -275,6 +338,8 @@
+         }
+         bean.append(&quot;]&quot;);
+         bean.append(&quot;}&quot;);
++        // System.out.println(&quot;GeoObjectBean is: \n ------------------------------------------- \n &quot; + bean.toString());
++        // System.out.println(&quot;---------------------------------------------\n&quot;);
+         return bean.toString();
+     }
+ 
+@@ -458,14 +523,57 @@
+         value = value.replaceAll(&quot;\r&quot;, &quot;\\\\r&quot;);
+         value = value.replaceAll(&quot;\n&quot;, &quot;\\\\n&quot;);
+         value = value.replaceAll(&quot;\t&quot;, &quot;\\\\t&quot;);
+-        //value = value.replaceAll(&quot;\&quot;&quot;, &quot;\\\\\&quot;&quot;);
++        value = value.replaceAll(&quot;\f&quot;, &quot;\\\\f&quot;);
++        value = value.replaceAll(&quot;\b&quot;, &quot;\\\\b&quot;);
++        value = value.replaceAll(&quot;\&quot;&quot;, &quot;\\\\\&quot;&quot;);
+         //System.out.println(&quot;replaced value is : &quot; + value);
+         return value;
+     }
+ 
++    private String toJSON(String text) {
++        // strip HTML tags
++        text = text.replaceAll(&quot;&lt;html&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;/html&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;head&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;/head&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;body&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;/body&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;p&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;p style=\&quot;margin-top: 0\&quot;&gt;&quot;, &quot;&quot;);
++        text = text.replaceAll(&quot;&lt;/p&gt;&quot;, &quot;&quot;);
++        // convert HTML entities
++        text = toUnicode(text);
++        //
++        text = text.trim();
++        // JSON conformity
++        text = removeControlChars(text);
++        // text = text.replaceAll(&quot;\r&quot;, &quot;\\\\n&quot;);
++        // text = text.replaceAll(&quot;\n&quot;, &quot;\\\\n&quot;);
++        // text = text.replaceAll(&quot;\&quot;&quot;, &quot;\\\\\&quot;&quot;);
++        //
++        return text;
++    }
++
+     private String convertHTMLForJSON(String html)
+     {
+         html = html.replaceAll(&quot;\&quot;&quot;, &quot;\\\\\&quot;&quot;);
++        // html = html.replaceAll(&quot;\r&quot;, &quot;\\\\n&quot;);
++        // html = html.replaceAll(&quot;\n&quot;, &quot;\\\\n&quot;);
++        // html = html.replaceAll(&quot;\t&quot;, &quot;\\\\t&quot;);
+         return html;
+     }
++
++    private String toUnicode(String text)
++    {
++        StringBuffer buffer = new StringBuffer();
++        Pattern p = Pattern.compile(&quot;&amp;#(\\d+);&quot;);
++        Matcher m = p.matcher(text);
++        while (m.find()) {
++            int c = Integer.parseInt(m.group(1));
++            m.appendReplacement(buffer, Character.toString((char) c));
++        }
++        m.appendTail(buffer);
++        return buffer.toString();
++    }
++
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000078.html">[Kiezatlas-svn] r90 - in trunk: config/default	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77">[ date ]</a>
+              <a href="thread.html#77">[ thread ]</a>
+              <a href="subject.html#77">[ subject ]</a>
+              <a href="author.html#77">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

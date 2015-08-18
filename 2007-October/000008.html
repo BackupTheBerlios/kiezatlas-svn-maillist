@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r16 - in trunk/src/de/kiezatlas/deepamehta: . topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r16%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200710090745.l997jUVW022839%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000007.html">
+   <LINK REL="Next"  HREF="000009.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r16 - in trunk/src/de/kiezatlas/deepamehta: . topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r16%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200710090745.l997jUVW022839%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r16 - in trunk/src/de/kiezatlas/deepamehta: . topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Tue Oct  9 09:45:30 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000007.html">[Kiezatlas-svn] r15 - in trunk: . config/default config/test db	db/patches docs icons pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+        <LI>Next message: <A HREF="000009.html">[Kiezatlas-svn] r17 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8">[ date ]</a>
+              <a href="thread.html#8">[ thread ]</a>
+              <a href="subject.html#8">[ subject ]</a>
+              <a href="author.html#8">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2007-10-09 09:45:16 +0200 (Tue, 09 Oct 2007)
+New Revision: 16
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/Comment.java
+   trunk/src/de/kiezatlas/deepamehta/Institution.java
+   trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+Log:
+Imports updated: DeepaMehtaUtils is now in the util-package
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-10-08 22:03:49 UTC (rev 15)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-10-09 07:45:16 UTC (rev 16)
+@@ -5,7 +5,6 @@
+ //
+ import de.deepamehta.BaseTopic;
+ import de.deepamehta.DeepaMehtaException;
+-import de.deepamehta.DeepaMehtaUtils;
+ import de.deepamehta.PresentableTopic;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+@@ -13,6 +12,7 @@
+ import de.deepamehta.service.web.WebSession;
+ import de.deepamehta.topics.TypeTopic;
+ import de.deepamehta.topics.EmailTopic;
++import de.deepamehta.util.DeepaMehtaUtils;
+ //
+ import javax.servlet.ServletException;
+ import javax.servlet.http.HttpServletRequest;
+@@ -31,7 +31,7 @@
+  * Kiez-Atlas 1.4.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 16.3.2007&lt;br&gt;
++ * Last change: 9.10.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Comment.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Comment.java	2007-10-08 22:03:49 UTC (rev 15)
++++ trunk/src/de/kiezatlas/deepamehta/Comment.java	2007-10-09 07:45:16 UTC (rev 16)
+@@ -1,7 +1,7 @@
+ package de.kiezatlas.deepamehta;
+ 
+-import de.deepamehta.DeepaMehtaUtils;
+ import de.deepamehta.service.ApplicationService;
++import de.deepamehta.util.DeepaMehtaUtils;
+ //
+ import java.io.Serializable;
+ 
+@@ -14,7 +14,7 @@
+  * Kiez-Atlas 1.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 1.3.2007&lt;br&gt;
++ * Last change: 9.10.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Institution.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Institution.java	2007-10-08 22:03:49 UTC (rev 15)
++++ trunk/src/de/kiezatlas/deepamehta/Institution.java	2007-10-09 07:45:16 UTC (rev 16)
+@@ -3,8 +3,8 @@
+ import de.kiezatlas.deepamehta.topics.InstitutionTopic;
+ //
+ import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaUtils;
+ import de.deepamehta.service.ApplicationService;
++import de.deepamehta.util.DeepaMehtaUtils;
+ //
+ import java.io.Serializable;
+ import java.util.*;
+@@ -18,7 +18,7 @@
+  * Kiez-Atlas 1.4.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 17.3.2007&lt;br&gt;
++ * Last change: 9.10.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2007-10-08 22:03:49 UTC (rev 15)
++++ trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2007-10-09 07:45:16 UTC (rev 16)
+@@ -6,7 +6,6 @@
+ import de.deepamehta.BaseAssociation;
+ import de.deepamehta.Commands;
+ import de.deepamehta.DeepaMehtaException;
+-import de.deepamehta.DeepaMehtaUtils;
+ import de.deepamehta.PresentableTopic;
+ import de.deepamehta.PropertyDefinition;
+ import de.deepamehta.service.ApplicationService;
+@@ -15,6 +14,7 @@
+ import de.deepamehta.service.DeepaMehtaServiceUtils;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.topics.LiveTopic;
++import de.deepamehta.util.DeepaMehtaUtils;
+ //
+ import java.io.File;
+ import javax.swing.ImageIcon;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000007.html">[Kiezatlas-svn] r15 - in trunk: . config/default config/test db	db/patches docs icons pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+	<LI>Next message: <A HREF="000009.html">[Kiezatlas-svn] r17 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#8">[ date ]</a>
+              <a href="thread.html#8">[ thread ]</a>
+              <a href="subject.html#8">[ subject ]</a>
+              <a href="author.html#8">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r79 - trunk/src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-September/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r79%20-%20trunk/src/de/kiezatlas/deepamehta&In-Reply-To=%3C200909211015.n8LAFvI0014119%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000067.html">
+   <LINK REL="Next"  HREF="000069.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r79 - trunk/src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r79%20-%20trunk/src/de/kiezatlas/deepamehta&In-Reply-To=%3C200909211015.n8LAFvI0014119%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r79 - trunk/src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Sep 21 12:15:57 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000067.html">[Kiezatlas-svn] r78 - in trunk/src: . de de/rpc de/rpc/deepamehta
+</A></li>
+        <LI>Next message: <A HREF="000069.html">[Kiezatlas-svn] r80 - in trunk/src: . de/rpc/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68">[ date ]</a>
+              <a href="thread.html#68">[ thread ]</a>
+              <a href="subject.html#68">[ subject ]</a>
+              <a href="author.html#68">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-09-21 12:15:55 +0200 (Mon, 21 Sep 2009)
+New Revision: 79
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+Minor changes to EditServlet.writeImage Method
+
+* preparation to revert imports which were just committed
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2009-09-21 09:45:48 UTC (rev 78)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2009-09-21 10:15:55 UTC (rev 79)
+@@ -150,7 +150,7 @@
+ 		Vector fileNames = new Vector();
+ 		for (int i = 0; i &lt; fileItems.size(); i++) {
+ 			try {
+-				System.out.println(&quot;&gt;&gt;&gt; EditServlet.writeImage(): &quot; + fileItems.size() + &quot; files uploaded, writing fileItem: &quot; + i);
++				System.out.println(&quot;&gt;&gt;&gt; EditServlet.writeFiles(): &quot; + fileItems.size() + &quot; files uploaded, writing fileItem: &quot; + i);
+ 				FileItem item = (FileItem) fileItems.get(i);
+ 				String propName = getFileChooserFieldName(item);
+ 				String fileext = getFileExtension(item.getName());	// ### explorer includes entire path
+@@ -184,7 +184,7 @@
+ 					fileNames.add(filename);
+ 				}
+ 			} catch (Exception e) {
+-				System.out.println(&quot;*** EditServlet.writeImage(): &quot; + e);
++				System.out.println(&quot;*** EditServlet.writeFiles(): &quot; + e);
+ 			}
+ 		}
+ 		return fileNames;
+@@ -233,7 +233,14 @@
+ 		if (image != null) {
+ 			String imagefile = as.getTopicProperty(image, PROPERTY_FILE);
+ 			if (imagefile.length() &gt; 0) {
+-				imageURL = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH + imagefile;
++                // yes, users store pdf or docs as object's logo image into the system, 
++                // we have to adjust the path so that they can see what they're doing
++                if (imagefile.indexOf(&quot;png&quot;) != -1 || imagefile.indexOf(&quot;jpg&quot;) != -1 || imagefile.indexOf(&quot;gif&quot;) != -1 ||
++                        imagefile.indexOf(&quot;PNG&quot;) != -1 || imagefile.indexOf(&quot;JPG&quot;) != -1 || imagefile.indexOf(&quot;GIF&quot;) != -1) {
++                    imageURL = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH + imagefile;
++                } else {
++                    imageURL = as.getCorporateWebBaseURL() + FILESERVER_DOCUMENTS_PATH + imagefile;
++                }
+ 			}
+ 		}
+ 		session.setAttribute(&quot;imagefile&quot;, imageURL);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-09-21 09:45:48 UTC (rev 78)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-09-21 10:15:55 UTC (rev 79)
+@@ -30,14 +30,26 @@
+ 
+ /**
+  * Kiezatlas 1.6.2&lt;br&gt;
+- * Requires DeepaMehta 2.0b8
++ * Requires DeepaMehta rev. 369
+  * &lt;p&gt;
+- * Last change: 20.11.2008&lt;br&gt;
+- * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
++ * Last change: 05.08.2009&lt;br&gt;
++ * J&ouml;rg Richter / Malte Rei&szlig;ig&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A> / <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+ public class ListServlet extends DeepaMehtaServlet implements KiezAtlas {
+-	
++
++    /**
++     * With introducing a SlimList this controller gained a state which is maintain in the session
++     * and that hurts to even look at. This is gonig to be nice in the near future, where no
++     * tight time contstraints are a matter of fact.
++     *
++     * @param action
++     * @param params
++     * @param session
++     * @param directives
++     * @return
++     * @throws javax.servlet.ServletException
++     */
+ 	protected String performAction(String action, RequestParameter params, Session session, CorporateDirectives directives)
+ 																									throws ServletException {
+ 		if (action == null) {
+@@ -262,7 +274,7 @@
+ 					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot; 
+ 						+ session.getAttribute(&quot;sortField&quot;) );
+ 				} else {
+-					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server with sortByTopicName&quot;);
++					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server with sort ByTopic Name&quot;);
+ 				}
+ 				// fresh topic data &amp; re filtered (just used after create geo)
+ 				if(getFilterField(session) != null) {
+@@ -278,6 +290,9 @@
+ 				// System.out.println(&quot;&gt;&gt;&gt; used cached or filtered topic list&quot;);
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			}
++            System.out.println(&quot;&gt;&gt;&gt;&gt; Runtime has: &quot; + Runtime.getRuntime().maxMemory()/1024/1024 + &quot;mb &quot; +
++                    &quot; of max, &quot; + Runtime.getRuntime().totalMemory()/1024/1024 + &quot; of total, &quot; +
++                    &quot;&quot;+Runtime.getRuntime().freeMemory()/1024/1024 +&quot; in memory&quot;);
+ 			// prepare the correct mailto link
+ 			if(getFilterField(session) != null) {
+ 				Vector beans = getListedTopics(session);
+@@ -297,18 +312,18 @@
+ 				String cityMapID = getCityMap(session).getID();
+ 				String instTypeID = getInstTypeID(session);
+ 				Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+-				Vector topicBeans = new Vector();
++				Vector topics = new Vector();
+ 				for (int i = 0; i &lt; insts.size(); i++) {
+                     // Loads BaseTopic
+ 					BaseTopic topic = as.getLiveTopic(insts.get(i).toString(), 1);
+-					topicBeans.add(topic);
++					topics.add(topic);
+ 				}
+                 //
+-				setCachedTopicList(topicBeans, session);
+-				System.out.println(&quot;&gt;&gt;&gt; slim refresh &quot;+topicBeans.size()+&quot; topics in cache with serverside data&quot;);
++				setCachedTopicList(topics, session);
++				System.out.println(&quot;&gt;&gt;&gt; slim refresh &quot;+topics.size()+&quot; topics in cache with serverside data&quot;);
+ 				// fresh topic data &amp; re sorted
+ 				if (sortBy != null) {
+-					sortBeans(topicBeans, sortBy);
++					sortBeans(topics, sortBy);
+ 					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot;
+ 						+ session.getAttribute(&quot;sortField&quot;) );
+ 				} else {
+@@ -317,11 +332,11 @@
+ 				// fresh topic data &amp; re filtered (just used after create geo)
+ 				if(getFilterField(session) != null) {
+ 					String filterText = (String) session.getAttribute(&quot;filterText&quot;);
+-					topicBeans = filterTopicsByName(topicBeans, getFilterField(session), filterText);
++					topics = filterTopicsByName(topics, getFilterField(session), filterText);
+ 					// System.out.println(&quot;&gt;&gt;&gt;&gt; re-filtered fresh data in topicList&quot;);
+ 				}
+                 // set topics to render in list, differ from cached if sorted or filtered
+-				setListedTopics(topicBeans, session);
++				setListedTopics(topics, session);
+ 				// notifications
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			} else {
+@@ -800,7 +815,14 @@
+ 
+ 
+ 	// --- Methods to maintain data in the session
+-	
++
++    /**
++     * Stores the full List of Topics into the Session, independent of a filter. A filter always works on
++     * all elements in this list, so the user filter through all topics wether or not he has filtered before
++     * 
++     * @param beans
++     * @param session
++     */
+ 	private void setCachedTopicList(Vector beans, Session session) {
+ 		System.out.println(&quot;&gt;&gt;&gt; stored &quot; + beans.size() + &quot; \&quot;cachedTopics\&quot; in session&quot;);
+ 		session.setAttribute(&quot;cachedTopics&quot;, beans);
+@@ -835,6 +857,12 @@
+ 		System.out.println(&quot;&gt; \&quot;sortField\&quot; stored in session: &quot; + field);
+ 	}
+ 
++    /**
++     * Stores the List of Topics which is to be rendered of the List or SlimList Page
++     *
++     * @param beans
++     * @param session
++     */
+ 	private void setListedTopics(Vector beans, Session session) {
+ 		session.setAttribute(&quot;topics&quot;, beans);
+ 		System.out.println(&quot;&gt; \&quot;topics\&quot; stored in session: &quot; + beans.size());
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000067.html">[Kiezatlas-svn] r78 - in trunk/src: . de de/rpc de/rpc/deepamehta
+</A></li>
+	<LI>Next message: <A HREF="000069.html">[Kiezatlas-svn] r80 - in trunk/src: . de/rpc/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#68">[ date ]</a>
+              <a href="thread.html#68">[ thread ]</a>
+              <a href="subject.html#68">[ subject ]</a>
+              <a href="author.html#68">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

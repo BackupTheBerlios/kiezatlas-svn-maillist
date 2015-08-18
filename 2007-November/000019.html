@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r27 - trunk/pages
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r27%20-%20trunk/pages&In-Reply-To=%3C200711261455.lAQEt9ja015165%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000018.html">
+   <LINK REL="Next"  HREF="000020.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r27 - trunk/pages</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r27%20-%20trunk/pages&In-Reply-To=%3C200711261455.lAQEt9ja015165%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r27 - trunk/pages">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Nov 26 15:55:09 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000018.html">[Kiezatlas-svn] r26 - trunk/pages
+</A></li>
+        <LI>Next message: <A HREF="000020.html">[Kiezatlas-svn] r28 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19">[ date ]</a>
+              <a href="thread.html#19">[ thread ]</a>
+              <a href="subject.html#19">[ subject ]</a>
+              <a href="author.html#19">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-26 15:55:02 +0100 (Mon, 26 Nov 2007)
+New Revision: 27
+
+Modified:
+   trunk/pages/GeoObjectInfo.jsp
+Log:
+1) fixed the previous fix
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2007-11-26 12:07:58 UTC (rev 26)
++++ trunk/pages/GeoObjectInfo.jsp	2007-11-26 14:55:02 UTC (rev 27)
+@@ -40,14 +40,20 @@
+ 			if (city == null) {
+ 				Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+ 				if (tmp != null) {
+-					if (tmp.size() &gt; 0) city = ((BaseTopic) tmp.elementAt(0)).getName();	
++					if (tmp.size() &gt; 0){
++						city = ((BaseTopic) tmp.elementAt(0)).getName();
++					} else {
++						// yes, this case exists
++						city = &quot; &quot;;
++					}						
+ 				} else {
+-					city = &quot;&quot;;
++					city = &quot; &quot;;
+ 				}
+ 			}
+ 			
+ 			String street = topicBean.getValue(&quot;Address / Street&quot;);
+ 			String postalCode = topicBean.getValue(&quot;Address / Postal Code&quot;);
++			if (postalCode == null)	postalCode = &quot;&quot;;
+ 			// fetch maplink block
+ 			out.println(mapLink(street, postalCode, city));
+ 		} else {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000018.html">[Kiezatlas-svn] r26 - trunk/pages
+</A></li>
+	<LI>Next message: <A HREF="000020.html">[Kiezatlas-svn] r28 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#19">[ date ]</a>
+              <a href="thread.html#19">[ thread ]</a>
+              <a href="subject.html#19">[ subject ]</a>
+              <a href="author.html#19">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

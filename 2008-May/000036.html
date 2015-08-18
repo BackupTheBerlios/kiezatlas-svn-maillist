@@ -1,0 +1,839 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r44%20-%20in%20trunk%3A%20config/default%20db/patches%20docs%0A%09pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200805270149.m4R1nG19026840%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000035.html">
+   <LINK REL="Next"  HREF="000037.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r44%20-%20in%20trunk%3A%20config/default%20db/patches%20docs%0A%09pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200805270149.m4R1nG19026840%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta">jri at mail.berlios.de
+       </A><BR>
+    <I>Tue May 27 03:49:16 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000035.html">[Kiezatlas-svn] r43 - in trunk: . config/default config/test	src/de/kiezatlas/deepamehta/topics
+</A></li>
+        <LI>Next message: <A HREF="000037.html">[Kiezatlas-svn] r45 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36">[ date ]</a>
+              <a href="thread.html#36">[ thread ]</a>
+              <a href="subject.html#36">[ subject ]</a>
+              <a href="author.html#36">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-05-27 03:49:09 +0200 (Tue, 27 May 2008)
+New Revision: 44
+
+Added:
+   trunk/db/patches/ka-1.5.1.sql
+   trunk/pages/GeoObjectAdminForm.jsp
+Modified:
+   trunk/config/default/web.xml
+   trunk/db/patches/ka-1.5.sql
+   trunk/docs/session.txt
+   trunk/pages/GeoObjectHome.jsp
+   trunk/pages/List.jsp
+   trunk/src/de/kiezatlas/deepamehta/Cluster.java
+   trunk/src/de/kiezatlas/deepamehta/Comment.java
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/GeoObject.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java
+   trunk/src/de/kiezatlas/deepamehta/Shape.java
+   trunk/src/de/kiezatlas/deepamehta/ShapeType.java
+Log:
+ListServlet extended:
+1) new administrator feature: geo objects are rendered as links. Clicking a link opens the form for editing the geo object. Like EditServlet but with ALL fields.
+2) unneeded columns removed (&quot;Description&quot;, &quot;Icon&quot;, &quot;Width&quot;, &quot;Height&quot;)
+3) columns reordered (&quot;Image&quot; goes back)
+IMPORTANT: Requires DeepaMehta revision 326 or later
+
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/config/default/web.xml	2008-05-27 01:49:09 UTC (rev 44)
+@@ -21,7 +21,8 @@
+ 
+ 	&lt;context-param&gt;
+ 		&lt;param-name&gt;service&lt;/param-name&gt;
+-		&lt;param-value&gt;kiezatlas&lt;/param-value&gt;
++		&lt;param-value&gt;mysql5&lt;/param-value&gt;&lt;!-- jri's default instance --&gt;
++		&lt;!-- &lt;param-value&gt;kiezatlas&lt;/param-value&gt; --&gt;&lt;!-- www.kiezatlas.de production instance --&gt;
+ 		&lt;description&gt;
+ 			Selects a DeepaMehta service.
+ 			If this parameter is not set the &quot;default&quot; service will be used.
+
+Added: trunk/db/patches/ka-1.5.1.sql
+===================================================================
+--- trunk/db/patches/ka-1.5.1.sql	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/db/patches/ka-1.5.1.sql	2008-05-27 01:49:09 UTC (rev 44)
+@@ -0,0 +1,2 @@
++-- reorder &quot;Image&quot;
++UPDATE AssociationProp SET PropValue='187' WHERE AssociationID='a-ka-104' AND PropName='Ordinal Number';
+
+Modified: trunk/db/patches/ka-1.5.sql
+===================================================================
+--- trunk/db/patches/ka-1.5.sql	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/db/patches/ka-1.5.sql	2008-05-27 01:49:09 UTC (rev 44)
+@@ -45,53 +45,53 @@
+ INSERT INTO Association VALUES ('at-aggregation', 1, 1, 'a-ka-97', '', 'tt-ka-geoobject-search', 1, 'tt-ka-geoobject', 1);
+ 
+ 
+---- starting conversion part
+---- 'eliminating the derivation from einrichtung to super type institution a-ka-11', keine AssociationProp
+ 
++-----------------------
++--- Conversion Part ---
++-----------------------
++
++
++
++--- delete &quot;Einrichtung&quot;s derivation from &quot;Institution&quot;
++
+ DELETE FROM Association WHERE ID = 'a-ka-11';
+ DELETE from AssociationProp WHERE AssociationID = 'a-ka-11';
+-DELETE FROM ViewAssociation WHERE AssociationID ='a-ka-11';
++DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-11';
+ 
++--- delete assignments of &quot;Einrichtung&quot;s properties which are now assigned to supertype &quot;Geo Objekt&quot;
++--- &quot;Web Alias&quot;, &quot;Password&quot;, &quot;YADE x&quot;, and &quot;YADE y&quot;
+ 
+---- eliminating the association to the fromer einrichtungs-properties which are now derived from new supertype geoobject
+---- 'a-ka-58';, a-ka-18, a-ka-54, a-ka-53, password, webalias, yadeX and yadeY
+-
+ DELETE FROM Association WHERE ID = 'a-ka-18';
+-DELETE FROM Association WHERE ID = 'a-ka-54';
+-DELETE FROM Association WHERE ID = 'a-ka-53';
+ DELETE FROM Association WHERE ID = 'a-ka-58';
++DELETE FROM Association WHERE ID = 'a-ka-53';
++DELETE FROM Association WHERE ID = 'a-ka-54';
+ 
+---- not to forget their properties, in this case their ordinal number
+-
+ DELETE FROM AssociationProp WHERE AssociationID = 'a-ka-18';
++DELETE FROM AssociationProp WHERE AssociationID = 'a-ka-58';
+ DELETE FROM AssociationProp WHERE AssociationID = 'a-ka-53';
+ DELETE FROM AssociationProp WHERE AssociationID = 'a-ka-54';
+-DELETE FROM AssociationProp WHERE AssociationID = 'a-ka-58';
+ 
+---- the views of these association
+-
+ DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-18';
++DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-58';
+ DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-53';
+ DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-54';
+-DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-58';
+ 
+---- eliminating the image relation with all props and views
++--- delete &quot;Einrichtung&quot;s relation to &quot;Image&quot;
+ 
+ DELETE FROM Association WHERE ID = 'a-ka-38';
+ DELETE FROM AssociationProp WHERE AssociationID = 'a-ka-38';
+ DELETE FROM ViewAssociation WHERE AssociationID = 'a-ka-38';
+ 
+---- eliminating the customimplementation class from einrichtung, it's now derived from geoobject
++--- delete &quot;Custom Implementation&quot; from &quot;Einrichtung&quot;, it's now derived from &quot;Geo Objekt&quot;
+ DELETE FROM TopicProp WHERE TopicID='tt-ka-einrichtung' AND PropName = 'Custom Implementation';
+ DELETE FROM TopicProp WHERE TopicID='tt-ka-color' AND PropName = 'Custom Implementation';
+ 
+---- add the new super type derivation association from geoobject to tt-ka-einrichtung, start counting after 97
++--- derive &quot;Einrichtung&quot; from &quot;Geo Objekt&quot;
+ INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-98', '', 'tt-ka-geoobject', 1, 'tt-ka-einrichtung', 1);
+ 
+---- adding the new relations for the tt-ka-einrichtung to webpage, phonenumber, fax and emailaddress, these properties where formerly derived from the institution type
++--- relate &quot;Einrichtung&quot; to &quot;Webpage&quot;, &quot;Phone Number&quot;, &quot;Fax Number&quot;, &quot;Email Address&quot;, and &quot;Address&quot;
++-- (these relations where formerly derived from the &quot;Institution&quot; type)
+ 
+---- cardinalities for the new order are oeffnungszeiten, tel, fax, ansprechpartner, email, website, categories, tr&#228;ger, weitere infos, ...
+-
+ INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-99', 'Website', 'tt-ka-einrichtung', 1, 'tt-webpage', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Name', 'Website');
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Cardinality', 'many');
+@@ -133,7 +133,7 @@
+ INSERT INTO AssociationProp VALUES ('a-ka-103', 1, 'Web Form', 'Related Form');
+ INSERT INTO AssociationProp VALUES ('a-ka-103', 1, 'Ordinal Number', '140');
+ 
+---- here follows up the image relation, from geeobject to image
++--- relate &quot;Geo Objekt&quot; to &quot;Image&quot;
+ INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-104', 'Image', 'tt-ka-geoobject', 1, 'tt-image', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-104', 1, 'Name', 'Image');
+ INSERT INTO AssociationProp VALUES ('a-ka-104', 1, 'Cardinality', 'one');
+@@ -142,7 +142,10 @@
+ INSERT INTO AssociationProp VALUES ('a-ka-104', 1, 'Web Form', 'Related Form');
+ INSERT INTO AssociationProp VALUES ('a-ka-104', 1, 'Ordinal Number', '109');
+ 
+---- Update for Person Ansprechpartner Ordinal Number for InfoPage
++--- Update ordinal numbers for 3 types/properties:
++-- &quot;Ansprechpartner&quot; (relation from &quot;Einrichtung&quot; to &quot;Person&quot;)
++-- &quot;&#214;ffnungszeiten&quot; (property of &quot;Einrichtung&quot;)
++-- &quot;Tr&#228;ger&quot; (relation from &quot;Soziale Einrichtung&quot; to &quot;Tr&#228;ger&quot;)
+ UPDATE AssociationProp SET PropValue='170' WHERE AssociationID='a-ka-34' AND PropName='Ordinal Number';
+ UPDATE AssociationProp SET PropValue='155' WHERE AssociationID='a-ka-8' AND PropName='Ordinal Number';
+ UPDATE AssociationProp SET PropValue='198' WHERE AssociationID='a-ka-19' AND PropName='Ordinal Number';
+@@ -152,10 +155,6 @@
+ --UPDATE TopicProp SET PropValue='Kiezatlas--Test'         WHERE TopicID='t-deepamehtainstallation' AND PropName='Client Name';
+ --UPDATE TopicProp SET PropValue='DeepaMehtaServer 2.0b8'   WHERE TopicID='t-deepamehtainstallation' AND PropName='Server Name';
+ 
+---- assign properties to association type &quot;Membership&quot;
+---- update membership properties for the compatibility of the old kiezatlas publishing, for memberships
+---- carefully to handle for developers, no association publisher property should be set yet
+-Insert AssociationProp (AssociationID, AssociationVersion, PropName, PropValue) SELECT ID, 1, 'Publisher', 'on' FROM Association WHERE TypeID = 'at-membership';
+-
+-
+-
++--- assure compatibility of the old kiezatlas publishing scheme
++-- set 'Publisher' property for all existing memberships
++INSERT AssociationProp (AssociationID, AssociationVersion, PropName, PropValue) SELECT ID, 1, 'Publisher', 'on' FROM Association WHERE TypeID = 'at-membership';
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/docs/session.txt	2008-05-27 01:49:09 UTC (rev 44)
+@@ -1,9 +1,9 @@
+-Kiez-Atlas 1.4.1 Documentation
++Kiez-Atlas 1.5.1 Documentation
+ 
+ Web Session Attributes
+ 
+ J&#246;rg Richter
+-17.3.2007
++26.5.2008
+ 
+ 
+ 
+@@ -45,7 +45,7 @@
+ 
+ 
+ GeoObjectList
+-----------------
++-------------
+ 
+ institutions		Vector of BaseTopic
+ categories			Hashtable
+@@ -58,7 +58,7 @@
+ 							value: street/postalcode
+ 
+ GeoObjectInfo
+----------------
++-------------
+ 
+ topicBean			TopicBean
+ forumActivition		String (SWITCH_ON, SWITCH_OFF)
+@@ -67,39 +67,41 @@
+ 
+ 
+ GeoObjectForum
+-----------------
++--------------
+ 
+ html				HMTLGenerator
+ selectedGeo			GeoObject
+ instComments		Vector of Comment
+ 
++
+ error
+ -----
+ 
+ error				String
+ 
++
+ CommentForm
+-----------------
++-----------
+ 
+ selectedGeo			GeoObject
+ comments			Vector of comments
+ 
+ 
++
+ EditServlet
+ ===========
+ 
+-GeoObjectHome
+-----------------
++Global
++------
+ 
+-topicBean			Instance of TopicBean
+-imagefile			full path to image 			
+-html				Instance of HTML Generator
++geo					BaseTopic
+ 
+ 
+-Global
+-------
++GeoObjectHome
++-------------
+ 
+-geo				BaseTopic
++topicBean			TopicBean
++imagefile			full path to image 			
+ 
+ 
+ ForumAdministration
+@@ -130,5 +132,12 @@
+ List
+ ----
+ 
+-mapName				String
+-topics				Vector of TopicBeans
++cityMap				selected city map (BaseTopic)
++instTypeID			corresponding institution type ID (String)
++topics				IDs of geo objects to list (Vector of String)
++
++
++GeoObjectAdminForm
++------------------
++
++geo					BaseTopic (geo object to edit)
+
+Added: trunk/pages/GeoObjectAdminForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectAdminForm.jsp	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/pages/GeoObjectAdminForm.jsp	2008-05-27 01:49:09 UTC (rev 44)
+@@ -0,0 +1,21 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(session, out); %&gt;
++&lt;%!
++	static String[] hiddenProps = {
++		KiezAtlas.PROPERTY_DESCRIPTION,
++		KiezAtlas.PROPERTY_ICON,
++		&quot;Title&quot;, &quot;Content&quot;,
++		&quot;Width&quot;, &quot;Height&quot;};
++%&gt;
++&lt;%
++	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
++	BaseTopic geo = (BaseTopic) session.getAttribute(&quot;geo&quot;);
++	//
++	// institution form
++	out.println(&quot;&lt;H2&gt;&quot; + geo.getName() + &quot;&lt;/H2&gt;&quot;);
++	out.println(&quot;&lt;H3&gt;Administrator &Auml;nderungsformular&lt;/H3&gt;&quot;);
++	out.println(html.form(geo.getType(), KiezAtlas.ACTION_UPDATE_GEO,
++						  geo.getID(), hiddenProps, true));
++%&gt;
++&lt;% end(out); %&gt;
+
+Modified: trunk/pages/GeoObjectHome.jsp
+===================================================================
+--- trunk/pages/GeoObjectHome.jsp	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/pages/GeoObjectHome.jsp	2008-05-27 01:49:09 UTC (rev 44)
+@@ -4,13 +4,13 @@
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	TopicBean topicBean = (TopicBean) session.getAttribute(&quot;topicBean&quot;);
+-	//render image if available from the virtual tomcat directory 8080/dm-images
+ 	String imageFile = (String) session.getAttribute(&quot;imagefile&quot;);
+-	
++	//
++	// render image if available
+ 	if (imageFile != null) {
+-		String imageHtmlString = &quot;&lt;/br&gt;&lt;img src=&quot; + imageFile + &quot;&gt;&quot;;
+-		out.println(imageHtmlString);
++		out.println(&quot;&lt;/br&gt;&lt;img src=&quot; + imageFile + &quot;&gt;&quot;);
+ 	}
++	//
+ 	topicBean.removeFieldsContaining(&quot;Image&quot;);
+ 	topicBean.removeField(&quot;Web Alias&quot;);
+ 	topicBean.removeField(&quot;Password&quot;);
+@@ -21,13 +21,12 @@
+ 	topicBean.removeFieldsContaining(&quot;Locked Geometry&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Icon&quot;);
+ 	topicBean.removeFieldsContaining(&quot;YADE&quot;);
+-	// Name as Headline
++	//
+ 	out.println(&quot;&lt;H2&gt;&quot; + topicBean.getValue(&quot;Name&quot;) + &quot;&lt;/H2&gt;&quot;);
+-	//hier die topic bean rinne
+ 	out.println(html.info(topicBean, DeepaMehtaConstants.BEAN_LAYOUT_BOX));
+-	// link to form page
++	//
++	// links to form page and forum administration
+ 	out.println(&quot;&lt;p&gt;\r&quot; + html.link(&quot;Zum &Auml;nderungsformular&quot;, KiezAtlas.ACTION_SHOW_GEO_FORM) + &quot;&lt;/p&gt;&quot;);
+-	// link to forum administration page
+ 	out.println(&quot;&lt;p&gt;\r&lt;hr&gt;\r&quot; + html.link(&quot;Zur Forum Administration&quot;, KiezAtlas.ACTION_SHOW_FORUM_ADMINISTRATION) + &quot;&lt;/p&gt;&quot;);
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/pages/List.jsp	2008-05-27 01:49:09 UTC (rev 44)
+@@ -1,14 +1,19 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+ &lt;% begin(session, out); %&gt;
++&lt;%!
++	static String[] hiddenProps = {
++		KiezAtlas.PROPERTY_DESCRIPTION,
++		KiezAtlas.PROPERTY_ICON,
++		&quot;Width&quot;, &quot;Height&quot;};
++%&gt;
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+-	String mapName = (String) session.getAttribute(&quot;mapName&quot;);
++	BaseTopic cityMap = (BaseTopic) session.getAttribute(&quot;cityMap&quot;);
+ 	Vector topics = (Vector) session.getAttribute(&quot;topics&quot;);
+ 	// --- list of institutions ---
+-	out.println(&quot;&lt;h2&gt;&quot; + mapName + &quot;&lt;/h2&gt;&quot;);
++	out.println(&quot;&lt;h2&gt;&quot; + cityMap.getName() + &quot;&lt;/h2&gt;&quot;);
+ 	out.println(topics.size() + &quot; Objekte&lt;br&gt;&lt;br&gt;&lt;br&gt;&quot;);
+-	out.println(html.list(topics));
+-	
++	out.println(html.list(topics, hiddenProps, true, KiezAtlas.ACTION_SHOW_GEO_FORM));	// hideSel=true
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Cluster.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -2,50 +2,46 @@
+ 
+ import java.awt.Point;
+ import java.util.Vector;
+-
++//
+ import de.deepamehta.PresentableTopic;
+ 
++
++
+ public class Cluster {
+-	
++
+ 	private Point p;
+ 	private String icon;
+ 	private Vector presentables = new Vector();
+-	
+-	public Cluster (PresentableTopic presentableOne, PresentableTopic presentableTwo, String clusterIconPath) {
+-		
++
++	public Cluster (PresentableTopic presentableOne, PresentableTopic presentableTwo, String clusterIconPath) {		
+ 		// first object is the point of this cluster
+ 		p = presentableOne.getGeometry();
+ 		icon = clusterIconPath + &quot;redball-bigger.gif&quot;;
+ 		presentables.add(presentableOne);
+ 		presentables.add(presentableTwo);
+-				
+ 	}
+-	
+-	//Override
++
++	// Override
+ 	public String toString() {
+-		return &quot;:: &quot; +this.presentables.toString()+&quot; :: &quot;;
++		return &quot;:: &quot; + presentables.toString() + &quot; :: &quot;;
+ 	}
+-	
++
+ 	public void addPresentable(PresentableTopic presentable) {
+ 		if (!presentables.contains(presentable)) {
+ 			//System.out.println(&quot;added &quot;+ presentable.getID()+&quot; into &quot; + this.p);
+ 			presentables.add(presentable);
+ 		}
+-		// else {
+-//			//System.out.println(&quot;Object already present in Cluster, omitting ... &quot;);
+-//		}
+ 	}
+-	
++
+ 	public String getIcon() {
+ 		return icon;
+ 	}
+-	
+-	public Vector getPresentables(){
+-		return this.presentables;
++
++	public Vector getPresentables() {
++		return presentables;
+ 	}
+-	
++
+ 	public Point getPoint() {
+-		return this.p;
++		return p;
+ 	}
+-
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Comment.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Comment.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/Comment.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -8,7 +8,7 @@
+ 
+ 
+ /**
+- * A bean-like data container for passing data from the front-controler (servlet)
++ * A bean-like data container for passing data from the front-controller (servlet)
+  * to the presentation layer (JSP engine).
+  * &lt;p&gt;
+  * Kiez-Atlas 1.4&lt;br&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -147,16 +147,13 @@
+ 	// *** Utilities ***
+ 	// *****************
+ 
+-	// not sure when this method is triggered
+-	// uses not configurable file path to write image/s to disk  
+ 
+-	private String writeImage(Vector fileItems) {
++
++	static String writeImage(Vector fileItems) {
+ 		try {
+ 			System.out.println(&quot;&gt;&gt;&gt; EditServlet.writeImage(): &quot; + fileItems.size() + &quot; files uploaded&quot;);
+ 			if (fileItems.size() &gt; 0) {
+-				
+-				//CAUTION
+-				String path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ###
++				String path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ### hardcoded
+ 				// ### String path = &quot;/Users/jri/Projects/DeepaMehta/trunk/install/client/images/&quot;;
+ 				FileItem item = (FileItem) fileItems.firstElement();
+ 				String filename = getFilename(item.getName());	// ### explorer includes entire path
+@@ -187,7 +184,7 @@
+ 	}
+ 
+ 	// ###
+-	String getFilename(String path) {
++	static String getFilename(String path) {
+ 		int pos = path.lastIndexOf('\\');
+ 		return pos != -1 ? path.substring(pos + 1) : path;
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/GeoObject.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/GeoObject.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/GeoObject.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -1,12 +1,18 @@
+ package de.kiezatlas.deepamehta;
++
+ import java.io.Serializable;
+ import java.util.Vector;
+-
++//
+ import de.deepamehta.service.ApplicationService;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ import de.kiezatlas.deepamehta.KiezAtlas;
+ 
++
++
+ /**
++ * A bean-like data container for passing data from the front-controller (servlet)
++ * to the presentation layer (JSP engine).
++ * &lt;p&gt;
+  * Kiez-Atlas 1.5&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1.
+  * &lt;p&gt;
+@@ -14,16 +20,12 @@
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+-public class GeoObject implements KiezAtlas, Serializable{
+-	/**
+-	 *  Value Object/ Bean
+-	 *  used as Container for the data Transport between Servlet and JSP 
+-	 */
+-	private static final long serialVersionUID = 1L;
++public class GeoObject implements KiezAtlas, Serializable {
++
+ 	public String geoID, name, webAlias;
+ 	public String yadeX, yadeY;
+ 	public Vector categories;
+-	
++
+ 	GeoObject(String newID, SearchCriteria[] criterias, ApplicationService as) {
+ 		GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(newID, 1);
+ 		this.geoID = geo.getID();
+@@ -33,7 +35,7 @@
+ 		this.yadeY = as.getTopicProperty(geo, PROPERTY_YADE_Y);
+ 		this.categories = geo.getCategories(KiezAtlas.TOPICTYPE_KIEZ_GEO);
+ 	}
+-	
++
+ 	public String toString() {
+ 		return &quot;\&quot;&quot; + name + &quot;\&quot;&quot;;
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -5,10 +5,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.5&lt;br&gt;
++ * Kiez-Atlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 15.1.2008&lt;br&gt;
++ * Last change: 26.5.2008&lt;br&gt;
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -185,10 +185,9 @@
+ 	public static final String ACTION_CREATE_COMMENT = &quot;createComment&quot;;
+ 	public static final String ACTION_TOGGLE_SHAPE_DISPLAY = &quot;toggleShapeDisplay&quot;;
+ 	// edit servlet
+-	public static final String ACTION_TRY_LOGIN = &quot;tryLogin&quot;;		// also used for list servlet
+-	//public static final String ACTION_SHOW_INSTITUTION_FORM = &quot;showInstForm&quot;;
+-	public static final String ACTION_SHOW_GEO_FORM = &quot;showGeoObjectForm&quot;;
+-	public static final String ACTION_UPDATE_GEO = &quot;updateGeo&quot;;
++	public static final String ACTION_TRY_LOGIN = &quot;tryLogin&quot;;				// also used for list servlet
++	public static final String ACTION_SHOW_GEO_FORM = &quot;showGeoObjectForm&quot;;	// also used for list servlet
++	public static final String ACTION_UPDATE_GEO = &quot;updateGeo&quot;;				// also used for list servlet
+ 	public static final String ACTION_SHOW_FORUM_ADMINISTRATION = &quot;showForumAdmin&quot;;
+ 	public static final String ACTION_ACTIVATE_FORUM = &quot;activateForum&quot;;
+ 	public static final String ACTION_DEACTIVATE_FORUM = &quot;deactivateForum&quot;;
+@@ -232,7 +231,6 @@
+     static final String PAGE_CITY_MAP = &quot;CityMap&quot;;
+     static final String PAGE_CATEGORY_LIST = &quot;CategoryList&quot;;
+     static final String PAGE_GEO_LIST = &quot;GeoObjectList&quot;;
+-    //static final String PAGE_INSTITUTION_INFO = &quot;InstitutionInfo&quot;;
+     static final String PAGE_GEO_INFO = &quot;GeoObjectInfo&quot;;
+     static final String PAGE_GEO_FORUM = &quot;GeoObjectForum&quot;;
+     static final String PAGE_COMMENT_FORM = &quot;CommentForm&quot;;
+@@ -245,6 +243,7 @@
+     static final String PAGE_LIST_LOGIN = &quot;ListLogin&quot;;
+     static final String PAGE_LIST_HOME = &quot;ListHome&quot;;
+     static final String PAGE_LIST = &quot;List&quot;;
++    static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+ 	// error
+     static final String PAGE_ERROR = &quot;error&quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -3,24 +3,26 @@
+ import java.util.Enumeration;
+ import java.util.Hashtable;
+ import java.util.Vector;
+-
++//
+ import javax.servlet.ServletException;
+-
++//
+ import de.deepamehta.BaseTopic;
+ import de.deepamehta.DeepaMehtaConstants;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.service.TopicBean;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
++//
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
++import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ 
+ 
+ 
+ /**
+- * Kiez-Atlas 1.4.1.&lt;br&gt;
+- * Requires DeepaMehta 2.0b7-post1.
++ * Kiez-Atlas 1.5&lt;br&gt;
++ * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last functional change: 17.3.2007&lt;br&gt;
++ * Last functional change: 26.5.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -39,7 +41,23 @@
+ 				return PAGE_LIST_LOGIN;
+ 			}
+ 		} else if (action.equals(ACTION_SHOW_INSTITUTIONS)) {
++			BaseTopic cityMap = cm.getTopic(params.getValue(&quot;cityMapID&quot;), 1);
++			String instTypeID = ((CityMapTopic) as.getLiveTopic(cityMap)).getInstitutionType().getID();
++			setCityMap(cityMap, session);
++			setInstTypeID(instTypeID, session);
+ 			return PAGE_LIST;
++		} else if (action.equals(ACTION_SHOW_GEO_FORM)) {
++			String geoID = params.getValue(&quot;id&quot;);
++			setGeoObject(cm.getTopic(geoID, 1), session);
++			return PAGE_GEO_ADMIN_FORM;
++		} else if (action.equals(ACTION_UPDATE_GEO)) {
++			GeoObjectTopic geo = getGeoObject(session);
++			updateTopic(geo.getType(), params, session);
++			String newFilename = EditServlet.writeImage(params.getUploads());
++			if (newFilename != null) {
++				as.setTopicProperty(geo.getImage(), PROPERTY_FILE, newFilename);
++			}
++			return PAGE_LIST;
+ 		}
+ 		//
+ 		return super.performAction(action, params, session);
+@@ -52,13 +70,10 @@
+ 			session.setAttribute(&quot;workspaces&quot;, workspaces);
+ 			session.setAttribute(&quot;cityMaps&quot;, cityMaps);
+ 		} else if (page.equals(PAGE_LIST)) {
+-			String cityMapID = params.getValue(&quot;cityMapID&quot;);
+-			CityMapTopic cityMap = (CityMapTopic) as.getLiveTopic(cityMapID, 1);
+-			String instTypeID = cityMap.getInstitutionType().getID();
++			String cityMapID = getCityMap(session).getID();
++			String instTypeID = getInstTypeID(session);
+ 			Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+-			SearchCriteria[] criterias = cityMap.getSearchCriterias();
+-			session.setAttribute(&quot;mapName&quot;, cityMap.getName());
+-			session.setAttribute(&quot;topics&quot;, createBaseTopicBeans(insts, criterias, instTypeID));
++			session.setAttribute(&quot;topics&quot;, insts);
+ 		}
+ 	}
+ 
+@@ -111,32 +126,8 @@
+ 		return cityMaps;
+ 	}
+ 
+-	private Vector createBaseTopicBeans(Vector instIDs, SearchCriteria[] criterias, String instTypeID) {
+-		Vector insts = new Vector();
+-		//
+-		Enumeration e = instIDs.elements();
+-		while (e.hasMoreElements()) {
+-			String instID = (String) e.nextElement();
+-			GeoObject geo = new GeoObject(instID, criterias, as);
+-			insts.addElement(new BaseTopic(instID, 1, instTypeID, 1, geo.name));
+-		}
+-		//
+-		return insts;
+-	}
+-	
+-	private Vector createTopicBeans(Vector topicIDs) {
+-		Vector topics = new Vector();
+-		//
+-		Enumeration e = topicIDs.elements();
+-		while (e.hasMoreElements()) {
+-			String instID = (String) e.nextElement();
+-			TopicBean topicBean = as.createTopicBean(instID, 1);
+-			topics.addElement(topicBean);
+-		}
+-		//
+-		return topics;
+-	}
+ 
++
+ 	// *************************
+ 	// *** Session Utilities ***
+ 	// *************************
+@@ -149,4 +140,33 @@
+ 		session.setAttribute(&quot;user&quot;, user);
+ 		System.out.println(&quot;&gt; \&quot;user\&quot; stored in session: &quot; + user);
+ 	}
++
++	private void setCityMap(BaseTopic cityMap, Session session) {
++		session.setAttribute(&quot;cityMap&quot;, cityMap);
++		System.out.println(&quot;&gt; \&quot;cityMap\&quot; stored in session: &quot; + cityMap);
++	}
++
++	private void setInstTypeID(String instTypeID, Session session) {
++		session.setAttribute(&quot;instTypeID&quot;, instTypeID);
++		System.out.println(&quot;&gt; \&quot;instTypeID\&quot; stored in session: &quot; + instTypeID);
++	}
++
++	private void setGeoObject(BaseTopic geo, Session session) {
++		session.setAttribute(&quot;geo&quot;, geo);
++		System.out.println(&quot;&gt; \&quot;geo\&quot; stored in session: &quot; + geo);
++	}
++
++	// ---
++
++	private BaseTopic getCityMap(Session session) {
++		return (BaseTopic) session.getAttribute(&quot;cityMap&quot;);
++	}
++
++	private String getInstTypeID(Session session) {
++		return (String) session.getAttribute(&quot;instTypeID&quot;);
++	}
++
++	private GeoObjectTopic getGeoObject(Session session) {
++		return (GeoObjectTopic) as.getLiveTopic((BaseTopic) session.getAttribute(&quot;geo&quot;));
++	}
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -8,6 +8,9 @@
+ 
+ 
+ /**
++ * A bean-like data container for passing data from the front-controller (servlet)
++ * to the presentation layer (JSP engine).
++ * &lt;p&gt;
+  * Kiez-Atlas 1.4.1.&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1.
+  * &lt;p&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Shape.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Shape.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/Shape.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -7,6 +7,9 @@
+ 
+ 
+ /**
++ * A bean-like data container for passing data from the front-controller (servlet)
++ * to the presentation layer (JSP engine).
++ * &lt;p&gt;
+  * Kiez-Atlas 1.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ShapeType.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ShapeType.java	2008-05-26 11:24:42 UTC (rev 43)
++++ trunk/src/de/kiezatlas/deepamehta/ShapeType.java	2008-05-27 01:49:09 UTC (rev 44)
+@@ -5,6 +5,9 @@
+ 
+ 
+ /**
++ * A bean-like data container for passing data from the front-controller (servlet)
++ * to the presentation layer (JSP engine).
++ * &lt;p&gt;
+  * Kiez-Atlas 1.3.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000035.html">[Kiezatlas-svn] r43 - in trunk: . config/default config/test	src/de/kiezatlas/deepamehta/topics
+</A></li>
+	<LI>Next message: <A HREF="000037.html">[Kiezatlas-svn] r45 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36">[ date ]</a>
+              <a href="thread.html#36">[ thread ]</a>
+              <a href="subject.html#36">[ subject ]</a>
+              <a href="author.html#36">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

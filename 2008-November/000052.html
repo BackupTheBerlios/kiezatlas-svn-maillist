@@ -1,0 +1,252 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r63 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r63%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200811211133.mALBXqul016569%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000051.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r63 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r63%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200811211133.mALBXqul016569%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r63 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Fri Nov 21 12:33:52 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000051.html">[Kiezatlas-svn] r62 - in trunk: docs images pages	src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52">[ date ]</a>
+              <a href="thread.html#52">[ thread ]</a>
+              <a href="subject.html#52">[ subject ]</a>
+              <a href="author.html#52">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-11-21 12:33:38 +0100 (Fri, 21 Nov 2008)
+New Revision: 63
+
+Modified:
+   trunk/pages/CityMap.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+* Fixes Caching Bug in List Generator
+* Changed Version Numbers
+* README Updated
+* Reverting HTML IE changes
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2008-11-07 19:01:47 UTC (rev 62)
++++ trunk/pages/CityMap.jsp	2008-11-21 11:33:38 UTC (rev 63)
+@@ -18,8 +18,9 @@
+ 	&lt;/style&gt;
+ 	&lt;!--[if lt IE 7]&gt;
+ 	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/pngfix.js&quot;&gt;&lt;/script&gt;
++	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/fixed.js&quot;&gt;&lt;/script&gt;
+ 	&lt;![endif]--&gt;
+-	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/fixed.js&quot;&gt;&lt;/script&gt;
++	&lt;!-- For running this app in IE 7, css-strict mode has to be enabled via a doctype definition --&gt;
+ 	&lt;script type=&quot;text/javascript&quot;&gt;
+ 
+ 		var currentActiveMenu = &quot;&quot;;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-11-07 19:01:47 UTC (rev 62)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-11-21 11:33:38 UTC (rev 63)
+@@ -32,7 +32,7 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6.1&lt;br&gt;
++ * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+  * Last change: 11.8.2008&lt;br&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-11-07 19:01:47 UTC (rev 62)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-11-21 11:33:38 UTC (rev 63)
+@@ -5,7 +5,7 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6.1&lt;br&gt;
++ * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+  * Last change: 11.8.2008&lt;br&gt;
+@@ -285,6 +285,7 @@
+     static final String PAGE_LIST = &quot;List&quot;;
+     static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+     static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
++	static final String PAGE_LINK_PAGE = &quot;Print&quot;;
+ 	// error
+     static final String PAGE_ERROR = &quot;error&quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-11-07 19:01:47 UTC (rev 62)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-11-21 11:33:38 UTC (rev 63)
+@@ -28,10 +28,10 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6&lt;br&gt;
++ * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 8.7.2008&lt;br&gt;
++ * Last change: 20.11.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -143,16 +143,21 @@
+ 			System.out.println(&quot;&gt;&gt;&gt; cleared Filter&quot;);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_CREATE_FORM_LETTER)) {
+-			System.out.println(&quot;&gt;&gt;&gt; created Form Letter&quot;);
+-			String letter = createFormLetter(getListedTopics(session));
++			String letter = &quot;&quot;;
++			if(getFilterField(session) != null) {
++				letter = createFormLetter(getListedFilteredTopics(session));	
++			} else {
++				letter = createFormLetter(getListedTopics(session));
++			}
+ 			if(letter.equals(&quot;&quot;)) {
+ 				setUseCache(Boolean.TRUE, session);
+ 				return PAGE_LIST;
+ 			}
+ 			String link = as.getCorporateWebBaseURL() + FILESERVER_DOCUMENTS_PATH;
+ 			link += writeLetter(letter, &quot;Adressen.txt&quot;);
++			System.out.println(&quot;&gt;&gt;&gt; created Form Letter&quot;);
+ 			session.setAttribute(&quot;formLetter&quot;, link);
+-			return &quot;Print&quot;;
++			return PAGE_LINK_PAGE;
+ 		}
+ 		//
+ 		return super.performAction(action, params, session, directives);
+@@ -190,11 +195,17 @@
+ 			} else {
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			}
+-			Vector beans = getListedTopics(session);
+-			Vector mailAdresses = getMailAdresses(beans);
+-			session.setAttribute(&quot;emailList&quot;, mailAdresses);
+-			// ### System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#228;ge&quot;);
+-			
++			if(getFilterField(session) != null) {
++				Vector beans = getListedFilteredTopics(session);
++				Vector mailAdresses = getMailAdresses(beans);
++				session.setAttribute(&quot;emailList&quot;, mailAdresses);
++				System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#228;ge&quot;);
++			} else {
++				Vector beans = getListedTopics(session);
++				Vector mailAdresses = getMailAdresses(beans);
++				session.setAttribute(&quot;emailList&quot;, mailAdresses);
++				System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#228;ge&quot;);
++			}			
+ 		}
+ 	}
+ 
+@@ -294,6 +305,11 @@
+ 		return mailAdresses;
+ 	}
+ 	
++	/**
++	 * 
++	 * @param topics
++	 * @return can be empty an empty stringif the given topics were null
++	 */
+ 	private String createFormLetter(Vector topics) {
+ 		String letter = &quot;Name&quot; + createTab() + &quot;Ansprechpartner/in&quot; + createTab() + &quot;Stra&#223;e / Hnr.&quot; +
+ 			&quot;&quot; + createTab() + &quot;PLZ&quot; + createTab() + &quot;Stadt\n&quot;;
+@@ -480,7 +496,7 @@
+ 	 * @param fileName
+ 	 */
+ 	private String writeLetter(String letter, String fileName) {
+-		String path = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;; // ### hardcoded ka
++		String path = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;; // ### hardcoded ka-server
+ 		// String path = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;; // ### hardcoded mre's
+ 		File toFile = new File(path + fileName);
+ 		try {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-11-07 19:01:47 UTC (rev 62)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-11-21 11:33:38 UTC (rev 63)
+@@ -22,7 +22,7 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6.1&lt;br&gt;
++ * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+  * Last change: 11.8.2008&lt;br&gt;
+@@ -33,7 +33,7 @@
+ 
+ 
+ 
+-	static final String VERSION = &quot;1.6.1&quot;;
++	static final String VERSION = &quot;1.6.2&quot;;
+ 	static {
+ 		System.out.println(&quot;&gt;&gt;&gt; Kiezatlas &quot; + VERSION);
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-11-07 19:01:47 UTC (rev 62)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-11-21 11:33:38 UTC (rev 63)
+@@ -27,7 +27,7 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6.1&lt;br&gt;
++ * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+  * Last change: 19.8.2008&lt;br&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000051.html">[Kiezatlas-svn] r62 - in trunk: docs images pages	src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#52">[ date ]</a>
+              <a href="thread.html#52">[ thread ]</a>
+              <a href="subject.html#52">[ subject ]</a>
+              <a href="author.html#52">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

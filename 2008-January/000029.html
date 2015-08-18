@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r38%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200801151719.m0FHJrwX020156%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000030.html">
+   <LINK REL="Next"  HREF="000031.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r38%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200801151719.m0FHJrwX020156%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Tue Jan 15 18:19:53 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000030.html">[Kiezatlas-svn] r37 - trunk/pages
+</A></li>
+        <LI>Next message: <A HREF="000031.html">[Kiezatlas-svn] r39 - trunk/src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29">[ date ]</a>
+              <a href="thread.html#29">[ thread ]</a>
+              <a href="subject.html#29">[ subject ]</a>
+              <a href="author.html#29">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-01-15 18:19:51 +0100 (Tue, 15 Jan 2008)
+New Revision: 38
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+Log:
+1) A Citymap has a 'Delete' command.
+2) 'Reposition All' command has an icon.
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-01-14 12:57:28 UTC (rev 37)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-01-15 17:19:51 UTC (rev 38)
+@@ -6,9 +6,9 @@
+ 
+ /**
+  * Kiez-Atlas 1.5&lt;br&gt;
+- * Requires DeepaMehta 2.0b7-post1.
++ * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 15.10.2007&lt;br&gt;
++ * Last change: 15.1.2008&lt;br&gt;
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -143,6 +143,7 @@
+ 	//
+     static final String ITEM_REPOSITION_ALL = &quot;Reposition all&quot;;
+     static final String  CMD_REPOSITION_ALL = &quot;repositionAll&quot;;
++    static final String ICON_REPOSITION_ALL = &quot;location.png&quot;;
+ 	//
+     static final String ITEM_MAKE_SHAPE = &quot;Make Shape&quot;;
+     static final String  CMD_MAKE_SHAPE = &quot;makeShape&quot;;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-01-14 12:57:28 UTC (rev 37)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-01-15 17:19:51 UTC (rev 38)
+@@ -80,8 +80,9 @@
+ 			commands.addCreateCommands(viewmode, session, directives);
+ 			commands.addSeparator();
+ 			//
++			commands.addCloseCommand(session);
+ 			commands.addHideAllCommands(topicmapID, viewmode, session);
+-			commands.addCloseCommand(session);
++			commands.addDeleteTopicmapCommand();
+ 			commands.addSeparator();
+ 			//
+ 			commands.addPublishCommand(getID(), session, directives);
+@@ -91,10 +92,13 @@
+ 			commands.addSeparator();
+ 			//
+ 			// additional command: &quot;Reposition all&quot;
+-			commands.addCommand(ITEM_REPOSITION_ALL, CMD_REPOSITION_ALL);
++			commands.addCommand(ITEM_REPOSITION_ALL, CMD_REPOSITION_ALL, FILESERVER_ICONS_PATH, ICON_REPOSITION_ALL);
+ 			commands.addSeparator();
+ 			//
+ 			commands.addHelpCommand(this, session);
++		} else if (editorContext == EDITOR_CONTEXT_WORKGROUP) {
++		} else {
++			throw new DeepaMehtaException(this + &quot; has unexpected editor context: &quot; + editorContext);
+ 		}
+ 		//
+ 		return commands;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000030.html">[Kiezatlas-svn] r37 - trunk/pages
+</A></li>
+	<LI>Next message: <A HREF="000031.html">[Kiezatlas-svn] r39 - trunk/src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29">[ date ]</a>
+              <a href="thread.html#29">[ thread ]</a>
+              <a href="subject.html#29">[ subject ]</a>
+              <a href="author.html#29">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

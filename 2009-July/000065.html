@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r76 - trunk/src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r76%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200907052307.n65N7TH6022046%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000064.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r76 - trunk/src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r76%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200907052307.n65N7TH6022046%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r76 - trunk/src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Jul  6 01:07:29 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000064.html">[Kiezatlas-svn] r75 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65">[ date ]</a>
+              <a href="thread.html#65">[ thread ]</a>
+              <a href="subject.html#65">[ subject ]</a>
+              <a href="author.html#65">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-07-06 01:07:27 +0200 (Mon, 06 Jul 2009)
+New Revision: 76
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+Log:
+GPS Transformation has now a better reporting: address topics are now linked directly into the report for revealing and correction of incorrect entries.
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-07-04 18:47:37 UTC (rev 75)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-07-05 23:07:27 UTC (rev 76)
+@@ -106,10 +106,12 @@
+                 BaseTopic workspace = (BaseTopic) workspaces.get(i);
+                 htmlReport.append(&quot;&lt;hr&gt;&quot;);
+                 htmlReport.append(&quot;Im Workspace: &lt;b&gt;&quot; + workspace.getName() + &quot;&lt;/b&gt;&lt;br/&gt;&quot;);
+-                System.out.println(&quot;    searching on workspace (&quot;+i+&quot;/&quot;+workspaces.size()+&quot;): &quot; + workspace.getName() + &quot;:&quot; + workspace.getID());
++                System.out.println(&quot;    searching on workspace (&quot;+i+&quot;/&quot;+workspaces.size()+&quot;): &quot; +
++                        &quot;&quot; + workspace.getName() + &quot;:&quot; + workspace.getID());
+                 BaseTopic geotype = getWorkspaceGeoType(workspace.getID());
+                 if (geotype == null) {
+-                    directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Please assign the GPSConverter Topic to a 'KiezAtlas' Workspace. No 'GeoObject' was found.&quot;, new Integer(NOTIFICATION_ERROR));
++                    directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Please assign the GPSConverter Topic to a &quot; +
++                            &quot;'KiezAtlas' Workspace. No 'GeoObject' was found.&quot;, new Integer(NOTIFICATION_ERROR));
+                     return directives;
+                 } else {
+                     Vector geos  = getAllGeoObjects(geotype.getID());
+@@ -131,15 +133,21 @@
+                                 BaseTopic geo = (BaseTopic) geos.get(a);
+                                 GeoObjectTopic geoTopic = (GeoObjectTopic) as.getLiveTopic(geo);
+                                 if (geoTopic.getAddress() != null) {
+-                                    htmlReport.append(&quot;&lt;li&gt;&quot;+geoTopic.getAddress().getName()+&quot;, &quot;+ as.getTopicProperty(geoTopic.getAddress(), PROPERTY_POSTAL_CODE)+&quot;, &quot; +
+-                                            &quot;&quot;+ geoTopic.getName() + &quot;(&quot;+geoTopic.getID()+&quot;)&lt;/li&gt;&quot;);
++                                    htmlReport.append(&quot;&lt;li&gt;&lt;a href=\&quot;<A HREF="http://">http://</A>&quot;+ACTION_REVEAL_TOPIC+&quot;/&quot;+geoTopic.getAddress().getID()+&quot;\&quot;&gt;&quot; +
++                                            &quot;&quot;+geoTopic.getAddress().getName()+&quot;, &quot; +
++                                            &quot;&quot;+ geoTopic.getName() + &quot;&lt;/li&gt;&quot;);
+                                 } else {
+-                                    htmlReport.append(&quot;&lt;li&gt;&quot;+ geoTopic.getName() + &quot;(&quot;+geoTopic.getID()+&quot;)&lt;/li&gt;&quot;);
++                                    htmlReport.append(&quot;&lt;li&gt;&lt;a href=\&quot;<A HREF="http://">http://</A>&quot;+ACTION_REVEAL_TOPIC+&quot;/&quot;+geoTopic.getID()+&quot;\&quot;&gt;&quot; +
++                                            &quot;&quot;+ geoTopic.getName() +&quot;&lt;/a&gt;&lt;/li&gt;&quot;);
+                                 }
++                                //<A HREF="http://revealTopic|t-195554">http://revealTopic|t-195554</A>&quot;
++                                //<A HREF="http://revealTopic/t-256022">http://revealTopic/t-256022</A>
+                                 System.out.println(&quot;*** Fail with: &quot; + geo.getName() + &quot;(&quot;+geo.getID()+&quot;), Adressangabe: &quot;+ geoTopic.getAddress());
+                             }
+                             htmlReport.append(&quot;&lt;/ul&gt;&quot;);
+-                            htmlReport.append(&quot;&lt;br/&gt;Auch nach mehrmaligen Anfragen sind folgende Adressen nicht automatisch in GPS Koordinaten aufzul&#246;sen. Bitte &#252;berpr&#252;fen Sie die Schreibweise bzw. Korrektheit der Adressangaben im einzelnen.&quot;);
++                            htmlReport.append(&quot;&lt;br/&gt;Auch nach mehrmaligen Anfragen sind folgende Adressen &quot; +
++                                    &quot;nicht automatisch in GPS Koordinaten aufzul&#246;sen. &quot; +
++                                    &quot;Bitte &#252;berpr&#252;fen Sie die Schreibweise bzw. Korrektheit der Adressangaben im einzelnen.&quot;);
+                             break scenarioloop;
+                         } else {
+                             geos = updateAllGeoCoordinates(geos);
+@@ -155,9 +163,13 @@
+             props.put(PROPERTY_DESCRIPTION, htmlReport.toString());
+             directives.add(DIRECTIVE_SHOW_TOPIC_PROPERTIES, this.getID(), props, new Integer(1));
+             as.setTopicProperty(this, PROPERTY_DESCRIPTION, htmlReport.toString());
++		} else if (cmd.equals(CMD_FOLLOW_HYPERLINK)){
++            //directives.add(DIRECTIVE_, this.getID(), props, new Integer(1));
++			// delegate to super class to handle ACTION_REVEAL_TOPIC
++            return super.executeCommand(command, session, topicmapID, viewmode);
+ 		} else {
+-			return super.executeCommand(command, session, topicmapID, viewmode);
+-		}
++            return super.executeCommand(command, session, topicmapID, viewmode);
++        }
+ 		return directives;
+ 	}
+ 
+@@ -174,8 +186,15 @@
+         // System.out.println(&quot;    workspaces found count: &quot; + workspaces.size());
+         return workspaces;
+     }
+-    
+ 
++    public Vector disabledProperties(Session session) {
++		Vector disabledProps = new Vector();
++		//
++        disabledProps.addElement(PROPERTY_DESCRIPTION);
++		//
++		return disabledProps;
++	}
++
+     /**
+      * returns null if no topictype whihc is assigned to the given workspace, is a subtype of &quot;GeoObjectTopic&quot;
+      * @param workspaceId
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000064.html">[Kiezatlas-svn] r75 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65">[ date ]</a>
+              <a href="thread.html#65">[ thread ]</a>
+              <a href="subject.html#65">[ subject ]</a>
+              <a href="author.html#65">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

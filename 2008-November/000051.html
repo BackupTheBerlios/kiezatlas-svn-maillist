@@ -1,0 +1,445 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r62 - in trunk: docs images pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r62%20-%20in%20trunk%3A%20docs%20images%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200811071901.mA7J1qM4029371%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000052.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r62 - in trunk: docs images pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r62%20-%20in%20trunk%3A%20docs%20images%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200811071901.mA7J1qM4029371%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r62 - in trunk: docs images pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Fri Nov  7 20:01:52 CET 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000052.html">[Kiezatlas-svn] r63 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51">[ date ]</a>
+              <a href="thread.html#51">[ thread ]</a>
+              <a href="subject.html#51">[ subject ]</a>
+              <a href="author.html#51">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-11-07 20:01:47 +0100 (Fri, 07 Nov 2008)
+New Revision: 62
+
+Added:
+   trunk/images/arrow_up.gif
+   trunk/images/google_logo_small.png
+Removed:
+   trunk/images/google14.ico
+Modified:
+   trunk/docs/session.txt
+   trunk/pages/CityMap.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/List.jsp
+   trunk/pages/Print.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+KiezAtlas 1.6.2 improved with
+1) fixing multi-field filter bug (all topics included now)
+2) updating filter GUI after a Map change 
+3) introducing caching of listedTopics, resulting in much better performance during filter and sort actions
+4) filtering functionality on already filtered subsets was removed
+5) improving circular letter feature 
+    a) Tab Seperated File is written in LATIN 1 and as a .txt 
+    b) Page explains to download the .txt file
+Minor improvements in this revision are: 
+a) improved code readability
+b) css fix is not excluded for ie7 now and new asc arrow for visualising sort 
+c) updated google maps logo
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/docs/session.txt	2008-11-07 19:01:47 UTC (rev 62)
+@@ -139,10 +139,12 @@
+ 
+ cityMap				selected city map (BaseTopic)
+ topics				Vector of TopicBeans
++filteredTopics		Vector of filteredTopics
++useCache			Boolean to use listed topics, not populated listedTopics 
+ geo					geo object to highlight (BaseTopic)
+ notifications		error notifications (Vector of Notification)
+ sortField			Topic Bean Field Name, der zur Sortierung heanrgezogen wird (String) bzw. &quot;null&quot;, wenn unsortiert
+-filterField			Topic Bean Field Name, der zur Filterung heanrgezogen wird (String) bzw. &quot;null&quot;, wenn ungefiltert
++filterField		    Topic Bean Field Name, der zur Filterung heanrgezogen wird (String) bzw. &quot;null&quot;, wenn ungefiltert
+ filterText			query string (String). Nur verwendet, wenn filterField != null
+ emailList			Liste von Email-Adressen (Vector of String)
+ 
+
+Added: trunk/images/arrow_up.gif
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/images/arrow_up.gif
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Deleted: trunk/images/google14.ico
+===================================================================
+(Binary files differ)
+
+Added: trunk/images/google_logo_small.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/images/google_logo_small.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/pages/CityMap.jsp	2008-11-07 19:01:47 UTC (rev 62)
+@@ -18,8 +18,8 @@
+ 	&lt;/style&gt;
+ 	&lt;!--[if lt IE 7]&gt;
+ 	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/pngfix.js&quot;&gt;&lt;/script&gt;
++	&lt;![endif]--&gt;
+ 	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/fixed.js&quot;&gt;&lt;/script&gt;
+-	&lt;![endif]--&gt;
+ 	&lt;script type=&quot;text/javascript&quot;&gt;
+ 
+ 		var currentActiveMenu = &quot;&quot;;
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/pages/KiezAtlas.jsp	2008-11-07 19:01:47 UTC (rev 62)
+@@ -197,7 +197,7 @@
+ 		// render googlelink if address is complete
+ 		if (isSet(city) &amp;&amp; isSet(street) &amp;&amp; isSet(postalCode)) {
+ 			String mapURL = &quot;<A HREF="http://maps.google.de/maps?q=">http://maps.google.de/maps?q=</A>&quot; + street + &quot;, &quot; + postalCode + &quot; &quot; + city + &quot;&amp;mrt=loc&amp;lci=lmc:panoramio,lmc:wikipedia_en&amp;layer=tc&amp;t=h&quot;;
+-			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/google14.ico\&quot; alt=\&quot;Ansicht in Google \&quot; height=\&quot;10\&quot; width=\&quot;10\&quot; hspace=\&quot;20\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;;
++			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/google_logo_small.png\&quot; alt=\&quot;Ansicht in Google \&quot; hspace=\&quot;20\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;;
+ 			html.append(imageLink);
+ 			return html.toString();
+ 		} else {
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/pages/List.jsp	2008-11-07 19:01:47 UTC (rev 62)
+@@ -30,6 +30,7 @@
+ 	if(filterField != null) {
+ 	    disabledFormString = &quot;&quot;;
+ 	    selectedFilterField = filterField;
++	    topics = (Vector) session.getAttribute(&quot;filteredTopics&quot;);
+ 	} else {
+ 	    disabledFormString = &quot; disabled&quot;;
+ 	    selectedFilterField = &quot;&quot;;
+
+Modified: trunk/pages/Print.jsp
+===================================================================
+--- trunk/pages/Print.jsp	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/pages/Print.jsp	2008-11-07 19:01:47 UTC (rev 62)
+@@ -5,5 +5,7 @@
+    &quot;<A HREF="http://www.w3.org/TR/html4/loose.dtd">http://www.w3.org/TR/html4/loose.dtd</A>&quot;&gt;
+ 
+ &lt;%  String link = (String) session.getAttribute(&quot;formLetter&quot;);
++    out.println(&quot;&lt;h3&gt;Download der Steuerdatei&lt;/h3&gt;&quot;);
++    out.println(&quot;&lt;p&gt;Bitte klicken Sie mit der rechten Maustaste auf den untenstehenden Link und w&#228;hlen Sie \&quot;Ziel Speichern unter\&quot;&lt;/p&gt;&quot;);
+     out.println(&quot;&lt;a href=\&quot;&quot; + link + &quot;\&quot;&gt;Steuerdatei herunterladen&lt;/a&gt;&quot;);
+ %&gt;
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/pages/kiezatlas.css	2008-11-07 19:01:47 UTC (rev 62)
+@@ -76,6 +76,10 @@
+ 	color: #666666;
+ }
+ 
++.list-highlightcolumnheader:after { 
++        content: url(&quot;../images/arrow_up.gif&quot;)&quot; &quot;;
++}
++
+ /* DeepaMehta info generator: outmost container for label/content pairs */
+ .info-container {
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-10-30 21:27:33 UTC (rev 61)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-11-07 19:01:47 UTC (rev 62)
+@@ -11,8 +11,11 @@
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+ import java.io.File;
++import java.io.FileOutputStream;
+ import java.io.FileWriter;
+ import java.io.IOException;
++import java.io.OutputStream;
++import java.io.OutputStreamWriter;
+ import java.util.Collections;
+ import java.util.Comparator;
+ import javax.servlet.ServletException;
+@@ -55,6 +58,7 @@
+ 			// -- initialize filter and search attributes with &quot;null&quot;
+ 			session.setAttribute(&quot;sortField&quot;, null);
+ 			session.setAttribute(&quot;filterField&quot;, null);
++			setUseCache(Boolean.FALSE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_SHOW_GEO_FORM)) {
+ 			String geoObjectID = params.getValue(&quot;id&quot;);
+@@ -77,6 +81,7 @@
+ 			}
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
++			setUseCache(Boolean.FALSE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
+ 			return PAGE_GEO_EMPTY_FORM;
+@@ -99,46 +104,53 @@
+ 			GeoObjectTopic geo = getGeoObject(session);
+ 			// --- store image ---
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+-			//
++			setUseCache(Boolean.FALSE, session);			//
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_GO_HOME)) {
++			setFilterField(null, session);
++			setFilterText(null, session);
++			setSortByField(null, session);
+ 			return PAGE_LIST_HOME;
+ 		} else if (action.equals(ACTION_SORT_BY)) {
+ 			Vector topicBeans = getListedTopics(session);
+ 			String sortBy = params.getParameter(&quot;sortField&quot;);
+ 			sortBeans(topicBeans, sortBy);
+-			session.setAttribute(&quot;topics&quot;, topicBeans);
+-			session.setAttribute(&quot;sortField&quot;, sortBy);
++			setListedTopics(topicBeans, session);
++			setSortByField(sortBy, session);
++			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_FILTER)) {
+ 			Vector topicBeans = getListedTopics(session);
+ 			String filterField = params.getParameter(&quot;filterField&quot;);
+ 			if (filterField != null) {
+-				String filterText = params.getValue(&quot;filterText&quot;);
++				String filterText = params.getParameter(&quot;filterText&quot;);
+ 				Vector newBeans = filterBeansByField(topicBeans, filterField, filterText);
+-				session.setAttribute(&quot;topics&quot;, newBeans);
+-				session.setAttribute(&quot;filterField&quot;, filterField);
+-				session.setAttribute(&quot;filterText&quot;, filterText);
+-				// Maybe redundant
++				setListedFilteredTopics(newBeans, session);
++				setFilterField(filterField, session);
++				setFilterText(filterText, session);
++				setUseCache(Boolean.TRUE, session);
+ 				return PAGE_LIST;
+ 			}
+-			// Maybe redundant
+-			session.setAttribute(&quot;topics&quot;, topicBeans);
++			// setListedTopics(topicBeans, session);
++			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_CLEAR_FILTER)) {
+ 			// -- reset filter and search attributes to &quot;null&quot;
++			// session.setAttribute(&quot;filterField&quot;, null);
++			session.setAttribute(&quot;filterText&quot;, null);
+ 			session.setAttribute(&quot;filterField&quot;, null);
+-			session.setAttribute(&quot;filterText&quot;, null);
+-			System.out.println(&quot;&gt;&gt;&gt; cleared Sort and Filter&quot;);
++			setUseCache(Boolean.TRUE, session);
++			System.out.println(&quot;&gt;&gt;&gt; cleared Filter&quot;);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_CREATE_FORM_LETTER)) {
+ 			System.out.println(&quot;&gt;&gt;&gt; created Form Letter&quot;);
+ 			String letter = createFormLetter(getListedTopics(session));
+ 			if(letter.equals(&quot;&quot;)) {
++				setUseCache(Boolean.TRUE, session);
+ 				return PAGE_LIST;
+ 			}
+ 			String link = as.getCorporateWebBaseURL() + FILESERVER_DOCUMENTS_PATH;
+-			link += writeLetter(letter, &quot;Adressen.tsv&quot;);
++			link += writeLetter(letter, &quot;Adressen.txt&quot;);
+ 			session.setAttribute(&quot;formLetter&quot;, link);
+ 			return &quot;Print&quot;;
+ 		}
+@@ -155,8 +167,8 @@
+ 			session.setAttribute(&quot;emailList&quot;, null);
+ 		} else if (page.equals(PAGE_LIST)) {
+ 			String sortBy = getSortByField(session);
+-			// refresh geo objects in list from cm, if no filter active
+-			if (session.getAttribute(&quot;filterField&quot;) == null) {
++			// refresh geo objects in list from cm, if caching is not active
++			if(!isCacheUsed(session).booleanValue()) {
+ 				String cityMapID = getCityMap(session).getID();
+ 				String instTypeID = getInstTypeID(session);
+ 				Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+@@ -172,11 +184,10 @@
+ 				} else {
+ 					// ### System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server, by default sort&quot;);
+ 				}
+-				session.setAttribute(&quot;topics&quot;, topicBeans);
++				setListedTopics(topicBeans, session);
+ 				// notifications
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			} else {
+-				// ### System.out.println(&quot;&gt;&gt;&gt;&gt; sorting / filtering active: &quot; + params.getParameter(&quot;sortField&quot;) );
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			}
+ 			Vector beans = getListedTopics(session);
+@@ -211,12 +222,14 @@
+ 			topicBean = (TopicBean) topicBeans.get(i);
+ 			beanField = (TopicBeanField) topicBean.getField(filterField);
+ 			if (beanField.type == TopicBeanField.TYPE_MULTI) {
++				multiLoop:
+ 				for (int j = 0; j &lt; beanField.values.size(); j++) {
+ 					topicProp = (BaseTopic) beanField.values.get(j);
+-					if (topicProp.getName().toLowerCase().indexOf(filterText.toLowerCase()) != -1) {
++					prop = topicProp.getName();
++					if (prop.toLowerCase().indexOf(filterText.toLowerCase()) != -1) {
+ 						filteredBeans.add(topicBean);
++						break multiLoop;
+ 					}
+-					break;
+ 				}
+ 			} else {
+ 				prop = (String) beanField.value;
+@@ -229,6 +242,7 @@
+ 		//
+ 		return filteredBeans;
+ 	}
++	
+ 	/**
+ 	 * Collects Email Addresses for all given beans by searching for TopicBeanFields {@link TopicBeanField} 
+ 	 * which are inherited by each bean as PROPERTY_EMAIL_ADDRESS as Email Topic (has to be named PROPERTY_EMAIL_ADDRESS) 
+@@ -480,9 +494,11 @@
+ 				System.out.println(&quot;  &gt; file already exists, try \&quot;&quot; + newFilename + &quot;\&quot;&quot;);
+ 				//fileName = newFilename;
+ 			}
++			FileOutputStream fout = new FileOutputStream(toFile, true);
++			OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
+ 			FileWriter fw = new FileWriter(toFile, true);
+-			fw.write(letter);
+-			fw.close();
++			out.write(letter);
++			out.close();
+ 			System.out.println(&quot;&gt;&gt;&gt; writeLetter(): written file successfully from: &quot; + toFile.getAbsolutePath());
+ 		} catch (IOException ex){
+ 			System.out.println(&quot;***: Error with writing File:&quot; + ex.getMessage());
+@@ -533,7 +549,7 @@
+ 		System.out.println(&quot;&gt; \&quot;geo\&quot; stored in session: &quot; + geo);
+ 	}
+ 	
+-	private void setSortField(String field, Session session) {
++	private void setSortByField(String field, Session session) {
+ 		session.setAttribute(&quot;sortField&quot;, field);
+ 		System.out.println(&quot;&gt; \&quot;sortField\&quot; stored in session: &quot; + field);
+ 	}
+@@ -543,6 +559,26 @@
+ 		System.out.println(&quot;&gt; \&quot;topics\&quot; stored in session: &quot; + beans.size());
+ 	}
+ 
++	private void setListedFilteredTopics(Vector beans, Session session) {
++		session.setAttribute(&quot;filteredTopics&quot;, beans);
++		System.out.println(&quot;&gt; \&quot;filteredTopics\&quot; stored in session: &quot; + beans.size());
++	}
++	
++	private void setFilterText(String value, Session session) {
++		session.setAttribute(&quot;filterText&quot;, value);
++		System.out.println(&quot;&gt; \&quot;filterText\&quot; stored in session: &quot; + value);
++	}
++	
++	private void setFilterField(String fieldName, Session session) {
++		session.setAttribute(&quot;filterField&quot;, fieldName);
++		System.out.println(&quot;&gt; \&quot;filterField\&quot; stored in session: &quot; + fieldName);
++	}
++	
++	private void setUseCache(Boolean flag, Session session) {
++		session.setAttribute(&quot;useCache&quot;, flag.toString());
++		System.out.println(&quot;&gt;&gt; \&quot;useCache\&quot; stored in session: &quot; + flag.toString());
++	}
++	
+ 	// ---
+ 
+ 	private CityMapTopic getCityMap(Session session) {
+@@ -557,6 +593,11 @@
+ 		return (GeoObjectTopic) as.getLiveTopic((BaseTopic) session.getAttribute(&quot;geo&quot;));
+ 	}
+ 	
++	/** Works just if sorting was once activated, uses session
++	 * 
++	 * @param session
++	 * @return
++	 */
+ 	private String getSortByField(Session session) {
+ 		return (String) session.getAttribute(&quot;sortField&quot;);
+ 	}
+@@ -564,9 +605,28 @@
+ 	private Vector getListedTopics(Session session) {
+ 		return (Vector) session.getAttribute(&quot;topics&quot;);
+ 	}
++	
++	private Vector getListedFilteredTopics(Session session) {
++		return (Vector) session.getAttribute(&quot;filteredTopics&quot;);
++	}
++	
++	private String getFilterText(Session session) {
++		return (String) session.getAttribute(&quot;filterText&quot;);
++	}
++	
++	private Boolean isCacheUsed (Session session) {
++		if (session.getAttribute(&quot;useCache&quot;).equals(&quot;true&quot;)) {
++			return Boolean.TRUE;
++		} else {
++			return Boolean.FALSE;
++		}
++	}
++	
++	private String getFilterField(Session session) {
++		return (String) session.getAttribute(&quot;filterField&quot;);
++	}
+ 
+ 
+-
+ 	// ********************************
+ 	// *** Inner Comparison Classes ***
+ 	// ********************************
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000052.html">[Kiezatlas-svn] r63 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#51">[ date ]</a>
+              <a href="thread.html#51">[ thread ]</a>
+              <a href="subject.html#51">[ subject ]</a>
+              <a href="author.html#51">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

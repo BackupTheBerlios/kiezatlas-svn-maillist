@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r26 - trunk/pages
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r26%20-%20trunk/pages&In-Reply-To=%3C200711261208.lAQC8BZW007661%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000017.html">
+   <LINK REL="Next"  HREF="000019.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r26 - trunk/pages</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r26%20-%20trunk/pages&In-Reply-To=%3C200711261208.lAQC8BZW007661%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r26 - trunk/pages">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Nov 26 13:08:11 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000017.html">[Kiezatlas-svn] r25 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+        <LI>Next message: <A HREF="000019.html">[Kiezatlas-svn] r27 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18">[ date ]</a>
+              <a href="thread.html#18">[ thread ]</a>
+              <a href="subject.html#18">[ subject ]</a>
+              <a href="author.html#18">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-26 13:07:58 +0100 (Mon, 26 Nov 2007)
+New Revision: 26
+
+Modified:
+   trunk/pages/GeoObjectInfo.jsp
+Log:
+1) kleiner bug, falls keine related City vorhanden ist gibts eine NullPointerException, 
+   /plattenblogger ist ein beispiel.., fliegt falls nur eine adresse assigned wurde, aber weder ein 	stadt property noch ein city topic
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2007-11-22 15:56:22 UTC (rev 25)
++++ trunk/pages/GeoObjectInfo.jsp	2007-11-26 12:07:58 UTC (rev 26)
+@@ -39,8 +39,8 @@
+ 			String city = topicBean.getValue(&quot;Stadt&quot;);
+ 			if (city == null) {
+ 				Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+-				if (tmp.size() &gt; 0) {
+-					city = ((BaseTopic) tmp.elementAt(0)).getName();
++				if (tmp != null) {
++					if (tmp.size() &gt; 0) city = ((BaseTopic) tmp.elementAt(0)).getName();	
+ 				} else {
+ 					city = &quot;&quot;;
+ 				}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000017.html">[Kiezatlas-svn] r25 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+	<LI>Next message: <A HREF="000019.html">[Kiezatlas-svn] r27 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#18">[ date ]</a>
+              <a href="thread.html#18">[ thread ]</a>
+              <a href="subject.html#18">[ subject ]</a>
+              <a href="author.html#18">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

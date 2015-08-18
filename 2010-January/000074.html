@@ -1,0 +1,552 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r85 - in trunk: pages src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r85%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C201001041806.o04I6RDw005833%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r85 - in trunk: pages src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r85%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C201001041806.o04I6RDw005833%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r85 - in trunk: pages src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Jan  4 19:06:27 CET 2010</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74">[ date ]</a>
+              <a href="thread.html#74">[ thread ]</a>
+              <a href="subject.html#74">[ subject ]</a>
+              <a href="author.html#74">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-01-04 19:06:13 +0100 (Mon, 04 Jan 2010)
+New Revision: 85
+
+Added:
+   trunk/pages/ListMailing.jsp
+Modified:
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/ListHome.jsp
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+introduced an alternative citymap mailing feature which allows &quot;criteria based assembling&quot; of recipient lists
+
+* extended service description text
+* mailto is now set to bcc per default in huge lists
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2009-12-04 12:53:21 UTC (rev 84)
++++ trunk/pages/KiezAtlas.jsp	2010-01-04 18:06:13 UTC (rev 85)
+@@ -170,7 +170,7 @@
+ 
+ 	private String commentEmail(boolean includeEmailAddress, String email) {
+ 		if (includeEmailAddress) {
+-			return isSet(email) ? &quot; (&lt;a href=\&quot;mailto:&quot; + email + &quot;\&quot;&gt;&quot; + email + &quot;&lt;/a&gt;)&quot; : &quot; (Emailadresse unbekannt)&quot;;
++			return isSet(email) ? &quot; (&lt;a href=\&quot;mailto:?bcc=&quot; + email + &quot;\&quot;&gt;&quot; + email + &quot;&lt;/a&gt;)&quot; : &quot; (Emailadresse unbekannt)&quot;;
+ 		} else {
+ 			return &quot;&quot;;
+ 		}
+@@ -213,7 +213,7 @@
+ 	String mailtoUrl(Vector mailboxes) {
+ 		Enumeration e = mailboxes.elements();
+ 		StringBuffer url = new StringBuffer();
+-		url.append(&quot;mailto:&quot;);
++		url.append(&quot;mailto:?bcc=&quot;);
+ 		//
+ 		while(e.hasMoreElements()) {
+ 			String mail = (String) e.nextElement();
+@@ -242,12 +242,34 @@
+ 		    TopicBeanField field = (TopicBeanField) bean.fields.get(i);
+ 		    html.append(&quot;&lt;option value=\&quot;&quot;+ field.name +&quot;\&quot;&quot;);
+ 		    if (field.name.equals(checked)) {
+-			html.append(&quot; selected=\&quot;selected\&quot;&quot;);
++                html.append(&quot; selected=\&quot;selected\&quot;&quot;);
+ 		    }
+ 		    html.append(&quot;&gt;&quot; + field.label + &quot;&lt;/option&gt; \n &quot;);
+ 		}
+ 		return html.toString();
+ 	}
++
++	/** basetopics given for names and id*/
++
++	String fieldOptionalIds(Vector names, String checked) {
++		StringBuffer html = new StringBuffer();
++		/** for (int j = 0; j &lt; hiddenProps.length; j++) {
++		    bean.removeField(hiddenProps[j].toString());
++		}
++		for (int k = 0; k &lt; hiddenPropsContaining.length; k++) {
++		    bean.removeFieldsContaining(hiddenPropsContaining[k].toString());
++		}  */
++		for (int i = 0; i &lt; names.size(); i++) {
++		    //TopicBeanField field = (TopicBeanField) names.get(i);
++            BaseTopic name = (BaseTopic) names.get(i);
++		    html.append(&quot;&lt;option value=\&quot;&quot;+ name.getID() +&quot;\&quot;&quot;);
++		    if (name.getName().equals(checked)) {
++                html.append(&quot; selected=\&quot;selected\&quot;&quot;);
++		    }
++		    html.append(&quot;&gt;&quot; + name.getName() + &quot;&lt;/option&gt; \n &quot;);
++		}
++		return html.toString();
++	}
+ 	
+ 	// ---
+ 
+
+Modified: trunk/pages/ListHome.jsp
+===================================================================
+--- trunk/pages/ListHome.jsp	2009-12-04 12:53:21 UTC (rev 84)
++++ trunk/pages/ListHome.jsp	2010-01-04 18:06:13 UTC (rev 85)
+@@ -22,26 +22,34 @@
+                             &quot;&quot;+cityMap.getName()+&quot;&lt;/a&gt;&nbsp;&lt;span class=\&quot;small\&quot;&gt;(&quot;+ mapCounts.get(cityMap.getID()) +&quot;)&lt;/span&gt;&nbsp;&nbsp;&quot;);
+                 if (!membership.equals(&quot;Affiliated&quot;)) {
+                     out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS_SLIM +
+-                    &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/slimList.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur schlanken Liste\&quot; alt=\&quot;zur schlanken Liste\&quot;&gt;&lt;/a&gt;&quot;);
++                    &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/slimList.png\&quot; &quot; +
++                            &quot;border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur schlanken Liste\&quot; alt=\&quot;zur schlanken Liste\&quot;&gt;&lt;/a&gt;&quot;);
+                 }
+                 // !membership.equals(&quot;Affiliated&quot;)
+                 if (mapTimes.get(cityMap.getID()).equals(&quot;&quot;)) {
+                     // out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_EXPORT_CITYMAP +
+                        // &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;erstelle Downloaddatei&lt;/a&gt;&lt;/dd&gt;&quot;);
+                     out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_EXPORT_CITYMAP +
+-                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/export.png\&quot; border=\&quot;0\&quot; height=\&quot;17px\&quot; width=\&quot;17px\&quot; title=\&quot;Erzeuge Downloaddatei\&quot; alt=\&quot;Erzeuge Downloaddatei\&quot;&gt;&lt;/a&gt;&lt;/dd&gt;&quot;);
++                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/export.png\&quot; &quot; +
++                        &quot;border=\&quot;0\&quot; height=\&quot;17px\&quot; width=\&quot;17px\&quot; title=\&quot;Erzeuge Downloaddatei\&quot; alt=\&quot;Erzeuge Downloaddatei\&quot;&gt;&lt;/a&gt;&quot;);
+                 } else {
+                     if (!mapTimes.get(cityMap.getID()).equals(&quot;isUpToDate&quot;)) {
+                         out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_DOWNLOAD_CITYMAP +
+-                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/document-save.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur Downloaddatei vom &quot;+mapTimes.get(cityMap.getID()) + &quot;\&quot; alt=\&quot;zur Downloaddatei vom &quot;+mapTimes.get(cityMap.getID()) + &quot;\&quot;&gt;&lt;/a&gt;&quot;);
++                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/document-save.png\&quot; &quot; +
++                                &quot;border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur Downloaddatei vom &quot;+mapTimes.get(cityMap.getID()) + &quot;\&quot; alt=\&quot;zur Downloaddatei vom &quot;+mapTimes.get(cityMap.getID()) + &quot;\&quot;&gt;&lt;/a&gt;&quot;);
+                         out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_EXPORT_CITYMAP +
+-                            &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/reload.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;Downloaddatei aktualisieren\&quot; alt=\&quot;Downloaddatei aktualisieren\&quot;&gt;&lt;/a&gt;&quot;);
++                            &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/reload.png\&quot; &quot; +
++                            &quot;border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;Downloaddatei aktualisieren\&quot; alt=\&quot;Downloaddatei aktualisieren\&quot;&gt;&lt;/a&gt;&quot;);
+                     } else {
+                         out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_DOWNLOAD_CITYMAP +
+-                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/document-save.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur aktuellen Downloaddatei\&quot; alt=\&quot;zur aktuellen Downloaddatei\&quot;&gt;&lt;/a&gt;&quot;);
++                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/document-save.png\&quot; &quot; +
++                                &quot;border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur aktuellen Downloaddatei\&quot; alt=\&quot;zur aktuellen Downloaddatei\&quot;&gt;&lt;/a&gt;&quot;);
+                     }
+                 }
+-                out.println(&quot;&lt;/dd&gt;&quot;);
++                out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_FILTER_ROUNDMAILING +
++                    &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;<A HREF="http://www.kiezatlas.de/client/icons/mail.gif\">http://www.kiezatlas.de/client/icons/mail.gif\</A>&quot; &quot; +
++                    &quot;border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zum verfassen einer Rundmail\&quot; alt=\&quot;zum verfassen einer Rundmail\&quot;&gt;&lt;/a&gt;&quot;);
++            out.println(&quot;&lt;/dd&gt;&quot;);
+ 		}
+ 	}
+ 	out.println(&quot;&lt;/dl&gt;&quot;);
+
+Added: trunk/pages/ListMailing.jsp
+===================================================================
+--- trunk/pages/ListMailing.jsp	2009-12-04 12:53:21 UTC (rev 84)
++++ trunk/pages/ListMailing.jsp	2010-01-04 18:06:13 UTC (rev 85)
+@@ -0,0 +1,40 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
++&lt;%
++	Vector categories = (Vector) session.getAttribute(&quot;availableCategories&quot;);
++	// Vector topicIds = (Vector) session.getAttribute(&quot;topicIds&quot;);
++	// Hashtable cityMaps = (Hashtable) session.getAttribute(&quot;cityMaps&quot;);
++	// Hashtable mapCounts = (Hashtable) session.getAttribute(&quot;mapCounts&quot;);
++	// Hashtable mapTimes = (Hashtable) session.getAttribute(&quot;mapTimes&quot;);
++	String cityMapName = (String) session.getAttribute(&quot;cityMapName&quot;);
++	String cityMapId = (String) session.getAttribute(&quot;cityMapID&quot;);
++	String filterField = (String) session.getAttribute(&quot;filterField&quot;);
++	Vector filterFieldNames = (Vector) session.getAttribute(&quot;filterFieldNames&quot;);
++	String recipients = (String) session.getAttribute(&quot;recipients&quot;);
++    // 
++    out.println(&quot;&lt;h3&gt;Filtern zum Erstellen einer Rundmail-Empf&auml;ngerliste im Stadtplan \&quot;&quot;+cityMapName+&quot;\&quot;&lt;/h3&gt;&quot;);
++    out.println(&quot;&lt;div class=\&quot;small\&quot; style=\&quot;position: absolute; right: 75px;\&quot;&gt;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_GO_HOME+&quot;\&quot;&gt;zur&uuml;ck&lt;/a&gt;&lt;/div&gt;&quot;);
++    //
++    if (filterFieldNames.size() &gt;= 1) {
++        // out.println(&quot;&lt;div class=\&quot;notification.info\&quot;&gt;Alle &lt;i&gt;Geo-Objekte&lt;/i&gt; aus der Kategorie \&quot;&quot;+filterFieldNames.get(filterFieldNames.size()-1)+&quot;\&quot; wurden der Empf&auml;ngerliste hinzugef&#252;gt.&lt;/div&gt;&lt;p/&gt;&quot;);
++        out.println(&quot;&lt;div class=\&quot;notification.info\&quot;&gt;Die aktuelle Empf&auml;ngerliste beinhaltet &lt;i&gt;&quot; +((recipients.split(&quot;,&quot;).length) - 1) + &quot; Geo-Objekte&lt;/i&gt; die den folgenden Kriterien zugeordnet sind:&lt;/div&gt;&lt;p/&gt;&quot;);
++        for (int i = 0; i &lt; filterFieldNames.size(); i++) {
++            out.println(&quot;&nbsp;&nbsp;&nbsp;&lt;b&gt;&quot; + filterFieldNames.get(i) + &quot;&lt;/b&gt;&lt;br/&gt;&quot;);
++        }
++        out.println(&quot;&lt;p/&gt;&quot;);
++    }
++    out.println(&quot;&lt;form id=\&quot;filterForm\&quot; method=\&quot;GET\&quot; action=\&quot;controller\&quot; &gt;\n&lt;select height=\&quot;400\&quot; name=\&quot;filterField\&quot;&gt;&quot;
++         + fieldOptionalIds(categories, filterField) + &quot;&lt;/select&gt;\n&quot;);
++    // -- had to encode the action into a hidden form element. cause of '?'
++    out.println(&quot;&lt;input type=\&quot;hidden\&quot; name=\&quot;action\&quot; value=\&quot;&quot;+KiezAtlas.ACTION_CREATE_ROUNDMAILING+&quot;\&quot;&gt;\n&quot;);
++    // out.println(&quot;&lt;input type=\&quot;text\&quot; name=\&quot;filterText\&quot;&gt;\n&quot;);
++    out.println(&quot;&lt;input type=\&quot;submit\&quot; value=\&quot;zum Verteiler hinzuf&uuml;gen\&quot;&gt;\n&quot;);
++    out.println(&quot;&lt;/form&gt;\n&quot;);
++    if (!recipients.equals(&quot;&quot;)) {
++        out.println(&quot;&lt;p/&gt;&quot;);
++        out.println(&quot;&lt;b&gt;&lt;a href=\&quot;mailto:?bcc=&quot;+recipients+&quot;\&quot;&gt;Rundmail erstellen&lt;/a&gt;&quot;);
++        out.println(&quot;&nbsp;&nbsp;&nbsp;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_FILTER_ROUNDMAILING+&quot;&amp;cityMapID=&quot;+cityMapId+&quot;\&quot;&gt;Empf&auml;ngerliste zur&uuml;cksetzen&lt;/a&gt;&lt;/b&gt;&quot;);
++    }
++%&gt;
++&lt;% end(out); %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-12-04 12:53:21 UTC (rev 84)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2010-01-04 18:06:13 UTC (rev 85)
+@@ -246,6 +246,8 @@
+ 	public static final String ACTION_FILTER =&quot;filter&quot;;
+ 	public static final String ACTION_CLEAR_FILTER =&quot;clearFilter&quot;;
+ 	public static final String ACTION_CREATE_FORM_LETTER =&quot;createFormLetter&quot;;
++	public static final String ACTION_FILTER_ROUNDMAILING =&quot;filterRoundMailing&quot;;
++	public static final String ACTION_CREATE_ROUNDMAILING =&quot;createRoundMailing&quot;;
+ 	public static final String ACTION_DELETE_ENTRY =&quot;deleteEntry&quot;;
+ 	public static final String ACTION_EXPORT_CITYMAP =&quot;exportCityMap&quot;;
+ 	public static final String ACTION_DOWNLOAD_CITYMAP =&quot;downloadCityMap&quot;;
+@@ -303,9 +305,10 @@
+     static final String PAGE_SLIM_LIST = &quot;SlimList&quot;;
+     static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+     static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
+-	static final String PAGE_LINK_PAGE = &quot;Print&quot;;
+-	static final String PAGE_DOWNLOAD_PAGE = &quot;Download&quot;;
++	static final String PAGE_LINK_PAGE = &quot;Print&quot;; // Link Page
++	static final String PAGE_DOWNLOAD_PAGE = &quot;Download&quot;; // Link Page
+ 	static final String PAGE_LIST_INFO = &quot;ListHelp&quot;;
++	static final String PAGE_LIST_MAILING = &quot;ListMailing&quot;;
+ 	// error
+     static final String PAGE_ERROR = &quot;error&quot;;
+     // service
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-12-04 12:53:21 UTC (rev 84)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-01-04 18:06:13 UTC (rev 85)
+@@ -29,8 +29,10 @@
+ 
+     protected String performAction(String topicId, String params, Session session, CorporateDirectives directives)
+     {
+-        session.setAttribute(&quot;html&quot;, &quot;&lt;h3&gt;Willkommen zu ihrem Kiezatlas Dienst&lt;/h3&gt;&quot; +
+-                &quot;&lt;br&gt;Hier geht's zur &lt;a href=\&quot;<A HREF="http://www.deepamehta.de/wiki/en/Application:_Web_Service\">http://www.deepamehta.de/wiki/en/Application:_Web_Service\</A>&quot;&gt;Software Dokumentation&lt;/a&gt;&quot;);
++        session.setAttribute(&quot;html&quot;, &quot;&lt;h3&gt;Willkommen zu dem Kiezatlas Dienst unter &quot;+as.getCorporateWebBaseURL()+&quot;&lt;/h3&gt;&quot; +
++                &quot;&lt;br&gt;F&uuml;r die Nutzung des Dienstes steht Entwicklern &quot; +
++                &quot;&lt;a href=\&quot;<A HREF="http://www.deepamehta.de/wiki/en/Application:_Web_Service\">http://www.deepamehta.de/wiki/en/Application:_Web_Service\</A>&quot;&gt;hier&lt;/a&gt; die Software Dokumentation zur Verf&#195;&#188;gung. &quot; +
++                &quot;Ein Beispiel zur Nutzung eines Kiezatlas Dienstes ist &lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/maps/interface.php?topicId=t-ka-schoeneberg&amp;workspaceId=t-ka-workspace\">http://www.kiezatlas.de/maps/interface.php?topicId=t-ka-schoeneberg&amp;workspaceId=t-ka-workspace\</A>&quot;&gt;hier&lt;/a&gt; bereits abrufbar.&quot;);
+         return PAGE_SERVE;
+     }
+ 
+@@ -48,7 +50,14 @@
+         // String parameters[] = params.split(&quot;,&quot;);
+         StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+-        String geoObjectString = createGeoObjectBean(cm.getTopic(topicId, 1), messages);
++        BaseTopic t = cm.getTopic(topicId, 1);
++        String geoObjectString;
++        if (t.getType().equals(&quot;tt-user&quot;)) {
++            System.out.println(&quot;*** KiezServlet.SecurityAccessDenied: not allowed to access user information&quot;);
++            geoObjectString= &quot;\&quot;\&quot;&quot;;
++        } else {
++            geoObjectString = createGeoObjectBean(t, messages);
++        }
+         result.append(geoObjectString);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         // System.out.println(&quot;result: &quot;+ result.toString());
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-12-04 12:53:21 UTC (rev 84)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2010-01-04 18:06:13 UTC (rev 85)
+@@ -1,9 +1,11 @@
+ package de.kiezatlas.deepamehta;
+ 
++import de.deepamehta.AmbiguousSemanticException;
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ //
+ import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.service.TopicBean;
+@@ -34,7 +36,7 @@
+  * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta rev. 369
+  * &lt;p&gt;
+- * Last change: 10.09.2009&lt;br&gt;
++ * Last change: 06.12.2009&lt;br&gt;
+  * J&ouml;rg Richter / Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A> / <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -229,6 +231,72 @@
+ 			link += writeLetter(letter, &quot;Adressen.txt&quot;);
+ 			session.setAttribute(&quot;formLetter&quot;, link);
+ 			return PAGE_LINK_PAGE;
++		} else if (action.equals(ACTION_FILTER_ROUNDMAILING)) {
++            String cityMap = (String) params.getValue(&quot;cityMapID&quot;);
++            // re-set the map
++            session.setAttribute(&quot;cityMapID&quot;, cityMap);
++            CityMapTopic map = (CityMapTopic) as.getLiveTopic(cityMap, 1); // live/base
++            SearchCriteria[] criterias = map.getSearchCriterias();
++            Vector categories = new Vector();
++            for (int i = 0; i &lt; criterias.length; i++) {
++                String critId = criterias[i].criteria.getID();
++                Vector cats = cm.getTopics(critId); // ics(crit.getID(), new Hashtable(), map.getID(), directives);
++                categories.addAll(cats);
++            }
++            sortBaseTopics(categories);
++            // Vector allTopics = cm.getViewTopics(map.getID(), 1);
++            session.setAttribute(&quot;availableCategories&quot;, categories);
++            session.setAttribute(&quot;filterField&quot;, &quot;&quot;);
++            session.setAttribute(&quot;filterFieldNames&quot;, new Vector());
++            session.setAttribute(&quot;cityMapName&quot;, map.getName());
++            session.setAttribute(&quot;recipients&quot;, &quot;&quot;);
++			return PAGE_LIST_MAILING;
++		} else if (action.equals(ACTION_CREATE_ROUNDMAILING)) {
++            String cityMap = (String) session.getAttribute(&quot;cityMapID&quot;);
++            String formerRecipients = (String) session.getAttribute(&quot;recipients&quot;);
++            Vector filterFieldNames = (Vector) session.getAttribute(&quot;filterFieldNames&quot;);
++            // String filterText = (String) session.getAttribute(&quot;filterText&quot;);
++            String filterField = (String) params.getValue(&quot;filterField&quot;);
++            filterFieldNames.add(as.getLiveTopic(filterField, 1).getName());
++            session.setAttribute(&quot;filterFieldNames&quot;, filterFieldNames);
++            //
++            CityMapTopic map = (CityMapTopic) as.getLiveTopic(cityMap, 1); // live/base
++            Vector mapTopics = cm.getViewTopics(map.getID(), 1);
++            Vector filteredTopics = new Vector();
++            for (int i = 0; i &lt; mapTopics.size(); i++) {
++                BaseTopic topic = (BaseTopic) mapTopics.get(i);
++                try {
++                   // checking if a topic has the relation to the filterField assuming it's a subtype of criteria
++                   Vector cats = (Vector) as.getRelatedTopics(topic.getID(), ASSOCTYPE_ASSOCIATION, 2);
++                   fcats:
++                   for (int j = 0; j &lt; cats.size(); j++) {
++                        BaseTopic kaTopic = (BaseTopic) cats.get(j);
++                        if (kaTopic.getID().equals(filterField)) {
++                            filteredTopics.add(topic);
++                            break fcats;
++                        }
++                   }
++                } catch (DeepaMehtaException ex) {
++                    // System.out.println(&quot;*** ListServlet.Exc is: &quot; + ex.getMessage() + &quot; remvoing topic from results.. &quot; + topic.getName());
++                }
++            }
++            // Vector allTopics = cm.getViewTopics(map.getID(), 1);
++            StringBuffer mailBoxes = new StringBuffer(&quot;&quot;);
++            if (filteredTopics.size() &gt; 0) {
++                // ToDo check the Email property properly (Engagement Workspace?)
++                Vector mailTo = lookUpMailAdresses(filteredTopics);
++                for (int j=0; j &lt; mailTo.size(); j++) {
++                    String mailBox = (String) mailTo.get(j);
++                    if (formerRecipients.indexOf(mailBox) == -1) {
++                        // checked for double
++                        mailBoxes.append(mailTo.get(j) + &quot;, &quot;);
++                    }
++                }
++                System.out.println(&quot;&quot;+ mailTo.size() + &quot;. mailBoxes:&quot; + mailBoxes.toString() + &quot; formerRecipients: &quot; + formerRecipients);
++            }
++            mailBoxes.append(formerRecipients);
++            session.setAttribute(&quot;recipients&quot;, mailBoxes.toString()); // --. update the linkedcontent
++			return PAGE_LIST_MAILING;
+ 		} else if (action.equals(ACTION_DELETE_ENTRY)){
+ 			String topicId = params.getParameter(&quot;id&quot;);
+ 			deleteTopic(topicId);
+@@ -435,6 +503,11 @@
+ 
+ 	
+ 
++	private void sortBaseTopics(Vector baseTopics) {
++		// ### System.out.println(&quot;&gt;&gt;&gt; sorting for german strings supported&quot;);
++		Collections.sort(baseTopics, new MyTopicSort());
++	}
++
+ 	private void sortBeans(Vector topicBeans, String sortBy) {
+ 		// ### System.out.println(&quot;&gt;&gt;&gt; sorting for german strings supported&quot;);
+ 		Collections.sort(topicBeans, new MyStringComparator( sortBy ));
+@@ -515,7 +588,99 @@
+ 		//
+ 		return mailAdresses;
+ 	}
+-	
++
++
++	/**
++	 * Collects Email Addresses for all given basetopics by searching for PROPERTY_EMAIL_ADDRESS as
++     * Email Topic (has to be named PROPERTY_EMAIL_ADDRESS)
++     *
++	 * @param topics
++	 * @return a list of Strings which are all email adresses
++	 */
++	private Vector lookUpMailAdresses(Vector topics) {
++		Vector mailAdresses = new Vector();
++		//
++		Enumeration e = topics.elements();
++		while (e.hasMoreElements()) {
++			BaseTopic geoObject = (BaseTopic) e.nextElement();
++			String mailbox = as.getTopicProperty(geoObject.getID(), 1, PROPERTY_EMAIL_ADDRESS);
++			// direct property
++            if (!mailbox.equals(&quot;&quot;) &amp;&amp; checkForMailBox(mailbox)) {
++                mailbox = splitMailBoxes(mailbox);
++                mailbox = encodeMailAmpersandTo(mailbox);
++                mailAdresses.add(mailbox);
++                // System.out.println(&quot;&gt; &gt;&gt;  added EmailProperty of &quot; + geoObject.getName() + &quot; to recipients&quot;);
++			} else {
++                try {
++                    mailbox = as.getRelatedTopic(geoObject.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_EMAIL_ADDRESS, 2, false).getName();
++                    if (checkForMailBox(mailbox)) {
++                        mailbox = splitMailBoxes(mailbox);
++                        mailbox = encodeMailAmpersandTo(mailbox);
++                        mailAdresses.add(mailbox);
++                    }
++                } catch (DeepaMehtaException ex) {
++                    // --- to ignore .. System.out.println(&quot;*** ListServlet.MailBoxExc. : &quot; +  ex.getMessage());
++                } catch (AmbiguousSemanticException aex) {
++                    mailbox = aex.getDefaultTopic().getName();
++                    if (checkForMailBox(mailbox)) {
++                        mailbox = splitMailBoxes(mailbox);
++                        mailAdresses.add(mailbox);
++                        // System.out.println(&quot;&gt; &gt;&gt; added related EmailAddress of &quot; + geoObject.getName() + &quot; to recipients&quot;);
++                    }
++                }
++            }
++		}
++		//
++		return mailAdresses;
++	}
++
++    /** mailAddress is handled as a correct mailbox if it contains an at-sign and no whitespace */
++    private boolean checkForMailBox (String mailBox) {
++        if ( mailBox.indexOf(&quot;@&quot;) == -1 || mailBox.indexOf(&quot; &quot;) != -1 ) {
++            return false;
++        } else {
++            return true;
++        }
++    }
++
++    /** some people do have an ampersand in their mailadress, it's allowed and there are other cases ### ToDo*/
++    private String encodeMailAmpersandTo (String mailBox) {
++        return mailBox.replaceAll(&quot;&amp;&quot;, &quot;%26&quot;).toString();
++    }
++
++    /** this method assumes that people divide different mailboxes through using _either_ / or : */
++    private String splitMailBoxes (String mailBox) {
++        int splitIndex = mailBox.indexOf(&quot;/&quot;);
++        StringBuffer result = new StringBuffer();
++        if (splitIndex != -1) {
++            String[] addresses = mailBox.split(&quot;/&quot;);
++            for (int i = 0; i &lt; addresses.length; i++) {
++                String box = addresses[i];
++                result.append(box);
++                if (i &lt; addresses.length) {
++                    result.append(&quot;, &quot;);
++                }
++            }
++            System.out.println(&quot;&gt; &gt;&gt;&gt; modified MailBoxSplit /  &quot; + mailBox.toString() + &quot; to : &quot; + result.toString());
++            return result.toString();
++        }
++        splitIndex = mailBox.indexOf(&quot;:&quot;);
++        if (splitIndex != -1) {
++            String[] addresses = mailBox.split(&quot;:&quot;);
++            for (int i = 0; i &lt;= addresses.length; i++) {
++                String box = addresses[i];
++                result.append(box);
++                if (i &lt; addresses.length) {
++                    result.append(&quot;, &quot;);
++                }
++            }
++            System.out.println(&quot;&gt; &gt;&gt;&gt; modified MailBoxSplit : &quot; + mailBox.toString() + &quot; to : &quot; + result.toString());
++            return result.toString();
++        }
++        // do nothing
++        return mailBox;
++    }
++
+ 	/** See getMailAddresses
+ 	 * 
+ 	 * @param bean
+@@ -918,7 +1083,6 @@
+ 	}
+ 
+ 
+-    
+ 	// *************************
+ 	// *** Session Utilities ***
+ 	// *************************
+@@ -1082,5 +1246,44 @@
+ 		}
+ 
+ 	}
++
++
++	private class MyTopicSort implements Comparator {
++
++
++		public int compare( Object o1, Object o2 ) {
++			BaseTopic beanOne = (BaseTopic) o1;
++			BaseTopic beanTwo = (BaseTopic) o2;
++			//
++			String valOne = beanOne.getName();
++			String valTwo = beanTwo.getName();
++			//
++			// int i = prepairForCompare( valOne ).compareTo( prepairForCompare( valTwo ) );
++			int k = ((String)valOne).compareTo( (String)valTwo );
++			/*
++			if ( i != 0) {
++				System.out.println(&quot;&gt;&gt;&gt;&gt;i &quot;+ i +&quot; o1: &quot; + o1.toString() +&quot;, o2: &quot;+ o2.toString());
++			}
++			if ( i == 0 ) {
++				System.out.println(&quot;&gt;&gt;&gt;&gt;k &quot;+ k +&quot; o1: &quot; + o1.toString() +&quot;, o2: &quot;+ o2.toString());
++			}
++			*/
++			return k; // ( 0 != i ) ? i : k;
++		}
++
++		/**
++		 * Maybe not useful
++		 *
++		 * @param o
++		 * @return
++		 */
++		private String prepairForCompare( Object o ) {
++			return ((String)o).toLowerCase().replace( '&#195;&#164;', 'a' )
++										.replace( '&#195;&#182;', 'o' )
++										.replace( '&#195;&#188;', 'u' )
++										.replace( '&#195;&#159;', 's' );
++		}
++
++	}
+ 	
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#74">[ date ]</a>
+              <a href="thread.html#74">[ thread ]</a>
+              <a href="subject.html#74">[ subject ]</a>
+              <a href="author.html#74">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,396 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r32 - trunk/src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r32%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200711281623.lASGNfDM031953%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000023.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r32 - trunk/src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r32%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200711281623.lASGNfDM031953%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r32 - trunk/src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed Nov 28 17:23:41 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000023.html">[Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24">[ date ]</a>
+              <a href="thread.html#24">[ thread ]</a>
+              <a href="subject.html#24">[ subject ]</a>
+              <a href="author.html#24">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-28 17:23:36 +0100 (Wed, 28 Nov 2007)
+New Revision: 32
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Updated Version Number to 1.5
+Supports again Yade based Topic Auto Positioning
+Supports again unique Webaliases
+
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-11-27 17:32:23 UTC (rev 31)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-11-28 16:23:36 UTC (rev 32)
+@@ -32,7 +32,7 @@
+ 
+ 
+ 
+-	static final String VERSION = &quot;1.4.1&quot;;
++	static final String VERSION = &quot;1.5&quot;;
+ 	static {
+ 		System.out.println(&quot;&gt;&gt;&gt; Kiez-Atlas &quot; + VERSION);
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2007-11-27 17:32:23 UTC (rev 31)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2007-11-28 16:23:36 UTC (rev 32)
+@@ -9,15 +9,16 @@
+ 
+ import de.deepamehta.AmbiguousSemanticException;
+ import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaConstants;
+ import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.PresentableTopic;
++import de.deepamehta.PropertyDefinition;
+ import de.deepamehta.service.ApplicationService;
+ import de.deepamehta.service.CorporateCommands;
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.topics.LiveTopic;
+ import de.deepamehta.topics.TopicTypeTopic;
++import de.deepamehta.topics.TypeTopic;
+ import de.kiezatlas.deepamehta.Comment;
+ import de.kiezatlas.deepamehta.KiezAtlas;
+ 
+@@ -38,15 +39,21 @@
+ 	 */
+ 	static final String DEFAULT_PASSWORD = &quot;geheim&quot;;
+ 	
++	
++	
+ 	// ------------------
+ 	// --- Constructor ---
+ 	// ------------------
+ 	
++	
++	
+ 	public GeoObjectTopic(BaseTopic topic, ApplicationService as) {
+ 		super(topic, as);
+ 		// TODO Auto-generated constructor stub
+ 	}
+-	
++
++
++
+ 	// **********************
+ 	// *** Defining Hooks ***
+ 	// **********************
+@@ -141,49 +148,121 @@
+ 		//
+ 		return directives;
+ 	}
++
++
+ 	
+-	// ---
+-	
+-	public Vector getCategories(String critTypeID) {
+-		return as.getRelatedTopics(getID(), ASSOCTYPE_ASSOCIATION, critTypeID, 2);
++	// ---------------------------
++	// --- Handling Properties ---
++	// ---------------------------
++
++
++
++	public boolean propertiesChangeAllowed(Hashtable oldProps, Hashtable newProps, CorporateDirectives directives) {
++		String alias = (String) newProps.get(PROPERTY_WEB_ALIAS);
++		if (alias != null) {
++			// ### compare to lookupInstitution()
++			Vector typeIDs = as.type(TOPICTYPE_KIEZ_GEO, 1).getSubtypeIDs();
++			Hashtable props = new Hashtable();
++			props.put(PROPERTY_WEB_ALIAS, alias);
++			Vector insts = cm.getTopics(typeIDs, props, true);	// caseSensitive=true
++			//
++			if (insts.size() &gt; 0) {
++				BaseTopic inst = (BaseTopic) insts.firstElement();
++				String errText = &quot;Web Alias \&quot;&quot; + alias + &quot;\&quot; ist bereits an Einrichtung \&quot;&quot; +
++					inst.getName() + &quot;\&quot; vergeben -- Bitte anderen Web Alias verwenden&quot;;
++				directives.add(DIRECTIVE_SHOW_MESSAGE, errText, new Integer(NOTIFICATION_WARNING));
++				System.out.println(&quot;*** InstitutionTopic.propertiesChangeAllowed(): &quot; + errText);
++				return false;
++			}
++		}
++		return super.propertiesChangeAllowed(oldProps, newProps, directives);
+ 	}
+-	
+-	public BaseTopic getImage() {
+-		try {
+-			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_IMAGE, 2, true);		// emptyAllowed=true
+-		} catch (AmbiguousSemanticException e) {
+-			System.out.println(&quot;*** GeoObjectTopic.getImage(): &quot; + e);
+-			return e.getDefaultTopic();
++
++	public CorporateDirectives propertiesChanged(Hashtable newProps, Hashtable oldProps,
++											String topicmapID, String viewmode, Session session) {
++		CorporateDirectives directives = super.propertiesChanged(newProps, oldProps, topicmapID, viewmode, session);
++		// --- &quot;YADE&quot; ---
++		if (newProps.get(PROPERTY_YADE_X) != null || newProps.get(PROPERTY_YADE_Y) != null) {
++			// determine new geometry
++			Point p = getPoint(topicmapID);	// throws DME
++			// set new geometry
++			if (p != null) {	// Note: p is null if YADE is &quot;off&quot;
++				directives.add(DIRECTIVE_SET_TOPIC_GEOMETRY, getID(), p, topicmapID);
++			}
+ 		}
++		//
++		return directives;
+ 	}
+-	
+-	public Vector getComments() {
+-		BaseTopic forum = getForum();
+-		if (forum == null) {
+-			throw new DeepaMehtaException(&quot;Institution &quot; + getID() + &quot; has no forum topic&quot;);
++
++	public static Vector hiddenProperties(TypeTopic type) {
++		Vector props = new Vector();
++		props.addElement(PROPERTY_DESCRIPTION);
++		return props;
++	}
++
++	public static Vector hiddenProperties(TypeTopic type, String relTopicTypeID) {
++		Vector props = null;
++		if (relTopicTypeID.equals(TOPICTYPE_EMAIL_ADDRESS)) {
++			props = new Vector();
++			props.addElement(PROPERTY_MAILBOX_URL);
++		} else if (relTopicTypeID.equals(TOPICTYPE_IMAGE)) {
++			props = new Vector();
++			props.addElement(PROPERTY_NAME);
+ 		}
+-		String[] sortProps = {PROPERTY_COMMENT_DATE, PROPERTY_COMMENT_TIME};
+-		return cm.getRelatedTopics(forum.getID(), SEMANTIC_FORUM_COMMENTS, TOPICTYPE_COMMENT, 2, sortProps, true);	// descending=true
++		return props;
+ 	}
+-	
+-	public boolean isForumActivated() {
+-		BaseTopic forum = getForum();
+-		if (forum == null) {
+-			return false;
++
++	public static void propertyLabel(PropertyDefinition propDef, ApplicationService as, Session session) {
++		String propName = propDef.getPropertyName();
++		if (propName.equals(PROPERTY_SONSTIGES)) {
++			propDef.setPropertyLabel(&quot;Weitere Infos&quot;);
+ 		}
+-		return as.getTopicProperty(forum, PROPERTY_FORUM_ACTIVITION).equals(SWITCH_ON);
+ 	}
+-	
+-	public BaseTopic getForum() {
+-		try {
+-			return as.getRelatedTopic(getID(), SEMANTIC_INSTITUTION_FORUM, TOPICTYPE_FORUM, 2, true);		// emptyAllowed=true
+-		} catch (AmbiguousSemanticException e) {
+-			System.out.println(&quot;*** GeoObjectTopic.getForum(): &quot; + e);
+-			return e.getDefaultTopic();
++
++	public static String propertyLabel(PropertyDefinition propDef, String relTopicTypeID, ApplicationService as) {
++		String propName = propDef.getPropertyName();
++		if (relTopicTypeID.equals(TOPICTYPE_ADDRESS)) {
++			if (propName.equals(PROPERTY_STREET)) {
++				return &quot;Stra&szlig;e&quot;;
++			} else if (propName.equals(PROPERTY_POSTAL_CODE)) {
++				return &quot;Postleitzahl&quot;;
++			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_WEBPAGE)) {
++			if (propName.equals(PROPERTY_URL)) {
++				return &quot;Website (URL)&quot;;
++			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_AGENCY)) {
++			if (propName.equals(PROPERTY_NAME)) {
++				return &quot;Tr&auml;ger&quot;;
++			} else if (propName.equals(PROPERTY_AGENCY_KIND)) {
++				return &quot;Art des Tr&auml;gers&quot;;
++			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_PERSON)) {
++			if (propName.equals(PROPERTY_FIRST_NAME)) {
++				return &quot;Ansprechpartner/in (Vorname)&quot;;
++			} else if (propName.equals(PROPERTY_NAME)) {
++				return &quot;Ansprechpartner/in (Nachname)&quot;;
++			} else if (propName.equals(PROPERTY_GENDER)) {
++				return &quot;Ansprechpartner/in&quot;;
++			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_PHONE_NUMBER)) {
++			if (propName.equals(PROPERTY_NAME)) {
++				return &quot;Telefon&quot;;
++			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_FAX_NUMBER)) {
++			if (propName.equals(PROPERTY_NAME)) {
++				return &quot;Fax&quot;;
++			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_EMAIL_ADDRESS)) {
++			if (propName.equals(PROPERTY_EMAIL_ADDRESS)) {
++				return &quot;E-mail&quot;;
++			}
+ 		}
++		return LiveTopic.propertyLabel(propDef, relTopicTypeID, as);
+ 	}
+ 	
+ 	
++	
+ 	// ------------------------
+ 	// --- Topic Type Hooks ---
+ 	// ------------------------
+@@ -200,10 +279,13 @@
+ 	}
+ 	
+ 	
++	
+ 	// **********************
+ 	// *** Custom Methods ***
+ 	// **********************
+ 
++	
++	
+ 	public static BaseTopic lookupInstitution(String alias, ApplicationService as) throws DeepaMehtaException {
+ 		Vector typeIDs = as.type(TOPICTYPE_KIEZ_GEO, 1).getSubtypeIDs();
+ 		Hashtable props = new Hashtable();
+@@ -221,17 +303,7 @@
+ 		return inst;
+ 	}
+ 	
+-	public Vector getCommentBeans() {
+-		Vector commentBeans = new Vector();
+-		//
+-		Enumeration e = getComments().elements();
+-		while (e.hasMoreElements()) {
+-			BaseTopic comment = (BaseTopic) e.nextElement();
+-			commentBeans.addElement(new Comment(comment.getID(), as));
+-		}
+-		//
+-		return commentBeans;
+-	}
++	// ---
+ 	
+ 	public BaseTopic getAddress() {
+ 		try {
+@@ -240,10 +312,8 @@
+ 			System.out.println(&quot;*** GeoObjectTopic.getAddress(): &quot; + e);
+ 			return e.getDefaultTopic();
+ 		}
+-	}
++	}	
+ 	
+-	
+-	
+ 	public String getCity() {
+ 		// if a geoobject has a stadt property, take it and return it
+ 		// else if a geoobject has an addressTopic assigned, check if there is a city, if so return this city
+@@ -266,7 +336,21 @@
+ 			return aex.getDefaultTopic().getName();
+ 		}
+ 	}
++	
++	public Vector getCategories(String critTypeID) {
++		return as.getRelatedTopics(getID(), ASSOCTYPE_ASSOCIATION, critTypeID, 2);
++	}
++	
++	public BaseTopic getImage() {
++		try {
++			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_IMAGE, 2, true);		// emptyAllowed=true
++		} catch (AmbiguousSemanticException e) {
++			System.out.println(&quot;*** GeoObjectTopic.getImage(): &quot; + e);
++			return e.getDefaultTopic();
++		}
++	}
+ 
++
+ 	
+ 	/**
+ 	 * Converts the YADE-coordinate of this institution into a screen coordinate.
+@@ -345,6 +429,42 @@
+ 				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#252;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 	}
++	
++	public boolean isForumActivated() {
++		BaseTopic forum = getForum();
++		if (forum == null) {
++			return false;
++		}
++		return as.getTopicProperty(forum, PROPERTY_FORUM_ACTIVITION).equals(SWITCH_ON);
++	}
++	
++	public Vector getComments() {
++		BaseTopic forum = getForum();
++		if (forum == null) {
++			throw new DeepaMehtaException(&quot;Institution &quot; + getID() + &quot; has no forum topic&quot;);
++		}
++		String[] sortProps = {PROPERTY_COMMENT_DATE, PROPERTY_COMMENT_TIME};
++		return cm.getRelatedTopics(forum.getID(), SEMANTIC_FORUM_COMMENTS, TOPICTYPE_COMMENT, 2, sortProps, true);	// descending=true
++	}
++	
++	public BaseTopic getForum() {
++		try {
++			return as.getRelatedTopic(getID(), SEMANTIC_INSTITUTION_FORUM, TOPICTYPE_FORUM, 2, true);		// emptyAllowed=true
++		} catch (AmbiguousSemanticException e) {
++			System.out.println(&quot;*** GeoObjectTopic.getForum(): &quot; + e);
++			return e.getDefaultTopic();
++		}
++	}
+ 
+-
++	public Vector getCommentBeans() {
++		Vector commentBeans = new Vector();
++		//
++		Enumeration e = getComments().elements();
++		while (e.hasMoreElements()) {
++			BaseTopic comment = (BaseTopic) e.nextElement();
++			commentBeans.addElement(new Comment(comment.getID(), as));
++		}
++		//
++		return commentBeans;
++	}
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000023.html">[Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#24">[ date ]</a>
+              <a href="thread.html#24">[ thread ]</a>
+              <a href="subject.html#24">[ subject ]</a>
+              <a href="author.html#24">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

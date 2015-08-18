@@ -1,0 +1,458 @@
+From maltito at scm.berlios.de  Mon Dec 16 20:12:37 2013
+From: maltito at scm.berlios.de (maltito at scm.berlios.de)
+Date: Mon, 16 Dec 2013 20:12:37 +0100
+Subject: [Kiezatlas-svn] r113 - in trunk: . images libs pages pages/be.de
+	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+Message-ID: <20131216191237.E4F6855B0C@scm.berlios.de>
+
+Author: maltito
+Date: 2013-12-16 20:12:37 +0100 (Mon, 16 Dec 2013)
+New Revision: 113
+
+Added:
+   trunk/images/efa4.gif
+   trunk/libs/gson-2.2.4.jar
+Modified:
+   trunk/build.xml
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/be.de/kiezatlas.js
+   trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/MapServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Fixing linebreaks, loadGPSCoordaintes and introduced Oberhausen-Fahrinfo-Link.
+
+- Linebreaks are translated into HTML (in AJAX-Interface)
+- Address with Oberhause as City got a Fahrinfo Link (in AJAX-Interface)
+
+Additionally:
+
+- Fixed loadGPSCoordinates in GeoObjectTopic
+- Introduced new dependency to gson (Java JSON Parser)
+
+Modified: trunk/build.xml
+===================================================================
+--- trunk/build.xml	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/build.xml	2013-12-16 19:12:37 UTC (rev 113)
+@@ -19,12 +19,13 @@
+ 	</target>
+ 
+ 	<target name="compile" depends="init">
+-		<javac srcdir="src" destdir="${build}" debug="on" verbose="no" listfiles="yes" source="1.5" encoding="UTF8">
++		<javac srcdir="src" destdir="${build}" debug="on" verbose="no" source="1.5" listfiles="yes" encoding="UTF8">
+ 			<classpath>
+ 				<pathelement location="${server}/DeepaMehtaService.jar"/>
+ 				<pathelement location="${server}/DeepaMehtaTopics.jar"/>
+ 				<pathelement location="${dm.base-dir}/libs/commons-fileupload-1.0.jar"/>
+ 				<pathelement location="libs/quartz-1.8.4.jar"/>
++				<pathelement location="libs/gson-2.2.4.jar"/>
+ 				<pathelement location="${web.servlet.lib}"/>
+ 			</classpath>
+ 		</javac>
+@@ -67,7 +68,7 @@
+         <include name="de/swers/kiezatlas/tools/*.class" />
+         <exclude name="de/kiezatlas/deepamehta/Comment.class" />
+         <exclude name="de/kiezatlas/deepamehta/SearchCriteria.class" />
+-      </classes>  
++      </classes>
+       <fileset dir=".">
+         <include name="images/*"/>
+         <include name="pages/*"/>
+
+Added: trunk/images/efa4.gif
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/images/efa4.gif
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/libs/gson-2.2.4.jar
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/libs/gson-2.2.4.jar
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/pages/KiezAtlas.jsp	2013-12-16 19:12:37 UTC (rev 113)
+@@ -47,13 +47,13 @@
+ 		case KiezAtlas.SERVLET_LIST:
+ 			title = title + " - Listenzugang";
+ 			break;
+-    case KiezAtlas.SERVLET_WORKSPACE:
++        case KiezAtlas.SERVLET_WORKSPACE:
+ 			title = title + " - Workspacezugang";
+ 			break;
+ 		case KiezAtlas.SERVLET_MAPS:
+ 			title = title + " - Stadtplanzugang";
+ 			break;
+-    case KiezAtlas.SERVLET_IMPORT:
++        case KiezAtlas.SERVLET_IMPORT:
+ 			title = title + " - Importzugang";
+ 			break;
+ 		}
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/pages/be.de/kiezatlas.js	2013-12-16 19:12:37 UTC (rev 113)
+@@ -616,7 +616,7 @@
+       dataType: 'json',
+ 	    success: function(obj) {
+ 	      var topic = obj.result;
+-        showGeoObjectInfo(topic, resultHandler, dontUpdateHistoryState);
++          showGeoObjectInfo(topic, resultHandler, dontUpdateHistoryState);
+ 	    }, // end of success handler
+ 	    error: function(x, s, e){
+ 	      resultHandler.empty();
+@@ -990,29 +990,33 @@
+     // address related stuff follows
+     var cityName = getTopicCity(givenTopic);
+     var street = getTopicAddress(givenTopic);
++    var postalCode = getTopicPostalCode(givenTopic);
+     var originId = getTopicOriginId(givenTopic);
++    var imageLink = "";
+     if (cityName == " Berlin" || cityName == "Berlin" || onBerlinDe || topicId == "t-1223527") { // ### FIXME sloppy
+       if (topicId == "t-1223527") cityName = "Berlin"
+-      var postalCode = getTopicPostalCode(givenTopic);
+-      var target = street + "%20" + postalCode + "%20" + cityName;
+-      var publicTransportURL = "http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=" + target + "&REQ0JourneyStopsZA1=2&start=1";
+-      // var publicTransportURL = 'http://www.fahrinfo-berlin.de/Stadtplan/index?query=' + street +
+-        // '&search=Suchen&formquery=&address=true';
+-      var imageLink = '<a href="'+ publicTransportURL + '" target="_blank">'
+-        + '<img src=\"'+IMAGES_URL+'fahrinfo.gif" border="0" hspace="20"/></a>';
++      // assemble berlin fahrinfo link
++      imageLink = createBerlinFahrinfoLink(street, cityName, postalCode);
++      //
+       if (onBerlinDe || topicId == "t-331302") { // ehrenamt map datasets have no city property
+         resultHandler.append(''+ postalCode + ' Berlin<br/>');
+       } else {
+         resultHandler.append(''+ postalCode + ' ' + cityName + '<br/>');
+       }
+       resultHandler.append('' + street + '&nbsp;' + imageLink + '<p/>');
+-    } else {
++    } else { // not berlin
+       if (topicId == "t-331302") { // ehrenamt map on datasets have no city property
+         resultHandler.append(''+getTopicPostalCode(givenTopic) + ' Berlin<br/>');
+       } else {
+         resultHandler.append(''+getTopicPostalCode(givenTopic) + ' ' + cityName + '<br/>');
+       }
+-      resultHandler.append('' + street + '<p/>');
++      // maybe oberhausen
++      if (cityName.indexOf("Oberhausen") != -1) {
++        imageLink = createOberhausenFahrinfoLink(street, cityName, postalCode);
++        resultHandler.append('' + street + '&nbsp;' + imageLink + '<p/>');
++      } else {
++        resultHandler.append('' + street + '<p/>');
++      }
+     }
+     // stripping unwanted fields of the data container
+     givenTopic = stripFieldsContaining(givenTopic, "LAT");
+@@ -1046,7 +1050,11 @@
+       if (givenTopic.properties[i].type == 0) {
+         if (givenTopic.properties[i].label.indexOf("Barrierefrei") == -1) {
+           // ordinary rendering for DM Property Type Single Value
+-          propertyList += '<span class="propertyField">'+givenTopic.properties[i].value+'</span></p>';
++          var formattedValue = givenTopic.properties[i].value + ""
++          if (formattedValue.indexOf("\r") != -1 || formattedValue.indexOf("\n") != -1) {
++              formattedValue = replaceLF(formattedValue)
++          }
++          propertyList += '<span class="propertyField">'+formattedValue+'</span></p>';
+         } else {
+           // special rendering for the "BARRIERFREE_ACCESS"-Property
+           if (givenTopic.properties[i].value == "") {
+@@ -1093,6 +1101,35 @@
+         updatePermaLink(baseUrl+mapAlias+"/p/"+givenTopic.id, {name: "getGeoObjectInfo", parameter: givenTopic.id});
+       }
+     }
++
++    function replaceLF(value) {
++      value = value.replace("\r\n", "<br/>");
++      value = value.replace("\r", "<br/>");
++      value = value.replace("\n", "<br/>");
++      return value;
++    }
++
++    function createBerlinFahrinfoLink(street, cityName, postalCode) {
++        var target = street + "%20" + postalCode + "%20" + cityName;
++        var publicTransportURL = "http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=" + target + "&REQ0JourneyStopsZA1=2&start=1";
++        var link = '<a href="'+ publicTransportURL + '" target="_blank">'
++            + '<img src=\"'+IMAGES_URL+'fahrinfo.gif" border="0" hspace="20"/></a>';
++        return link;
++    }
++
++    function createOberhausenFahrinfoLink(street, cityName, postalCode) {
++        var target = ""
++        if (typeof postalCode !== "undefined") {
++            target = "&place_destination=" + postalCode + "%20" + cityName + "&name_destination=" + street;
++        } else {
++            target = "&place_destination=" + cityName + "&name_destination=" + street;
++        }
++        var publicTransportURL = "http://www.efa.de/gvh/XSLT_TRIP_REQUEST2?language=de" + target + "&type_destination=address&sessionID=0"
++        var link = '<a href="'+ publicTransportURL + '" target="_blank">'
++            + '<img src=\"'+IMAGES_URL+'fahrinfo.gif" border="0" hspace="20"/></a>';
++        return link;
++    }
++
+   }
+ 
+ 
+@@ -2594,9 +2631,9 @@
+   function getTopicCity(topic) {
+     for (var at=0; at < topic.properties.length; at++) {
+       // resultHandler.append('<tr><td>'+topic.properties[i].label+'</td><td>'+topic.properties[i].value+'</td></tr>');
+-      if (topic.properties[at].name == "Address / City") {
++      if (topic.properties[at].name === "Address / City") {
+         return topic.properties[at].value; // + ' Berlin<br/>';
+-      } else if (topic.properties[at].name == "Stadt") {
++      } else if (topic.properties[at].name === "Stadt") {
+         return topic.properties[at].value;
+       }
+     }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2013-12-16 19:12:37 UTC (rev 113)
+@@ -57,8 +57,8 @@
+ 
+ 
+ 
+-	private final String urlStr = "http://www.kiezatlas.de/rpc/";
+-	// private final String urlStr = "http://localhost:8080/kiezatlas/rpc/";
++	private final String SERVICE_URL = "http://www.kiezatlas.de/rpc/";
++	// private final String SERVICE_URL = "http://localhost:8080/kiezatlas/rpc/";
+ 	private final String charset = "ISO-8859-1";
+ 
+ 	String topicmapId = "is-set-to-current-topicmap-id-of-request"; // used by new getLastModified impl
+@@ -270,9 +270,9 @@
+ 		String result = null;
+ 		try {
+ 			// Send data
+-			URL url = new URL(urlStr);
++			URL url = new URL(SERVICE_URL);
+ 			String query = "{\"method\": \"getMapTopics\", \"params\": [\"" + mapId + "\" , \"" + workspaceId + "\"]}";
+-			URLConnection connection = new URL(urlStr).openConnection();
++			URLConnection connection = new URL(SERVICE_URL).openConnection();
+ 			connection.setDoOutput(true); // Triggers POST.
+ 			// connection.setRequestProperty("Accept-Charset", charset);
+ 			connection.setRequestProperty("Content-Type", "application/json;charset=" + charset);
+@@ -289,7 +289,7 @@
+ 			rd.close();
+ 			return result;
+ 		} catch(UnknownHostException uke) {
+-			System.out.println("*** [ATLAS] couldn't load CityMapData from " + urlStr + " cause is: " + uke.getCause());
++			System.out.println("*** [ATLAS] couldn't load CityMapData from " + SERVICE_URL + " cause is: " + uke.getCause());
+ 			return null;
+ 			// done();
+ 		} catch (Exception ex) {
+@@ -302,10 +302,10 @@
+ 		String result = null;
+ 		try {
+ 			// Send data
+-			URL url = new URL(urlStr);
++			URL url = new URL(SERVICE_URL);
+ 			String query = "{\"method\": \"getWorkspaceCriterias\", \"params\": [\"" + mapId + "\"]}";
+ 			// url.s
+-			URLConnection connection = new URL(urlStr).openConnection();
++			URLConnection connection = new URL(SERVICE_URL).openConnection();
+ 			connection.setDoOutput(true); // Triggers POST.
+ 			// connection.setRequestProperty("Accept-Charset", charset);
+ 			connection.setRequestProperty("Content-Type", "application/json;charset=" + charset);
+@@ -321,7 +321,7 @@
+ 			result = line;
+ 			return result;
+ 		} catch(UnknownHostException uke) {
+-			System.out.println("*** [ATLAS] could not load CityMap-Data from " + urlStr + " message is: " + uke.getCause());
++			System.out.println("*** [ATLAS] could not load CityMap-Data from " + SERVICE_URL + " message is: " + uke.getCause());
+ 			return null;
+ 			// done();
+ 		} catch (UnsupportedEncodingException ex) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2013-12-16 19:12:37 UTC (rev 113)
+@@ -159,7 +159,8 @@
+ 			String geoID = params.getValue("id");
+ 			setSelectedGeo(geoID, session);
+ 			TopicBean topicBean = as.createTopicBean(geoID, 1);
+-			if (topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO).indexOf("lor/analysen/") != -1) {
++			String adminInfo = topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO);
++			if (adminInfo != null && adminInfo.indexOf("lor/analysen/") != -1) {
+ 				topicBean = prepareNewLorPageLink(topicBean);
+ 			}
+ 			session.setAttribute("topicBean", topicBean);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2013-12-16 19:12:37 UTC (rev 113)
+@@ -499,7 +499,8 @@
+ 		StringBuffer bean = new StringBuffer();
+ 		//
+ 		TopicBean topicBean = as.createTopicBean(topic.getID(), 1);
+-		if (topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO).indexOf("lor/analysen/") != -1) {
++		String adminInfo = topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO);
++		if (adminInfo != null && adminInfo.indexOf("lor/analysen/") != -1) {
+ 			topicBean = prepareNewLorPageLink(topicBean);
+ 		}
+ 		removeCredentialInformation(topicBean);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/MapServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/MapServlet.java	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/src/de/kiezatlas/deepamehta/MapServlet.java	2013-12-16 19:12:37 UTC (rev 113)
+@@ -54,8 +54,8 @@
+ 	// --
+ 
+ 
+-	private final String urlStr = "http://www.kiezatlas.de/rpc/";
+-	// private final String urlStr = "http://localhost:8080/kiezatlas/rpc/";
++    private final String SERVICE_URL = "http://www.kiezatlas.de/rpc/";
++	// private final String SERVICE_URL = "http://localhost:8080/kiezatlas/rpc/";
+ 	// private final String urlStr = "http://212.87.44.116:8080/rpc/";
+ 	private final String charset = "ISO-8859-1";
+ 
+@@ -267,9 +267,9 @@
+ 		String result = null;
+ 		try {
+ 			// Send data
+-			URL url = new URL(urlStr);
++			URL url = new URL(SERVICE_URL);
+ 			String query = "{\"method\": \"getMapTopics\", \"params\": [\"" + mapId + "\" , \"" + workspaceId + "\"]}";
+-			URLConnection connection = new URL(urlStr).openConnection();
++			URLConnection connection = new URL(SERVICE_URL).openConnection();
+ 			connection.setDoOutput(true); // Triggers POST.
+ 			// connection.setRequestProperty("Accept-Charset", charset);
+ 			connection.setRequestProperty("Content-Type", "application/json;charset=" + charset);
+@@ -286,7 +286,7 @@
+ 			rd.close();
+ 			return result;
+ 		} catch(UnknownHostException uke) {
+-			System.out.println("*** [MapServlet] could not load the json data to import from " + urlStr + " message is: " + uke.getMessage());
++			System.out.println("*** [MapServlet] could not load the json data to import from " + SERVICE_URL + " message is: " + uke.getMessage());
+ 			return null;
+ 			// done();
+ 		} catch (Exception ex) {
+@@ -299,10 +299,10 @@
+ 		String result = null;
+ 		try {
+ 			// Send data
+-			URL url = new URL(urlStr);
++			URL url = new URL(SERVICE_URL);
+ 			String query = "{\"method\": \"getWorkspaceCriterias\", \"params\": [\"" + mapId + "\"]}";
+ 			// url.s
+-			URLConnection connection = new URL(urlStr).openConnection();
++			URLConnection connection = new URL(SERVICE_URL).openConnection();
+ 			connection.setDoOutput(true); // Triggers POST.
+ 			// connection.setRequestProperty("Accept-Charset", charset);
+ 			connection.setRequestProperty("Content-Type", "application/json;charset=" + charset);
+@@ -318,7 +318,7 @@
+ 			result = line;
+ 			return result;
+ 		} catch(UnknownHostException uke) {
+-			System.out.println("*** [MapServlet] could not load the json data to import from " + urlStr + " message is: " + uke.getMessage());
++			System.out.println("*** [MapServlet] could not load the json data to import from " + SERVICE_URL + " message is: " + uke.getMessage());
+ 			return null;
+ 			// done();
+ 		} catch (UnsupportedEncodingException ex) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2013-06-30 21:52:07 UTC (rev 112)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2013-12-16 19:12:37 UTC (rev 113)
+@@ -1,5 +1,9 @@
+ package de.kiezatlas.deepamehta.topics;
+ 
++import com.google.gson.JsonArray;
++import com.google.gson.JsonElement;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonParser;
+ import de.kiezatlas.deepamehta.Comment;
+ import de.kiezatlas.deepamehta.KiezAtlas;
+ 
+@@ -23,6 +27,7 @@
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+ import java.io.UnsupportedEncodingException;
++import java.lang.String;
+ import java.net.URL;
+ import java.net.URLConnection;
+ import java.net.URLEncoder;
+@@ -200,7 +205,7 @@
+                         "ist folgender Fehler aufgetreten: "+ex, new Integer(NOTIFICATION_ERROR));
+             }
+ 
+-			
++
+ 		}
+ 		return super.propertyChangeAllowed(propName, propValue, session, directives);
+ 	}
+@@ -578,12 +583,13 @@
+         //
+         String givenAddress = getAddressString();
+         if (givenAddress.equals("")) return new String[4]; // skip gps fetch for just " Berlin" without a street
+-        StringBuffer requestUrl = new StringBuffer("http://maps.google.com/maps/geo?");
+-        requestUrl.append("q=");
++        // StringBuffer requestUrl = new StringBuffer("http://maps.google.com/maps/geo?");
++        StringBuffer requestUrl = new StringBuffer("https://maps.googleapis.com/maps/api/geocode/json?");
++        requestUrl.append("address=");
+         requestUrl.append(convertAddressForRequest(givenAddress));
+-        // requested. put and remove address
+-        // TODO: adapt to new Google Geocode API v3
+-        requestUrl.append("&output=csv&oe=utf8&sensotr=false&key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&gl=de");
++        // as maps-api documentation says, geocoding up to 2500 address does not require an api key at all
++        // https://developers.google.com/maps/documentation/geocoding/ and https://developers.google.com/maps/faq
++        requestUrl.append("&sensor=false&region=de"); // key=" +key+ " &output=csv
+         for (int i = 0; i < 3; i++) {
+             try {
+                 //String http = URLEncoder.encode(requestUrl.toString(), "UTF-8");
+@@ -593,18 +599,27 @@
+                                     new InputStreamReader(
+                                     con.getInputStream()));
+                 String inputLine;
++                StringBuffer response = new StringBuffer();
+                 while ((inputLine = in.readLine()) != null) {
+-                    // System.out.println("[DEBUG] GeoCodeResponse: " + inputLine);
+-                    String[] points = inputLine.split(",");
+-                    if (points[2].equals("0") && points[3].equals("0")) {
+-                        System.out.println("[WARNING] .. geoCoder is lazy, could not locate GeoObjects ("+this.getAddressString()+") G coordinates, trying again " + i);
+-                    } else {
+-                        return points;
+-                    }
++                    response.append(inputLine);
+                 }
+                 in.close();
++                // parse coordinates of the very first result item
++                JsonParser parser = new JsonParser();
++                JsonElement result = parser.parse(response.toString());
++                JsonObject object = result.getAsJsonObject();
++                JsonObject first_result = object.getAsJsonArray("results").get(0).getAsJsonObject();
++                String latitude = first_result.getAsJsonObject("geometry").getAsJsonObject("location").get("lat").getAsString();
++                String longitude = first_result.getAsJsonObject("geometry").getAsJsonObject("location").get("lng").getAsString();
++                System.out.println("[GeoObjectTopic]: Fetched location \"" + latitude + "\", \""+longitude+"\" for "
++                        + givenAddress + " via Gecoding at Google Maps Api v3");
++                String[] points = new String[4];
++                points[2] = latitude;
++                points[3] = longitude;
++                return points;
+             } catch (IOException e) {
+-                directives.add(DIRECTIVE_SHOW_MESSAGE, "The Google GeoCoder could not be connected. This GeoObject has no GPS Coordinates.", new Integer(NOTIFICATION_ERROR));
++                directives.add(DIRECTIVE_SHOW_MESSAGE, "The Google GeoCoder could not be connected. "
++                    + "This GeoObject has no GPS Coordinates.", new Integer(NOTIFICATION_ERROR));
+                 e.printStackTrace();
+                 return new String[4];
+             }
+
+

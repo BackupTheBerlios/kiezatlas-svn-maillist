@@ -1,0 +1,510 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r43 - in trunk: . config/default config/test	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r43%20-%20in%20trunk%3A%20.%20config/default%20config/test%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200805261124.m4QBOqAA024272%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000034.html">
+   <LINK REL="Next"  HREF="000036.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r43 - in trunk: . config/default config/test	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r43%20-%20in%20trunk%3A%20.%20config/default%20config/test%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200805261124.m4QBOqAA024272%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r43 - in trunk: . config/default config/test	src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Mon May 26 13:24:52 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000034.html">[Kiezatlas-svn] r42 - tags
+</A></li>
+        <LI>Next message: <A HREF="000036.html">[Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35">[ date ]</a>
+              <a href="thread.html#35">[ thread ]</a>
+              <a href="subject.html#35">[ subject ]</a>
+              <a href="author.html#35">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-05-26 13:24:42 +0200 (Mon, 26 May 2008)
+New Revision: 43
+
+Modified:
+   trunk/build.xml
+   trunk/config/default/web.xml
+   trunk/config/test/web.xml
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java
+Log:
+1) Adapted to API change introduced by DeepaMehta revision 325.
+(makes use of new application service method as.setTopicProperty(BaseTopic ...)
+IMPORTANT: Requires DeepaMehta revision 325 or later. You must update.
+2) web.xml polished
+
+
+Modified: trunk/build.xml
+===================================================================
+--- trunk/build.xml	2008-05-26 10:42:48 UTC (rev 42)
++++ trunk/build.xml	2008-05-26 11:24:42 UTC (rev 43)
+@@ -1,7 +1,7 @@
+-&lt;project name=&quot;Kiez-Atlas&quot; default=&quot;deploy&quot; basedir=&quot;.&quot;&gt;
++&lt;project name=&quot;Kiezatlas&quot; default=&quot;deploy&quot; basedir=&quot;.&quot;&gt;
+ 
+ 	&lt;description&gt;
+-		Kiez-Atlas
++		Kiezatlas
+ 	&lt;/description&gt;
+ 
+ 	&lt;property name=&quot;project.name&quot; value=&quot;kiezatlas&quot;/&gt;
+@@ -10,8 +10,9 @@
+ 	&lt;property name=&quot;war-test&quot; value=&quot;${project.name}-test.war&quot;/&gt;
+ 	&lt;property name=&quot;build&quot; location=&quot;build&quot;/&gt;
+ 
+-	&lt;property name=&quot;dm.base-dir&quot; location=&quot;/home/tito/source/deepaMehtaTrunk&quot;/&gt;
+-	&lt;!-- &lt;property name=&quot;dm.base-dir&quot; location=&quot;../../DeepaMehta/trunk&quot;/&gt; --&gt; &lt;!-- for jri --&gt;
++	&lt;!-- &lt;property name=&quot;dm.base-dir&quot; location=&quot;/home/tito/source/deepaMehtaTrunk&quot;/&gt; --&gt; &lt;!-- for mre --&gt;
++	&lt;property name=&quot;dm.base-dir&quot; location=&quot;../../DeepaMehta/trunk&quot;/&gt;
++
+ 	&lt;import file=&quot;${dm.base-dir}/config.xml&quot; /&gt;
+ 
+ 	&lt;target name=&quot;init&quot; description=&quot;create build directory&quot;&gt;
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2008-05-26 10:42:48 UTC (rev 42)
++++ trunk/config/default/web.xml	2008-05-26 11:24:42 UTC (rev 43)
+@@ -1,104 +1,102 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+ &lt;!DOCTYPE web-app 
+-    PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
+-    &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
++	PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
++	&quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+ 
+ &lt;web-app&gt;
+ 
+-    &lt;!-- General description of the web application --&gt;
++	&lt;!-- General description of the web application --&gt;
+ 
+-    &lt;display-name&gt;Kiez-Atlas&lt;/display-name&gt;
+-    &lt;description&gt;
+-      Version 1.0b1.
+-      Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>)
+-    &lt;/description&gt;
++	&lt;display-name&gt;Kiezatlas&lt;/display-name&gt;
++	&lt;description&gt;
++		Version 1.5
++		Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>)
++	&lt;/description&gt;
+ 
+-    &lt;!-- Context initialization parameters that define shared
+-         String constants used within your application, which
+-         can be customized by the system administrator who is
+-         installing your application.
+-    --&gt;
++	&lt;!-- Context initialization parameters that define shared
++		 String constants used within your application, which
++		 can be customized by the system administrator who is
++		 installing your application.
++	--&gt;
+ 
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;service&lt;/param-name&gt;
+-      &lt;param-value&gt;kiezatlas&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects a DeepaMehta service.
+-        If this parameter is not set the &quot;default&quot; service will be used.
+-        To configure DeepaMehta services see the file install/client/dms.rc
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
++	&lt;context-param&gt;
++		&lt;param-name&gt;service&lt;/param-name&gt;
++		&lt;param-value&gt;kiezatlas&lt;/param-value&gt;
++		&lt;description&gt;
++			Selects a DeepaMehta service.
++			If this parameter is not set the &quot;default&quot; service will be used.
++			To configure DeepaMehta services see the file install/client/dms.rc
++		&lt;/description&gt;
++	&lt;/context-param&gt;
+ 
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;generator&lt;/param-name&gt;
+-      &lt;param-value&gt;jsp&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects the HTML generator method.
+-        Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
++	&lt;context-param&gt;
++		&lt;param-name&gt;generator&lt;/param-name&gt;
++		&lt;param-value&gt;jsp&lt;/param-value&gt;
++		&lt;description&gt;
++			Selects the HTML generator method.
++			Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
++		&lt;/description&gt;
++	&lt;/context-param&gt;
+ 
+-    &lt;!-- Servlet definitions for the servlets that make up
+-         the web application.
+-    --&gt;
++	&lt;!-- Servlet definitions for the servlets that make up
++		 the web application.
++	--&gt;
+ 
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Browse Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;Browse Servlet Controller&lt;/description&gt;
++		&lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Edit Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;Edit Servlet Controller&lt;/description&gt;
++		&lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;List Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+- 
+-    &lt;servlet&gt;
+-        &lt;servlet-name&gt;UploadDataServlet&lt;/servlet-name&gt;
+-        &lt;description&gt;UploadDataServlet&lt;/description&gt;
+-        &lt;servlet-class&gt;de.swers.kiezatlas.tools.UploadDataServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;List Servlet Controller&lt;/description&gt;
++		&lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;Import Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;For Stadtinfo Neuk&#246;lln data only&lt;/description&gt;
++		&lt;servlet-class&gt;de.swers.kiezatlas.tools.UploadDataServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;!-- Define mappings that are used by the servlet container to
+-         translate a particular request URI (context-relative) to a
+-         particular servlet.
+-    --&gt;
++	&lt;!-- Define mappings that are used by the servlet container to
++		 translate a particular request URI (context-relative) to a
++		 particular servlet.
++	--&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-        &lt;servlet-name&gt;UploadDataServlet&lt;/servlet-name&gt;
+-        &lt;url-pattern&gt;/upload/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-    
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;Import Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/upload/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;!-- Define the default session timeout for your application,
+-         in minutes.
+-    --&gt;
++	&lt;!-- Define the default session timeout for your application,
++		 in minutes.
++	--&gt;
+ 
+-    &lt;session-config&gt;
+-      &lt;session-timeout&gt;60&lt;/session-timeout&gt;
+-    &lt;/session-config&gt;
++	&lt;session-config&gt;
++		&lt;session-timeout&gt;120&lt;/session-timeout&gt;
++	&lt;/session-config&gt;
+ 
+ &lt;/web-app&gt;
+
+Modified: trunk/config/test/web.xml
+===================================================================
+--- trunk/config/test/web.xml	2008-05-26 10:42:48 UTC (rev 42)
++++ trunk/config/test/web.xml	2008-05-26 11:24:42 UTC (rev 43)
+@@ -1,100 +1,102 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+ &lt;!DOCTYPE web-app 
+-    PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
+-    &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
++	PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
++	&quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+ 
+ &lt;web-app&gt;
+ 
+-    &lt;!-- General description of the web application --&gt;
++	&lt;!-- General description of the web application --&gt;
+ 
+-    &lt;display-name&gt;Kiez-Atlas&lt;/display-name&gt;
+-    &lt;description&gt;
+-      Version 1.0b1.
+-      Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>)
+-    &lt;/description&gt;
++	&lt;display-name&gt;Kiezatlas&lt;/display-name&gt;
++	&lt;description&gt;
++		Version 1.5
++		Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>)
++	&lt;/description&gt;
+ 
+-    &lt;!-- Context initialization parameters that define shared
+-         String constants used within your application, which
+-         can be customized by the system administrator who is
+-         installing your application.
+-    --&gt;
++	&lt;!-- Context initialization parameters that define shared
++		 String constants used within your application, which
++		 can be customized by the system administrator who is
++		 installing your application.
++	--&gt;
+ 
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;service&lt;/param-name&gt;
+-      &lt;param-value&gt;test&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects a DeepaMehta service.
+-        If this parameter is not set the &quot;default&quot; service will be used.
+-        To configure DeepaMehta services see the file install/client/dms.rc
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
++	&lt;context-param&gt;
++		&lt;param-name&gt;service&lt;/param-name&gt;
++		&lt;param-value&gt;test&lt;/param-value&gt;
++		&lt;description&gt;
++			Selects a DeepaMehta service.
++			If this parameter is not set the &quot;default&quot; service will be used.
++			To configure DeepaMehta services see the file install/client/dms.rc
++		&lt;/description&gt;
++	&lt;/context-param&gt;
+ 
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;generator&lt;/param-name&gt;
+-      &lt;param-value&gt;jsp&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects the HTML generator method.
+-        Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
++	&lt;context-param&gt;
++		&lt;param-name&gt;generator&lt;/param-name&gt;
++		&lt;param-value&gt;jsp&lt;/param-value&gt;
++		&lt;description&gt;
++			Selects the HTML generator method.
++			Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
++		&lt;/description&gt;
++	&lt;/context-param&gt;
+ 
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;stylesheet&lt;/param-name&gt;
+-      &lt;param-value&gt;browser/browser.xsl&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Sets the stylesheet for the XSL transformation.
+-		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
++	&lt;!-- Servlet definitions for the servlets that make up
++		 the web application.
++	--&gt;
+ 
+-    &lt;!-- Servlet definitions for the servlets that make up
+-         the web application.
+-    --&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;Browse Servlet Controller&lt;/description&gt;
++		&lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Browse Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;Edit Servlet Controller&lt;/description&gt;
++		&lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Edit Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;List Servlet Controller&lt;/description&gt;
++		&lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;List Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
++	&lt;servlet&gt;
++		&lt;servlet-name&gt;Import Servlet&lt;/servlet-name&gt;
++		&lt;description&gt;For Stadtinfo Neuk&#246;lln data only&lt;/description&gt;
++		&lt;servlet-class&gt;de.swers.kiezatlas.tools.UploadDataServlet&lt;/servlet-class&gt;
++	&lt;/servlet&gt;
+ 
+-    &lt;!-- Define mappings that are used by the servlet container to
+-         translate a particular request URI (context-relative) to a
+-         particular servlet.
+-    --&gt;
++	&lt;!-- Define mappings that are used by the servlet container to
++		 translate a particular request URI (context-relative) to a
++		 particular servlet.
++	--&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;!-- Define the default session timeout for your application,
+-         in minutes.
+-    --&gt;
++	&lt;servlet-mapping&gt;
++		&lt;servlet-name&gt;Import Servlet&lt;/servlet-name&gt;
++		&lt;url-pattern&gt;/upload/*&lt;/url-pattern&gt;
++	&lt;/servlet-mapping&gt;
+ 
+-    &lt;session-config&gt;
+-      &lt;session-timeout&gt;60&lt;/session-timeout&gt;
+-    &lt;/session-config&gt;
++	&lt;!-- Define the default session timeout for your application,
++		 in minutes.
++	--&gt;
+ 
++	&lt;session-config&gt;
++		&lt;session-timeout&gt;120&lt;/session-timeout&gt;
++	&lt;/session-config&gt;
++
+ &lt;/web-app&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-05-26 10:42:48 UTC (rev 42)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-05-26 11:24:42 UTC (rev 43)
+@@ -114,8 +114,7 @@
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_LOCK_GEOMETRY) || cmd.equals(CMD_UNLOCK_GEOMETRY)) {
+ 			String value = cmd.equals(CMD_LOCK_GEOMETRY) ? SWITCH_ON : SWITCH_OFF;
+-			directives.add(as.setTopicProperty(getID(), getVersion(), PROPERTY_LOCKED_GEOMETRY, value,
+-				topicmapID, viewmode, session));
++			directives.add(as.setTopicProperty(this, PROPERTY_LOCKED_GEOMETRY, value, topicmapID, session));
+ 		} else {
+ 			return super.executeCommand(command, session, topicmapID, viewmode);
+ 		}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java	2008-05-26 10:42:48 UTC (rev 42)
++++ trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java	2008-05-26 11:24:42 UTC (rev 43)
+@@ -104,8 +104,7 @@
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_LOCK_GEOMETRY) || cmd.equals(CMD_UNLOCK_GEOMETRY)) {
+ 			String value = cmd.equals(CMD_LOCK_GEOMETRY) ? SWITCH_ON : SWITCH_OFF;
+-			directives.add(as.setTopicProperty(getID(), getVersion(), PROPERTY_LOCKED_GEOMETRY, value,
+-				topicmapID, viewmode, session));
++			directives.add(as.setTopicProperty(this, PROPERTY_LOCKED_GEOMETRY, value, topicmapID, session));
+ 		} else {
+ 			return super.executeCommand(command, session, topicmapID, viewmode);
+ 		}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000034.html">[Kiezatlas-svn] r42 - tags
+</A></li>
+	<LI>Next message: <A HREF="000036.html">[Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#35">[ date ]</a>
+              <a href="thread.html#35">[ thread ]</a>
+              <a href="subject.html#35">[ subject ]</a>
+              <a href="author.html#35">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

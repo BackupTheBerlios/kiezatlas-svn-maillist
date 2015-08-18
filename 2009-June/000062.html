@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r74 - in trunk/src/de/kiezatlas/deepamehta: . topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r74%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200906181802.n5II2Rq9017723%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000061.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r74 - in trunk/src/de/kiezatlas/deepamehta: . topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r74%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200906181802.n5II2Rq9017723%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r74 - in trunk/src/de/kiezatlas/deepamehta: . topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Thu Jun 18 20:02:27 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000061.html">[Kiezatlas-svn] r73 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62">[ date ]</a>
+              <a href="thread.html#62">[ thread ]</a>
+              <a href="subject.html#62">[ subject ]</a>
+              <a href="author.html#62">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-06-18 20:02:25 +0200 (Thu, 18 Jun 2009)
+New Revision: 74
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+KiezAtlas as installed today
+1) improved caching-mechanism in Lists
+
+Niceness: The GPS Transform reports are displayed immediately at client side when finished and a few more comments were made
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-06-16 11:48:03 UTC (rev 73)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-06-18 18:02:25 UTC (rev 74)
+@@ -85,7 +85,9 @@
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
+             setGPSCoordinates(geo, directives); // ### should load coordinates if address was changed
+-			setUseCache(Boolean.FALSE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
++			// make sure that element in cache is updated
++            updateTopicInCache(geo, session);
++            setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with cached topics now
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
+ 			return PAGE_GEO_EMPTY_FORM;
+@@ -109,7 +111,8 @@
+ 			setGPSCoordinates(geo, directives);
+             // --- store image ---
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+-			setUseCache(Boolean.FALSE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
++            inserTopicIntoCache(geo, session);
++			setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_GO_HOME)) {
+ 			setFilterField(null, session);
+@@ -117,6 +120,7 @@
+ 			setSortByField(null, session);
+ 			return PAGE_LIST_HOME;
+ 		} else if (action.equals(ACTION_SORT_BY)) {
++            // just sort currently rendered list of topics
+ 			Vector topicBeans = getListedTopics(session);
+ 			String sortBy = params.getParameter(&quot;sortField&quot;);
+ 			sortBeans(topicBeans, sortBy);
+@@ -125,6 +129,7 @@
+ 			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_FILTER)) {
++            // always filter on the full list of cached topics
+ 			Vector topicBeans = getCachedTopicList(session);
+ 			String filterField = params.getParameter(&quot;filterField&quot;);
+ 			if (filterField != null) {
+@@ -168,10 +173,9 @@
+ 			return PAGE_LINK_PAGE;
+ 		} else if (action.equals(ACTION_DELETE_ENTRY)){
+ 			String topicId = params.getParameter(&quot;id&quot;);
+-			System.out.println(&quot;	deleteAction from listServlet, deleting entry with id: &quot; + topicId);
+ 			deleteTopic(topicId);
+-            System.out.println(&quot;    &quot; + topicId + &quot; deleted successful from corporate memory&quot;);
+-			setUseCache(Boolean.FALSE, session);
++            removeTopicFromCache(topicId, session);
++			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+ 		}
+ 		//
+@@ -188,7 +192,7 @@
+ 			session.setAttribute(&quot;emailList&quot;, null);
+ 		} else if (page.equals(PAGE_LIST)) {
+ 			String sortBy = getSortByField(session);
+-			// refresh geo objects in list from cm, if caching is not active
++			// refresh geo objects in list from cm, if caching is not used
+ 			if(!isCacheUsed(session).booleanValue()) {
+ 				String cityMapID = getCityMap(session).getID();
+ 				String instTypeID = getInstTypeID(session);
+@@ -198,6 +202,7 @@
+ 					TopicBean topic = as.createTopicBean(insts.get(i).toString(), 1);
+ 					topicBeans.add(topic);
+ 				}
++                //
+ 				setCachedTopicList(topicBeans, session);
+ 				// System.out.println(&quot;&gt;&gt;&gt; refreshed beans in cache with serverside data&quot;);
+ 				// fresh topic data &amp; re sorted
+@@ -214,6 +219,7 @@
+ 					topicBeans = filterBeansByField(topicBeans, getFilterField(session), filterText);
+ 					// System.out.println(&quot;&gt;&gt;&gt;&gt; re-filtered fresh data in topicList&quot;);
+ 				}
++                // set topics to render in list, differ from cached if sorted or filtered
+ 				setListedTopics(topicBeans, session);
+ 				// notifications
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+@@ -233,6 +239,9 @@
+ 				session.setAttribute(&quot;emailList&quot;, mailAdresses);
+ 				// System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#228;ge&quot;);
+ 			}
++            // total memory of a jvm is flexible 
++            System.out.println(&quot;CHECK: jvm has &quot; + Runtime.getRuntime().freeMemory() + &quot; free memory, &quot; +
++                    &quot;it's max memory is &quot;+Runtime.getRuntime().maxMemory());
+ 		}
+ 	}
+ 
+@@ -550,6 +559,38 @@
+ 		return cityMaps;
+ 	}
+ 
++    private void updateTopicInCache(GeoObjectTopic geo, Session session) {
++        Vector topics = getCachedTopicList(session);
++        for (int i=0; i &lt; topics.size(); i++) {
++            TopicBean t = (TopicBean) topics.get(i);
++            if (t.id.equals(geo.getID())) {
++                topics.set(i, as.createTopicBean(geo.getID(), 1));
++                System.out.println(&quot;&gt;&gt;&gt;&gt; replaced topic (&quot;+geo.getID()+&quot;) in cache, inserted a fresh bean&quot;);
++            }
++        }
++        setCachedTopicList(topics, session);
++    }
++
++    private void inserTopicIntoCache(GeoObjectTopic geo, Session session) {
++        Vector topics = getCachedTopicList(session);
++        TopicBean geoBean = as.createTopicBean(geo.getID(), 1);
++        topics.add(1, geoBean);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; updated cache, inserted a fresh bean (&quot;+geo.getID()+&quot;) &quot;);
++        setCachedTopicList(topics, session);
++    }
++
++    private void removeTopicFromCache(String topicId, Session session) {
++        Vector topics = getCachedTopicList(session);
++         for (int i=0; i &lt; topics.size(); i++) {
++            TopicBean t = (TopicBean) topics.get(i);
++            if (t.id.equals(topicId)) {
++                topics.remove(i);
++                System.out.println(&quot;&gt;&gt;&gt;&gt; removed topic (&quot;+topicId+&quot;) from cache&quot;);
++            }
++        }
++    }
++
++
+ 	/**
+ 	 * Writes txt files with incremental number into the documents repository
+ 	 * 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-06-16 11:48:03 UTC (rev 73)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-06-18 18:02:25 UTC (rev 74)
+@@ -150,6 +150,9 @@
+ 
+             }
+             htmlReport.append(&quot;&lt;/body&gt;&lt;/html&gt;&quot;);
++            Hashtable props = new Hashtable();
++            props.put(PROPERTY_DESCRIPTION, htmlReport.toString());
++            directives.add(DIRECTIVE_SHOW_TOPIC_PROPERTIES, this.getID(), props, new Integer(1));
+             as.setTopicProperty(this, PROPERTY_DESCRIPTION, htmlReport.toString());
+ 		} else {
+ 			return super.executeCommand(command, session, topicmapID, viewmode);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-06-16 11:48:03 UTC (rev 73)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-06-18 18:02:25 UTC (rev 74)
+@@ -173,19 +173,29 @@
+ 		if (propName.equals(PROPERTY_WEB_ALIAS)) {
+ 			String webAlias = propValue;
+ 			// ### compare to lookupInstitution()
+-			Vector typeIDs = as.type(TOPICTYPE_KIEZ_GEO, 1).getSubtypeIDs();
+-			Hashtable props = new Hashtable();
+-			props.put(PROPERTY_WEB_ALIAS, webAlias);
+-			Vector insts = cm.getTopics(typeIDs, props, true);	// caseSensitive=true
+-			//
+-			if (insts.size() &gt; 0) {
+-				BaseTopic inst = (BaseTopic) insts.firstElement();
+-				String errText = &quot;Web Alias \&quot;&quot; + webAlias + &quot;\&quot; ist bereits an \&quot;&quot; + inst.getName() +
+-					&quot;\&quot; vergeben -- F&#252;r \&quot;&quot; + getName() + &quot;\&quot; bitte anderen Web Alias verwenden&quot;;
+-				directives.add(DIRECTIVE_SHOW_MESSAGE, errText, new Integer(NOTIFICATION_WARNING));
+-				System.out.println(&quot;*** GeoObjectTopic.propertyChangeAllowed(): &quot; + errText);
+-				return false;
+-			}
++            try {
++                TypeTopic typeTopic = as.type(TOPICTYPE_KIEZ_GEO, 1);
++                Vector typeIDs = typeTopic.getSubtypeIDs();
++                Hashtable props = new Hashtable();
++                props.put(PROPERTY_WEB_ALIAS, webAlias);
++                Vector insts = cm.getTopics(typeIDs, props, true);	// caseSensitive=true
++                //
++                if (insts.size() &gt; 0) {
++                    BaseTopic inst = (BaseTopic) insts.firstElement();
++                    String errText = &quot;Web Alias \&quot;&quot; + webAlias + &quot;\&quot; ist bereits an \&quot;&quot; + inst.getName() +
++                        &quot;\&quot; vergeben -- F&#252;r \&quot;&quot; + getName() + &quot;\&quot; bitte anderen Web Alias verwenden&quot;;
++                    directives.add(DIRECTIVE_SHOW_MESSAGE, errText, new Integer(NOTIFICATION_WARNING));
++                    System.out.println(&quot;*** GeoObjectTopic.propertyChangeAllowed(): &quot; + errText);
++                    return false;
++                }
++            } catch(DeepaMehtaException ex) {
++                // catches nullpointer in as.type() call, should never happen.
++                // but i got a error report for this. i assume that it's session timer issue
++                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Beim aktualisieren des Webalias einer Einrichtung &quot; +
++                        &quot;ist folgender Fehler aufgetreten: &quot;+ex, new Integer(NOTIFICATION_ERROR));
++            }
++
++			
+ 		}
+ 		return super.propertyChangeAllowed(propName, propValue, session, directives);
+ 	}
+@@ -551,7 +561,7 @@
+         requestUrl.append(&quot;q=&quot;);
+         requestUrl.append(convertAddressForRequest(givenAddress));
+         // requested. put and remove address
+-        requestUrl.append(&quot;&amp;output=csv&amp;oe=utf8&amp;sensor=false&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&amp;gl=de&quot;);
++        requestUrl.append(&quot;&amp;output=csv&amp;oe=utf8&amp;sensotr=false&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&amp;gl=de&quot;);
+         for (int i = 0; i &lt; 3; i++) {
+             try {
+                 URL url = new URL(requestUrl.toString());
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000061.html">[Kiezatlas-svn] r73 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62">[ date ]</a>
+              <a href="thread.html#62">[ thread ]</a>
+              <a href="subject.html#62">[ subject ]</a>
+              <a href="author.html#62">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

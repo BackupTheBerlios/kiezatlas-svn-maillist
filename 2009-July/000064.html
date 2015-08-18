@@ -1,0 +1,260 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r75 - in trunk/src/de/kiezatlas/deepamehta: . topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-July/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r75%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200907041847.n64Ile2j022251%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000065.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r75 - in trunk/src/de/kiezatlas/deepamehta: . topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r75%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200907041847.n64Ile2j022251%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r75 - in trunk/src/de/kiezatlas/deepamehta: . topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Sat Jul  4 20:47:40 CEST 2009</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000065.html">[Kiezatlas-svn] r76 - trunk/src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64">[ date ]</a>
+              <a href="thread.html#64">[ thread ]</a>
+              <a href="subject.html#64">[ subject ]</a>
+              <a href="author.html#64">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-07-04 20:47:37 +0200 (Sat, 04 Jul 2009)
+New Revision: 75
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+GPS Transformation Revisited
+1) GeoObjectTopic &amp; GPSTransformerTopic makes now use of Java's URLEncoder -&gt; less errors during geocoding task
+
+ToDo: The GPS TransformerTopic should re-use the GeoObjectTopic implementation of setGPSCoordinates instead of use it's own
+* doubled code snippets
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-06-18 18:02:25 UTC (rev 74)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-07-04 18:47:37 UTC (rev 75)
+@@ -84,7 +84,7 @@
+ 			}
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
+-            setGPSCoordinates(geo, directives); // ### should load coordinates if address was changed
++            setGPSCoordinates(geo, directives); //{ // ### should load coordinates if address was changed
+ 			// make sure that element in cache is updated
+             updateTopicInCache(geo, session);
+             setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with cached topics now
+@@ -108,7 +108,7 @@
+ 			// --- get geo object ---
+ 			setGeoObject(cm.getTopic(geoObjectID, 1), session);
+ 			GeoObjectTopic geo = getGeoObject(session);
+-			setGPSCoordinates(geo, directives);
++			setGPSCoordinates(geo, directives); //{ // ### should load coordinates if address was changed
+             // --- store image ---
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+             inserTopicIntoCache(geo, session);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-06-18 18:02:25 UTC (rev 74)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-07-04 18:47:37 UTC (rev 75)
+@@ -17,9 +17,8 @@
+ import java.io.UnsupportedEncodingException;
+ import java.net.URL;
+ import java.net.URLConnection;
++import java.net.URLEncoder;
+ import java.util.*;
+-import java.util.logging.Level;
+-import java.util.logging.Logger;
+ 
+ 
+ 
+@@ -123,19 +122,21 @@
+                     // re-try as long as geoObjects are returned, max. 10 times
+                     scenarioloop:
+                     while (!geos.isEmpty()) {
+-                        if (runs == 10) {
++                        if (runs == 3) {
+                             // 10 retries to contact the geocoder again
+                             htmlReport.append(&quot;&lt;br&gt;Adressfehler sind bei insgesamt &lt;b&gt;&quot;+geos.size()+&quot;&lt;/b&gt; Objekten aufgetreten:&quot;);
+                             // checkout the corresponding cityMap
+                             htmlReport.append(&quot;&lt;ul&gt;&quot;);
+                             for(int a = 0; a &lt; geos.size(); a++) {
+                                 BaseTopic geo = (BaseTopic) geos.get(a);
+-                                htmlReport.append(&quot;&lt;li&gt;&quot; + getAddressURL(geo.getID()) +&quot;, &quot;+ geo.getName() + &quot;(&quot;+geo.getID()+&quot;)&lt;/li&gt;&quot;);
+-                                //directives.add(DIRECTIVE_SHOW_MESSAGE,
+-                                //        &quot;Die globalen Koordinaten zu folgendem Objekt konnten nicht aufgel&#246;st werden: &quot;
+-                                //        + geo.getName() + &quot;:&quot;+ getAddress(geo.getID()) + &quot;. &quot; +
+-                                //        &quot;Damit auch dieses Objekt Koordinaten enth&#228;lt, korrigieren Sie bitte die Anschrift und starten Sie den Konverter erneut.&quot;, new Integer(NOTIFICATION_WARNING));
+-                                System.out.println(&quot;*** Fail with: &quot; + geo.getName() + &quot;(&quot;+geo.getID()+&quot;), Adressangabe: &quot;+ getAddressURL(geo.getID()));
++                                GeoObjectTopic geoTopic = (GeoObjectTopic) as.getLiveTopic(geo);
++                                if (geoTopic.getAddress() != null) {
++                                    htmlReport.append(&quot;&lt;li&gt;&quot;+geoTopic.getAddress().getName()+&quot;, &quot;+ as.getTopicProperty(geoTopic.getAddress(), PROPERTY_POSTAL_CODE)+&quot;, &quot; +
++                                            &quot;&quot;+ geoTopic.getName() + &quot;(&quot;+geoTopic.getID()+&quot;)&lt;/li&gt;&quot;);
++                                } else {
++                                    htmlReport.append(&quot;&lt;li&gt;&quot;+ geoTopic.getName() + &quot;(&quot;+geoTopic.getID()+&quot;)&lt;/li&gt;&quot;);
++                                }
++                                System.out.println(&quot;*** Fail with: &quot; + geo.getName() + &quot;(&quot;+geo.getID()+&quot;), Adressangabe: &quot;+ geoTopic.getAddress());
+                             }
+                             htmlReport.append(&quot;&lt;/ul&gt;&quot;);
+                             htmlReport.append(&quot;&lt;br/&gt;Auch nach mehrmaligen Anfragen sind folgende Adressen nicht automatisch in GPS Koordinaten aufzul&#246;sen. Bitte &#252;berpr&#252;fen Sie die Schreibweise bzw. Korrektheit der Adressangaben im einzelnen.&quot;);
+@@ -173,16 +174,8 @@
+         // System.out.println(&quot;    workspaces found count: &quot; + workspaces.size());
+         return workspaces;
+     }
++    
+ 
+-
+-    private String getCityMapId(String geoTypeId, String topicId, String workspaceId) {
+-        // get all published topicmaps  from this workspace
+-            // go through all topics in in this map and search for the topicId
+-            // if topic is part of the Map, return it's cityMapID
+-            // ? speed ? maybe, do that first
+-        return &quot;&quot;;
+-    }
+-
+     /**
+      * returns null if no topictype whihc is assigned to the given workspace, is a subtype of &quot;GeoObjectTopic&quot;
+      * @param workspaceId
+@@ -253,8 +246,13 @@
+             String city = geo.getCity();
+             city = removeSpaces(city);
+             address.append(&quot; &quot; + city);
+-            return address.toString();
+-			// as.getRelatedTopic(id, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
++            try {
++                result = URLEncoder.encode(address.toString(), &quot;UTF-8&quot;);
++            } catch (UnsupportedEncodingException ex) {
++                System.out.println(GPSConverterTopic.class.getName()+&quot;: &quot;+ex);
++                result = address.toString();
++            }
++            return result;
+ 		} catch (AmbiguousSemanticException e) {
+ 			// Related Address Topic
+             BaseTopic add = e.getDefaultTopic();
+@@ -275,9 +273,9 @@
+             address.append(&quot; &quot; + city);
+             System.out.println(&quot;*** GPSConverterTopic.getAddress(): AmbigiousSemanticExc. took &quot; + address.toString());
+             try {
+-                result = new String(address.toString().getBytes(), &quot;UTF-8&quot;);
++                result = URLEncoder.encode(address.toString(), &quot;UTF-8&quot;);
+             } catch (UnsupportedEncodingException ex) {
+-                Logger.getLogger(GPSConverterTopic.class.getName()).log(Level.SEVERE, null, ex);
++                System.out.println(GPSConverterTopic.class.getName()+&quot;: &quot;+ex);
+                 result = address.toString();
+             }
+             return result;
+@@ -338,7 +336,6 @@
+                             as.setTopicProperty(geoObject, PROPERTY_GPS_LAT, points[2]);
+                             as.setTopicProperty(geoObject, PROPERTY_GPS_LONG, points[3]);
+                             System.out.println(&quot;    saving: &quot; + requested.get(address.toString()) + &quot; for: &quot;+ address);
+-
+                         }
+                     }
+                     in.close();
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-06-18 18:02:25 UTC (rev 74)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-07-04 18:47:37 UTC (rev 75)
+@@ -22,12 +22,16 @@
+ import java.io.BufferedReader;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
++import java.io.UnsupportedEncodingException;
+ import java.net.URL;
+ import java.net.URLConnection;
++import java.net.URLEncoder;
+ import java.util.Enumeration;
+ import java.util.Hashtable;
+ import java.util.StringTokenizer;
+ import java.util.Vector;
++import java.util.logging.Level;
++import java.util.logging.Logger;
+ 
+ 
+ 
+@@ -343,6 +347,7 @@
+ 	// ---
+ 
+     private String getAddressString() {
++        String result;
+         StringBuffer address = new StringBuffer();
+         // Related Address Topic
+         BaseTopic add = getAddress();
+@@ -356,7 +361,8 @@
+         address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
+         // City
+         address.append(&quot; &quot; + getCity());
+-        return address.toString();
++        result = address.toString();
++        return result;
+ 	}
+ 
+     public BaseTopic getAddress() {
+@@ -564,6 +570,7 @@
+         requestUrl.append(&quot;&amp;output=csv&amp;oe=utf8&amp;sensotr=false&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&amp;gl=de&quot;);
+         for (int i = 0; i &lt; 3; i++) {
+             try {
++                //String http = URLEncoder.encode(requestUrl.toString(), &quot;UTF-8&quot;);
+                 URL url = new URL(requestUrl.toString());
+                 URLConnection con = url.openConnection();
+                 BufferedReader in = new BufferedReader(
+@@ -614,9 +621,12 @@
+     }
+ 
+     private String convertAddressForRequest(String address) {
+-        char blank = &quot; &quot;.charAt(0);
+-        char plus = &quot;+&quot;.charAt(0);
+-        return address.replace(blank, plus);
++        try {
++            address = URLEncoder.encode(address.toString(), &quot;UTF-8&quot;);
++        } catch (UnsupportedEncodingException ex) {
++            Logger.getLogger(GeoObjectTopic.class.getName()).log(Level.SEVERE, null, ex);
++        }
++        return address;
+     }
+ 
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000065.html">[Kiezatlas-svn] r76 - trunk/src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64">[ date ]</a>
+              <a href="thread.html#64">[ thread ]</a>
+              <a href="subject.html#64">[ subject ]</a>
+              <a href="author.html#64">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

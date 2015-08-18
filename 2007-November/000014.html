@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r22 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r22%20-%20in%20trunk%3A%20db/patches%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200711151753.lAFHrQGi018050%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000013.html">
+   <LINK REL="Next"  HREF="000015.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r22 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r22%20-%20in%20trunk%3A%20db/patches%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200711151753.lAFHrQGi018050%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r22 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Thu Nov 15 18:53:26 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000013.html">[Kiezatlas-svn] r21 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+        <LI>Next message: <A HREF="000015.html">[Kiezatlas-svn] r23 - in trunk: db/patches pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14">[ date ]</a>
+              <a href="thread.html#14">[ thread ]</a>
+              <a href="subject.html#14">[ subject ]</a>
+              <a href="author.html#14">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-15 18:53:14 +0100 (Thu, 15 Nov 2007)
+New Revision: 22
+
+Modified:
+   trunk/db/patches/ka-1.5.sql
+   trunk/docs/session.txt
+   trunk/pages/GeoObjectHome.jsp
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+Log:
+1) updated session.txt in docs
+2) modified stylesheet
+3) updated 1.5 patch
+4) updated infoRendering in right Frame again
+
+Modified: trunk/db/patches/ka-1.5.sql
+===================================================================
+--- trunk/db/patches/ka-1.5.sql	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/db/patches/ka-1.5.sql	2007-11-15 17:53:14 UTC (rev 22)
+@@ -90,13 +90,15 @@
+ 
+ --- adding the new relations for the tt-ka-einrichtung to webpage, phonenumber, fax and emailaddress, these properties where formerly derived from the institution type
+ 
++--- cardinalities for the new order are oeffnungszeiten, tel, fax, ansprechpartner, email, website, categories, tr&#228;ger, weitere infos, ...
++
+ INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-99', 'Website', 'tt-ka-einrichtung', 1, 'tt-webpage', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Name', 'Website');
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Cardinality', 'many');
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Association Type ID', 'at-association');
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Web Info', 'Related Topic Name');
+ INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Web Form', 'Related Form');
+-INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Ordinal Number', '150');
++INSERT INTO AssociationProp VALUES ('a-ka-99', 1, 'Ordinal Number', '185');
+ 
+ INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-100', 'Telefon', 'tt-ka-einrichtung', 1, 'tt-phonenumber', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-100', 1, 'Name', 'Telefon');
+@@ -120,7 +122,7 @@
+ INSERT INTO AssociationProp VALUES ('a-ka-102', 1, 'Association Type ID', 'at-association');
+ INSERT INTO AssociationProp VALUES ('a-ka-102', 1, 'Web Info', 'Related Topic Name');
+ INSERT INTO AssociationProp VALUES ('a-ka-102', 1, 'Web Form', 'Related Form');
+-INSERT INTO AssociationProp VALUES ('a-ka-102', 1, 'Ordinal Number', '170');
++INSERT INTO AssociationProp VALUES ('a-ka-102', 1, 'Ordinal Number', '175');
+ 
+ INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-103', 'Adresse', 'tt-ka-einrichtung', 1, 'tt-address', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-103', 1, 'Name', 'Adresse');
+@@ -140,7 +142,10 @@
+ INSERT INTO AssociationProp VALUES ('a-ka-104', 1, 'Web Form', 'Related Form');
+ INSERT INTO AssociationProp VALUES ('a-ka-104', 1, 'Ordinal Number', '109');
+ 
++--- Update for Person Ansprechpartner Ordinal Number for InfoPage
++-- UPDATE AssociationProp SET PropValue='170' WHERE AssociationID='a-ka-34' AND PropName='Ordinal Number';
+ 
++
+ --- Version Change
+ -- UPDATE TopicProp SET PropValue='Kiezatlas--Test'         WHERE TopicID='t-deepamehtainstallation' AND PropName='Client Name';
+ -- UPDATE TopicProp SET PropValue='DeepaMehtaServer 2.0b8'   WHERE TopicID='t-deepamehtainstallation' AND PropName='Server Name';
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/docs/session.txt	2007-11-15 17:53:14 UTC (rev 22)
+@@ -33,7 +33,7 @@
+ 						vector 2:
+ 							element 0     : icon url
+ 							element 1,2,..: PresentableTopic
+-selectedInst		Institution
++selectedGeo			GeoObject
+ 
+ 
+ CategoryList
+@@ -67,6 +67,8 @@
+ GeoObjectForum
+ ----------------
+ 
++html				HMTLGenerator
++selectedGeo			GeoObject
+ instComments		Vector of Comment
+ 
+ 
+@@ -75,8 +77,13 @@
+ 
+ error				String
+ 
++CommentForm
++----------------
+ 
++selectedGeo			GeoObject
++comments			Vector of comments
+ 
++
+ EditServlet
+ ===========
+ 
+
+Modified: trunk/pages/GeoObjectHome.jsp
+===================================================================
+--- trunk/pages/GeoObjectHome.jsp	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/pages/GeoObjectHome.jsp	2007-11-15 17:53:14 UTC (rev 22)
+@@ -13,11 +13,13 @@
+ 	}
+ 	topicBean.removeFieldsContaining(&quot;Image&quot;);
+ 	topicBean.removeField(&quot;Web Alias&quot;);
+-	topicBean.removeField(&quot;Password&quot;);	
+-	topicBean.removeField(&quot;Owner ID&quot;);
+-	topicBean.removeField(&quot;Description&quot;);
+-	topicBean.removeField(&quot;Locked Geometry&quot;);
+-	topicBean.removeField(&quot;Icon&quot;);
++	topicBean.removeField(&quot;Password&quot;);
++	topicBean.removeField(&quot;Address / Name&quot;);
++	topicBean.removeField(&quot;Address / Description&quot;);
++	topicBean.removeFieldsContaining(&quot;Owner ID&quot;);
++	topicBean.removeFieldsContaining(&quot;Description&quot;);
++	topicBean.removeFieldsContaining(&quot;Locked Geometry&quot;);
++	topicBean.removeFieldsContaining(&quot;Icon&quot;);
+ 	topicBean.removeFieldsContaining(&quot;YADE&quot;);
+ 	// Name as Headline
+ 	out.println(&quot;&lt;H2&gt;&quot; + topicBean.getValue(&quot;Name&quot;) + &quot;&lt;/H2&gt;&quot;);
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/pages/GeoObjectInfo.jsp	2007-11-15 17:53:14 UTC (rev 22)
+@@ -34,12 +34,13 @@
+ 	//Print Adress if available on this Topic includind directlink to bvg
+ 	try { 
+ 		if (topicBean.getValue(&quot;Address / Street&quot;) != null) {
++			// turnaround if no property &quot;Stadt&quot; grab related Address / City
+ 			Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+ 			String city = &quot;&quot;;
+ 			if (tmp != null) {
+ 				if (tmp.size() &gt; 0) {
+ 					city = ((BaseTopic) tmp.elementAt(0)).getName();
+-				}
++				}	
+ 			} else {
+ 				city = topicBean.getValue(&quot;Stadt&quot;);
+ 			}
+@@ -60,7 +61,7 @@
+ 	topicBean.removeField(&quot;Stadt&quot;);
+ 	//print properties which were not removed, starting generic content rendering 
+ 	out.println(&quot;&lt;br/&gt;&lt;br/&gt;&quot;);
+-	out.println(html.info(topicBean));
++	out.println(html.info(topicBean, 2));
+ 	//If forum is activated by the owner, it will be shown a link here
+ 	if (forumActivition.equals(KiezAtlas.SWITCH_ON)) {
+ 		// link to forum page
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/pages/KiezAtlas.jsp	2007-11-15 17:53:14 UTC (rev 22)
+@@ -1,4 +1,5 @@
+-&lt;%@page import=&quot;de.deepamehta.service.TopicBean&quot; %&gt;
++&lt;%@ page import=&quot;de.deepamehta.DeepaMehtaConstants&quot; %&gt;
++&lt;%@ page import=&quot;de.deepamehta.service.TopicBean&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.KiezAtlas&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.GeoObject&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.SearchCriteria&quot; %&gt;
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/pages/kiezatlas.css	2007-11-15 17:53:14 UTC (rev 22)
+@@ -1,12 +1,9 @@
+-body, td {
++body {
++	background-color: #FFFFFF;
+ 	font-family: Verdana, Arial;
+ 	font-size: 12px;
+ }
+ 
+-body {
+-	background-color: #FFFFFF;
+-}
+-
+ .big {
+ 	font-size: 14px;
+ 	font-weight: bold;
+@@ -16,7 +13,7 @@
+ 	color: #666666;
+ 	font-size: 10px;
+ }
+-
++	
+ .evenrow {
+ 	background-color: #F0F0FF;
+ }
+@@ -24,3 +21,45 @@
+ .oddrow {
+ 	background-color: #FFFFFF;
+ }
++
++/* used to display the label/key/name of the property */
++.label {
++	font-family: Verdana, Arial;
++	font-size: 10px;
++	color: #666;
++	font-weight: bold;
++}
++/* used to display the value of the property */
++.content {
++	color: #000;
++	font-family: Verdana, Arial;
++	font-size: 12px;
++}
++/* used as the container for the generic propertoes below image and fahrplan link */
++.wholeInfo {
++	align: left;
++	width: 95%;
++	text-align: left;
++	white-space: normal;
++	background-color: #EEE;
++	padding: 10px;
++  	border: 1px dashed silver;
++}
++
++/* used in the Modern Box Layout as a container for MultiType Fields  */
++.multiBox {
++	position: relative;
++	color: #000;
++	font-family: Verdana, Arial;
++	font-size: 12px;
++	#padding-left: 20px; 
++	padding: 10px;
++	align: left;
++	width: 97%;
++	text-align: left;
++	white-space: pre-wrap;
++	background-color: #FFF;
++	padding: 5px;
++  	border: 1px dashed silver;
++}
++	
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-11-12 14:00:30 UTC (rev 21)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-11-15 17:53:14 UTC (rev 22)
+@@ -29,9 +29,9 @@
+ 
+ /**
+  * Kiez-Atlas 1.5&lt;br&gt;
+- * Requires DeepaMehta 2.0b7-post1
++ * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 15.10.2007&lt;br&gt;
++ * Last change: 12.11.2007&lt;br&gt;
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -58,7 +58,6 @@
+ 					session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 					setCityMap(CityMapTopic.lookupCityMap(kiez, true, as), session);	// throwIfNotFound=true
+ 				} else {
+-					System.out.println(&quot;@init::regular visit alias &quot; + alias);
+ 					setCityMap(CityMapTopic.lookupCityMap(alias, true, as), session);	// throwIfNotFound=true
+ 				}
+ 				initInstitutaionType(session);	// relies on city map
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000013.html">[Kiezatlas-svn] r21 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+	<LI>Next message: <A HREF="000015.html">[Kiezatlas-svn] r23 - in trunk: db/patches pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14">[ date ]</a>
+              <a href="thread.html#14">[ thread ]</a>
+              <a href="subject.html#14">[ subject ]</a>
+              <a href="author.html#14">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

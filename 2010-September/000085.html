@@ -1,0 +1,1146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r97 - in trunk/pages/be.de: . img
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-September/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r97%20-%20in%20trunk/pages/be.de%3A%20.%20img&In-Reply-To=%3C20100908130251.A75A948101F%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r97 - in trunk/pages/be.de: . img</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r97%20-%20in%20trunk/pages/be.de%3A%20.%20img&In-Reply-To=%3C20100908130251.A75A948101F%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r97 - in trunk/pages/be.de: . img">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed Sep  8 15:02:51 CEST 2010</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85">[ date ]</a>
+              <a href="thread.html#85">[ thread ]</a>
+              <a href="subject.html#85">[ subject ]</a>
+              <a href="author.html#85">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-09-08 15:02:51 +0200 (Wed, 08 Sep 2010)
+New Revision: 97
+
+Added:
+   trunk/pages/be.de/CustomLayerSwitcher.js
+Modified:
+   trunk/pages/be.de/bmap.php
+   trunk/pages/be.de/img/Stop.png
+   trunk/pages/be.de/kiezatlas.js
+   trunk/pages/be.de/landmaps.css
+Log:
+GUI Changes for the alternative Citymap Interface
+* hotspots are displayed as multiple elements in one framedCloud
+* new dropdown menu for &quot;Mapfunctionality&quot; placed in map (new CustomLayerSwitch OpenLayers Control)
+* icon color adjusted
+minor fixes 
+fix: rendering of hotspots is now actually correct
+
+also some more comments were placed and some unused code was removed
+
+Added: trunk/pages/be.de/CustomLayerSwitcher.js
+===================================================================
+--- trunk/pages/be.de/CustomLayerSwitcher.js	                        (rev 0)
++++ trunk/pages/be.de/CustomLayerSwitcher.js	2010-09-08 13:02:51 UTC (rev 97)
+@@ -0,0 +1,632 @@
++/* Copyright (c) 2006-2008 MetaCarta, Inc., published under the Clear BSD
++ * license.  See <A HREF="http://svn.openlayers.org/trunk/openlayers/license.txt">http://svn.openlayers.org/trunk/openlayers/license.txt</A> for the
++ * full text of the license. */
++
++/** 
++ * @requires OpenLayers/Control.js
++ */
++
++/**
++ * Class: OpenLayers.Control.LayerSwitcher
++ * The LayerSwitcher control displays a table of contents for the map. This 
++ * allows the user interface to switch between BaseLasyers and to show or hide
++ * Overlays. By default the switcher is shown minimized on the right edge of 
++ * the map, the user may expand it by clicking on the handle.
++ *
++ * To create the LayerSwitcher outside of the map, pass the Id of a html div 
++ * as the first argument to the constructor.
++ * 
++ * Inherits from:
++ *  - &lt;OpenLayers.Control&gt;
++ */
++OpenLayers.Control.LayerSwitcher = 
++  OpenLayers.Class(OpenLayers.Control, {
++
++    /**
++     * APIProperty: roundedCorner
++     * {Boolean} If true the Rico library is used for rounding the corners
++     *     of the layer switcher div, defaults to true.
++     */
++    roundedCorner: false,
++
++    /**  
++     * APIProperty: roundedCornerColor
++     * {String} The color of the rounded corners, only applies if roundedCorner
++     *     is true, defaults to &quot;darkblue&quot;.
++     */
++    roundedCornerColor: &quot;darkblue&quot;,
++    
++    /**  
++     * Property: layerStates 
++     * {Array(Object)} Basically a copy of the &quot;state&quot; of the map's layers 
++     *     the last time the control was drawn. We have this in order to avoid
++     *     unnecessarily redrawing the control.
++     */
++    layerStates: null,
++    
++
++  // DOM Elements
++  
++    /**
++     * Property: layersDiv
++     * {DOMElement} 
++     */
++    layersDiv: null,
++    
++    /** 
++     * Property: baseLayersDiv
++     * {DOMElement}
++     */
++    baseLayersDiv: null,
++
++    /** 
++     * Property: baseLayers
++     * {Array(&lt;OpenLayers.Layer&gt;)}
++     */
++    baseLayers: null,
++    
++    
++    /** 
++     * Property: dataLbl
++     * {DOMElement} 
++     */
++    dataLbl: null,
++    
++    /** div
++     * Property: dataLayersDiv
++     * {DOMElement} 
++     */
++    dataLayersDiv: null,
++
++    /** 
++     * Property: dataLayers
++     * {Array(&lt;OpenLayers.Layer&gt;)} 
++     */
++    dataLayers: null,
++
++
++    /** 
++     * Property: minimizeDiv
++     * {DOMElement} 
++     */
++    minimizeDiv: null,
++
++    /** 
++     * Property: maximizeDiv
++     * {DOMElement} 
++     */
++    maximizeDiv: null,
++    
++    /**
++     * APIProperty: ascending
++     * {Boolean} 
++     */
++    ascending: false,
++ 
++    /**
++     * Constructor: OpenLayers.Control.LayerSwitcher
++     * 
++     * Parameters:
++     * options - {Object}
++     */
++    initialize: function(options) {
++        OpenLayers.Control.prototype.initialize.apply(this, arguments);
++        this.layerStates = [];
++    },
++
++    /**
++     * APIMethod: destroy 
++     */    
++    destroy: function() {
++        
++        OpenLayers.Event.stopObservingElement(this.div);
++
++        OpenLayers.Event.stopObservingElement(this.minimizeDiv);
++        OpenLayers.Event.stopObservingElement(this.maximizeDiv);
++
++        //clear out layers info and unregister their events 
++        this.clearLayersArray(&quot;base&quot;);
++        this.clearLayersArray(&quot;data&quot;);
++        
++        this.map.events.un({
++            &quot;addlayer&quot;: this.redraw,
++            &quot;changelayer&quot;: this.redraw,
++            &quot;removelayer&quot;: this.redraw,
++            &quot;changebaselayer&quot;: this.redraw,
++            scope: this
++        });
++        
++        OpenLayers.Control.prototype.destroy.apply(this, arguments);
++    },
++
++    /** 
++     * Method: setMap
++     *
++     * Properties:
++     * map - {&lt;OpenLayers.Map&gt;} 
++     */
++    setMap: function(map) {
++        OpenLayers.Control.prototype.setMap.apply(this, arguments);
++
++        this.map.events.on({
++            &quot;addlayer&quot;: this.redraw,
++            &quot;changelayer&quot;: this.redraw,
++            &quot;removelayer&quot;: this.redraw,
++            &quot;changebaselayer&quot;: this.redraw,
++            scope: this
++        });
++    },
++
++    /**
++     * Method: draw
++     *
++     * Returns:
++     * {DOMElement} A reference to the DIV DOMElement containing the 
++     *     switcher tabs.
++     */  
++    draw: function() {
++        OpenLayers.Control.prototype.draw.apply(this);
++
++        // create layout divs
++        this.loadContents();
++
++        // set mode to minimize
++        if(!this.outsideViewport) {
++            this.minimizeControl();
++        }
++
++        // populate div with current info
++        this.redraw();    
++
++        return this.div;
++    },
++
++    /** 
++     * Method: clearLayersArray
++     * User specifies either &quot;base&quot; or &quot;data&quot;. we then clear all the
++     *     corresponding listeners, the div, and reinitialize a new array.
++     * 
++     * Parameters:
++     * layersType - {String}  
++     */
++    clearLayersArray: function(layersType) {
++        var layers = this[layersType + &quot;Layers&quot;];
++        if (layers) {
++            for(var i=0, len=layers.length; i&lt;len ; i++) {
++                var layer = layers[i];
++                OpenLayers.Event.stopObservingElement(layer.inputElem);
++                OpenLayers.Event.stopObservingElement(layer.labelSpan);
++            }
++        }
++        this[layersType + &quot;LayersDiv&quot;].innerHTML = &quot;&quot;;
++        this[layersType + &quot;Layers&quot;] = [];
++    },
++
++
++    /**
++     * Method: checkRedraw
++     * Checks if the layer state has changed since the last redraw() call.
++     * 
++     * Returns:
++     * {Boolean} The layer state changed since the last redraw() call. 
++     */
++    checkRedraw: function() {
++        var redraw = false;
++        if ( !this.layerStates.length ||
++             (this.map.layers.length != this.layerStates.length) ) {
++            redraw = true;
++        } else {
++            for (var i=0, len=this.layerStates.length; i&lt;len; i++) {
++                var layerState = this.layerStates[i];
++                var layer = this.map.layers[i];
++                if ( (layerState.name != layer.name) || 
++                     (layerState.inRange != layer.inRange) || 
++                     (layerState.id != layer.id) || 
++                     (layerState.visibility != layer.visibility) ) {
++                    redraw = true;
++                    break;
++                }    
++            }
++        }    
++        return redraw;
++    },
++    
++    /** 
++     * Method: redraw
++     * Goes through and takes the current state of the Map and rebuilds the
++     *     control to display that state. Groups base layers into a 
++     *     radio-button group and lists each data layer with a checkbox.
++     *
++     * Returns: 
++     * {DOMElement} A reference to the DIV DOMElement containing the control
++     */  
++    redraw: function() {
++        // if the state hasn't changed since last redraw, no need 
++        // to do anything. Just return the existing div.
++        if (!this.checkRedraw()) { 
++            return this.div; 
++        } 
++
++        //clear out previous layers 
++        this.clearLayersArray(&quot;base&quot;);
++        this.clearLayersArray(&quot;data&quot;);
++        
++        var containsOverlays = false;
++        var containsBaseLayers = false;
++        
++        // Save state -- for checking layer if the map state changed.
++        // We save this before redrawing, because in the process of redrawing
++        // we will trigger more visibility changes, and we want to not redraw
++        // and enter an infinite loop.
++        var len = this.map.layers.length;
++        this.layerStates = new Array(len);
++        for (var i=0; i &lt;len; i++) {
++            var layer = this.map.layers[i];
++            this.layerStates[i] = {
++                'name': layer.name, 
++                'visibility': layer.visibility,
++                'inRange': layer.inRange,
++                'id': layer.id
++            };
++        }    
++
++        var layers = this.map.layers.slice();
++        if (!this.ascending) { layers.reverse(); }
++        for(var i=0, len=layers.length; i&lt;len; i++) {
++            var layer = layers[i];
++            var baseLayer = layer.isBaseLayer;
++
++            if (layer.displayInLayerSwitcher) {
++
++                if (baseLayer) {
++                    containsBaseLayers = true;
++                } else {
++                    containsOverlays = true;
++                }    
++
++                // only check a baselayer if it is *the* baselayer, check data
++                //  layers if they are visible
++                var checked = (baseLayer) ? (layer == this.map.baseLayer)
++                                          : layer.getVisibility();
++    
++                // create input element
++                var inputElem = document.createElement(&quot;input&quot;);
++                inputElem.id = this.id + &quot;_input_&quot; + layer.name;
++                inputElem.name = (baseLayer) ? this.id + &quot;_baseLayers&quot; : layer.name;
++                inputElem.type = (baseLayer) ? &quot;radio&quot; : &quot;checkbox&quot;;
++                inputElem.value = layer.name;
++                inputElem.align = &quot;right&quot;;
++                inputElem.checked = checked;
++                inputElem.defaultChecked = checked;
++
++                if (!baseLayer &amp;&amp; !layer.inRange) {
++                    inputElem.disabled = true;
++                }
++                var context = {
++                    'inputElem': inputElem,
++                    'layer': layer,
++                    'layerSwitcher': this
++                };
++                OpenLayers.Event.observe(inputElem, &quot;mouseup&quot;, 
++                    OpenLayers.Function.bindAsEventListener(this.onInputClick,
++                                                            context)
++                );
++                
++                // create span
++                var labelSpan = document.createElement(&quot;span&quot;);
++                OpenLayers.Element.addClass(labelSpan, &quot;labelSpan&quot;)
++                if (!baseLayer &amp;&amp; !layer.inRange) {
++                    labelSpan.style.color = &quot;gray&quot;;
++                }
++                labelSpan.innerHTML = layer.name;
++                labelSpan.style.verticalAlign = (baseLayer) ? &quot;bottom&quot; 
++                                                            : &quot;baseline&quot;;
++                OpenLayers.Event.observe(labelSpan, &quot;click&quot;, 
++                    OpenLayers.Function.bindAsEventListener(this.onInputClick,
++                                                            context)
++                );
++                // create line break
++                var br = document.createElement(&quot;br&quot;);
++    
++                
++                var groupArray = (baseLayer) ? this.baseLayers
++                                             : this.dataLayers;
++                groupArray.push({
++                    'layer': layer,
++                    'inputElem': inputElem,
++                    'labelSpan': labelSpan
++                });
++                                                     
++    
++                var groupDiv = (baseLayer) ? this.baseLayersDiv
++                                           : this.dataLayersDiv;
++                groupDiv.appendChild(labelSpan);
++                groupDiv.appendChild(inputElem);
++                groupDiv.appendChild(br);
++            }
++        }
++
++        // if no overlays, dont display the overlay label
++        this.dataLbl.style.display = (containsOverlays) ? &quot;&quot; : &quot;none&quot;;        
++        
++        // if no baselayers, dont display the baselayer label
++        this.baseLbl.style.display = (containsBaseLayers) ? &quot;&quot; : &quot;none&quot;;        
++        return this.div;
++    },
++
++    /** 
++     * Method:
++     * A label has been clicked, check or uncheck its corresponding input
++     * 
++     * Parameters:
++     * e - {Event} 
++     *
++     * Context:  
++     *  - {DOMElement} inputElem
++     *  - {&lt;OpenLayers.Control.LayerSwitcher&gt;} layerSwitcher
++     *  - {&lt;OpenLayers.Layer&gt;} layer
++     */
++
++    onInputClick: function(e) {
++
++        if (!this.inputElem.disabled) {
++            if (this.inputElem.type == &quot;radio&quot;) {
++                this.inputElem.checked = true;
++                this.layer.map.setBaseLayer(this.layer);
++            } else {
++                this.inputElem.checked = !this.inputElem.checked;
++                this.layerSwitcher.updateMap();
++            }
++        }
++        OpenLayers.Event.stop(e);
++        // alert(&quot;OpenLayerSwitcher.onInputClick&quot;);
++        clickInfoForMapControlMenu();
++    },
++    
++    /**
++     * Method: onLayerClick
++     * Need to update the map accordingly whenever user clicks in either of
++     *     the layers.
++     * 
++     * Parameters: 
++     * e - {Event} 
++     */
++    onLayerClick: function(e) {
++        this.updateMap();
++        // this.onMenuClickInfo();
++    },
++
++    /** 
++     * Method: updateMap
++     * Cycles through the loaded data and base layer input arrays and makes
++     *     the necessary calls to the Map object such that that the map's 
++     *     visual state corresponds to what the user has selected in 
++     *     the control.
++     */
++    updateMap: function() {
++
++        // set the newly selected base layer        
++        for(var i=0, len=this.baseLayers.length; i&lt;len; i++) {
++            var layerEntry = this.baseLayers[i];
++            if (layerEntry.inputElem.checked) {
++                this.map.setBaseLayer(layerEntry.layer, false);
++            }
++        }
++
++        // set the correct visibilities for the overlays
++        for(var i=0, len=this.dataLayers.length; i&lt;len; i++) {
++            var layerEntry = this.dataLayers[i];   
++            layerEntry.layer.setVisibility(layerEntry.inputElem.checked);
++        }
++
++    },
++
++    /** 
++     * Method: maximizeControl
++     * Set up the labels and divs for the control
++     * 
++     * Parameters:
++     * e - {Event} 
++     */
++    maximizeControl: function(e) {
++
++        // set the div's width and height to empty values, so
++        // the div dimensions can be controlled by CSS
++        this.div.style.width = &quot;&quot;;
++        this.div.style.height = &quot;&quot;;
++
++        this.showControls(false);
++
++        if (e != null) {
++            OpenLayers.Event.stop(e);                                            
++        }
++    },
++    
++    /** 
++     * Method: minimizeControl
++     * Hide all the contents of the control, shrink the size, 
++     *     add the maximize icon
++     *
++     * Parameters:
++     * e - {Event} 
++     */
++    minimizeControl: function(e) {
++
++        // to minimize the control we set its div's width
++        // and height to 0px, we cannot just set &quot;display&quot;
++        // to &quot;none&quot; because it would hide the maximize
++        // div
++        this.div.style.width = &quot;0px&quot;;
++        this.div.style.height = &quot;0px&quot;;
++
++        this.showControls(true);
++
++        if (e != null) {
++            OpenLayers.Event.stop(e);                                            
++        }
++    },
++
++    /**
++     * Method: showControls
++     * Hide/Show all LayerSwitcher controls depending on whether we are
++     *     minimized or not
++     * 
++     * Parameters:
++     * minimize - {Boolean}
++     */
++    showControls: function(minimize) {
++
++        this.maximizeDiv.style.display = minimize ? &quot;&quot; : &quot;none&quot;;
++        this.minimizeDiv.style.display = minimize ? &quot;none&quot; : &quot;&quot;;
++
++        this.layersDiv.style.display = minimize ? &quot;none&quot; : &quot;&quot;;
++    },
++    
++    /** 
++     * Method: loadContents
++     * Set up the labels and divs for the control
++     */
++    loadContents: function() {
++
++        //configure main div
++
++        OpenLayers.Event.observe(this.div, &quot;mouseup&quot;, 
++            OpenLayers.Function.bindAsEventListener(this.mouseUp, this));
++        OpenLayers.Event.observe(this.div, &quot;mousedown&quot;,
++            OpenLayers.Function.bindAsEventListener(this.mouseDown, this));
++        OpenLayers.Event.observe(this.div, &quot;click&quot;, this.ignoreEvent);
++        OpenLayers.Event.observe(this.div, &quot;dblclick&quot;, this.ignoreEvent);
++
++        // layers list div        
++        this.layersDiv = document.createElement(&quot;div&quot;);
++        this.layersDiv.id = this.id + &quot;_layersDiv&quot;;
++        // this.layersDiv.setAttribute(&quot;right&quot;, &quot;25px&quot;);
++        // this.layersDiv.style.border = &quot;thin solid red&quot;;
++        // this.layersDiv.style.position = &quot;relative right: 100px top: 200px; !important&quot;;
++        // mright: 100px&quot;;
++        OpenLayers.Element.addClass(this.layersDiv, &quot;layersDiv&quot;);
++        // base layer div
++        this.baseLbl = document.createElement(&quot;div&quot;);
++        this.baseLbl.innerHTML = OpenLayers.i18n(&quot;Sie haben die Wahl:&quot;);
++        OpenLayers.Element.addClass(this.baseLbl, &quot;baseLbl&quot;);
++       
++        this.baseLayersDiv = document.createElement(&quot;div&quot;);
++        OpenLayers.Element.addClass(this.baseLayersDiv, &quot;baseLayersDiv&quot;);
++        // overlay layer div
++        this.dataLbl = document.createElement(&quot;div&quot;);
++        this.dataLbl.innerHTML = OpenLayers.i18n(&quot;Zusatzebenen:&quot;);
++        OpenLayers.Element.addClass(this.dataLbl, &quot;dataLbl&quot;);
++        
++        this.dataLayersDiv = document.createElement(&quot;div&quot;);
++        OpenLayers.Element.addClass(this.dataLayersDiv, &quot;dataLayersDiv&quot;);
++
++        if (this.ascending) {
++            this.P = document.createElement(&quot;p&quot;);
++            this.BR = document.createElement(&quot;br&quot;);
++            this.layersDiv.appendChild(this.P);
++            this.layersDiv.appendChild(this.baseLbl);
++            this.layersDiv.appendChild(this.baseLayersDiv);
++            this.layersDiv.appendChild(this.BR);
++            this.layersDiv.appendChild(this.dataLbl);
++            this.layersDiv.appendChild(this.dataLayersDiv);
++        } else {
++            this.P = document.createElement(&quot;p&quot;);
++            this.BR = document.createElement(&quot;br&quot;);
++            this.layersDiv.appendChild(this.P);
++            this.layersDiv.appendChild(this.dataLbl);
++            this.layersDiv.appendChild(this.dataLayersDiv);
++            this.layersDiv.appendChild(this.BR);
++            this.layersDiv.appendChild(this.baseLbl);
++            this.layersDiv.appendChild(this.baseLayersDiv);
++        }    
++ 
++        this.div.appendChild(this.layersDiv);
++
++        if(this.roundedCorner) {
++            OpenLayers.Rico.Corner.round(this.div, {
++                corners: &quot;tl bl&quot;,
++                bgColor: &quot;transparent&quot;,
++                color: this.roundedCornerColor,
++                blend: false
++            });
++            OpenLayers.Rico.Corner.changeOpacity(this.layersDiv, 0.75);
++        }
++
++        var imgLocation = OpenLayers.Util.getImagesLocation();
++        var sz = new OpenLayers.Size(18,18);
++
++        // maximize button div
++        var img = imgLocation + 'layer-switcher-maximize.png';
++        this.maximizeDiv = OpenLayers.Util.createAlphaImageDiv(
++                                    &quot;OpenLayers_Control_MaximizeDiv&quot;, 
++                                    null, 
++                                    sz, 
++                                    img, 
++                                    &quot;absolute&quot;);
++        OpenLayers.Element.addClass(this.maximizeDiv, &quot;maximizeDiv&quot;);
++        this.maximizeDiv.style.display = &quot;none&quot;;
++        OpenLayers.Event.observe(this.maximizeDiv, &quot;mouseover&quot;, 
++            OpenLayers.Function.bindAsEventListener(this.maximizeControl, this)
++        );
++        
++        this.div.appendChild(this.maximizeDiv);
++
++        // minimize button div
++        var img = imgLocation + 'layer-switcher-minimize.png';
++        var sz = new OpenLayers.Size(18,18);        
++        this.minimizeDiv = OpenLayers.Util.createAlphaImageDiv(
++                                    &quot;OpenLayers_Control_MinimizeDiv&quot;, 
++                                    null, 
++                                    sz, 
++                                    img, 
++                                    &quot;absolute&quot;);
++        OpenLayers.Element.addClass(this.minimizeDiv, &quot;minimizeDiv&quot;);
++        this.minimizeDiv.style.display = &quot;none&quot;;
++        OpenLayers.Event.observe(this.minimizeDiv, &quot;mouseover&quot;, 
++            OpenLayers.Function.bindAsEventListener(this.minimizeControl, this)
++        );
++
++        this.div.appendChild(this.minimizeDiv);
++    },
++    
++    /** 
++     * Method: ignoreEvent
++     * 
++     * Parameters:
++     * evt - {Event} 
++     */
++    ignoreEvent: function(evt) {
++        OpenLayers.Event.stop(evt);
++    },
++
++    /** 
++     * Method: mouseDown
++     * Register a local 'mouseDown' flag so that we'll know whether or not
++     *     to ignore a mouseUp event
++     * 
++     * Parameters:
++     * evt - {Event}
++     */
++    mouseDown: function(evt) {
++        this.isMouseDown = true;
++        this.ignoreEvent(evt);
++    },
++
++    /** 
++     * Method: mouseUp
++     * If the 'isMouseDown' flag has been set, that means that the drag was 
++     *     started from within the LayerSwitcher control, and thus we can 
++     *     ignore the mouseup. Otherwise, let the Event continue.
++     *  
++     * Parameters:
++     * evt - {Event} 
++     */
++    mouseUp: function(evt) {
++        if (this.isMouseDown) {
++            this.isMouseDown = false;
++            this.ignoreEvent(evt);
++        }
++    },
++
++    CLASS_NAME: &quot;OpenLayers.Control.LayerSwitcher&quot;
++});
+
+Modified: trunk/pages/be.de/bmap.php
+===================================================================
+--- trunk/pages/be.de/bmap.php	2010-08-30 15:14:19 UTC (rev 96)
++++ trunk/pages/be.de/bmap.php	2010-09-08 13:02:51 UTC (rev 97)
+@@ -56,6 +56,7 @@
+     &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;landmaps.css&quot;&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;kiezatlas.js&quot;&gt;&lt;/script&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;OpenLayers.js&quot;&gt;&lt;/script&gt;
++    &lt;script type=&quot;text/javascript&quot; src=&quot;CustomLayerSwitcher.js&quot;&gt;&lt;/script&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;jquery-1.3.2.js&quot;&gt;&lt;/script&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://maps.google.com/maps?file=api&amp;v=2&amp;oe=utf-8&amp;key=ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A">http://maps.google.com/maps?file=api&amp;v=2&amp;oe=utf-8&amp;key=ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A</A>&quot;&gt;&lt;/script&gt;
+     &lt;script type=&quot;text/javascript&quot;&gt;
+@@ -170,15 +171,17 @@
+       &lt;/div&gt;
+       &lt;div id=&quot;map&quot;&gt;&lt;/div&gt;
+ 	    &lt;div id=&quot;focusAlternatives&quot;&gt;&lt;/div&gt;
+-      &lt;div id=&quot;mapControl&quot;&gt;
++      &lt;div id=&quot;mapControl&quot;&gt;&nbsp;
+         &lt;a href=&quot;javascript:showAllMarker();&quot; id=&quot;toggleMarkerHref&quot;&gt;
+           &lt;img border=&quot;0&quot; src=&quot;img/FreiwilligenAgentur.png&quot; title=&quot;Alle Markierer einblenden&quot; width=&quot;15&quot; height=&quot;15&quot;&gt;
+         &lt;/a&gt;
+-			    &lt;!-- &lt;a href=&quot;javascript:removeAllMarker();&quot; style=&quot;text-decoration: none;&quot;&gt;&gt; Alle ausblenden&lt;/a&gt; &lt;br/&gt;--&gt;
+-			  &lt;a href=&quot;javascript:updateVisibleBounds(null, true);&quot; id=&quot;resetMarkerHref&quot;&gt;
+-			    &lt;img border=&quot;0&quot; src=&quot;img/Stop.png&quot; title=&quot;zur&#252;cksetzen der Kartenansicht und Informationsebenen&quot; width=&quot;15&quot; height=&quot;15&quot;&gt;
+-        &lt;/a&gt;&nbsp;
+-		    &lt;a href=&quot;javascript:toggleMapControl();&quot; id=&quot;mapFunctions&quot;&gt;Kartenfunktionalit&auml;t&lt;/a&gt;
++        &lt;!-- &lt;img border=&quot;0&quot; id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
++		      &lt;!-- &lt;a href=&quot;javascript:removeAllMarker();&quot; style=&quot;text-decoration: none;&quot;&gt;&gt; Alle ausblenden&lt;/a&gt; &lt;br/&gt;--&gt;
++		    &lt;a href=&quot;javascript:updateVisibleBounds(null, true);&quot; id=&quot;resetMarkerHref&quot;&gt;
++		      &lt;img border=&quot;0&quot; src=&quot;img/Stop.png&quot; title=&quot;zur&#252;cksetzen der Kartenansicht und Informationsebenen&quot; width=&quot;15&quot; height=&quot;15&quot;&gt;
++        &lt;/a&gt;
++        &lt;!-- &lt;img border=&quot;0&quot; id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
++        &lt;span id=&quot;moreLabel&quot;&gt;Mehr..&lt;/span&gt;
+ 		    &lt;div id=&quot;mapSwitcher&quot; style=&quot;position: absolute; visibility: hidden;&quot;&gt;&lt;/div&gt;
+       &lt;/div&gt;
+       &lt;div id=&quot;memu&quot; style=&quot;visibility:hidden;&quot;&gt;&lt;/div&gt;
+
+Modified: trunk/pages/be.de/img/Stop.png
+===================================================================
+(Binary files differ)
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2010-08-30 15:14:19 UTC (rev 96)
++++ trunk/pages/be.de/kiezatlas.js	2010-09-08 13:02:51 UTC (rev 97)
+@@ -25,6 +25,7 @@
+   var LEVEL_OF_DETAIL_ZOOM = 15; // the map focus when a mapinternal infoWindow is rendered
+   var LEVEL_OF_DISTRICT_ZOOM = 12;
+   var LEVEL_OF_CITY_ZOOM = 11;
++  //
+   var sideBarToggle = true;
+   var autocomplete_item = 0;
+   var alternative_items = [];
+@@ -45,6 +46,7 @@
+   
+     
+   function openLayersInit(openBounds){
++    // Map Options
+     var options = {
+       projection: new OpenLayers.Projection(&quot;EPSG:900913&quot;),
+       displayProjection: new OpenLayers.Projection(&quot;EPSG:4326&quot;),
+@@ -53,24 +55,32 @@
+       maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+     };
+     map = new OpenLayers.Map('map', options);
++    // BaseLayer
+     var mapnik = new OpenLayers.Layer.TMS(&quot;OpenStreetMap&quot;, &quot;<A HREF="http://tile.openstreetmap.org/">http://tile.openstreetmap.org/</A>&quot;, {type: 'png', 
+       getURL: osm_getTileURL, displayOutsideMaxExtent: true, 
+       attribution: '&lt;a href=&quot;<A HREF="http://www.openstreetmap.org/">http://www.openstreetmap.org/</A>&quot;&gt;OpenStreetMap&lt;/a&gt;', 
+       numZoomLevels: 25}
+     );
+-    map.events.register(&quot;movestart&quot;, map, function (evnt) {
+-      // log(&quot;baseLayerBounds&quot;+map.getBoundFromBaseLayer());
+-      if (map.getExtent()!= null) log(&quot;evt: &quot; + map.getExtent().getCenterLonLat());
+-    });
+     var googleBaseLayer = new OpenLayers.Layer.Google(&quot;Google Maps&quot;, {sphericalMercator:true, numZoomLevels: 25} );
+-    // districtLayer.setVisibility(true);
+     if (onBerlinDe) map.addLayers([googleBaseLayer, mapnik]); // , markerLayer
+     else map.addLayers([mapnik, googleBaseLayer]);
++    //
+     // MapControl Setup
+     nav = new OpenLayers.Control.NavigationHistory();
++    myLayerSwitcher = OpenLayers.Control.CustomLayerSwitcher = 
++    OpenLayers.Class(OpenLayers.Control.LayerSwitcher, {
++      CLASS_NAME: &quot;OpenLayers.Control.CustomLayerSwitcher&quot;
++    });
++    // myLayerSwitcher.moveTo(new OpenLayers.Pixel(50, 300));
++    // myLayerSwitcher.moveTo(new OpenLayers.Pixel(150, 400));
+     // parent control must be added to the map
+     map.addControl(nav);
++    map.events.register(&quot;movestart&quot;, map, function (evnt) {
++      // log(&quot;baseLayerBounds&quot;+map.getBoundFromBaseLayer());
++      if (map.getExtent()!= null &amp;&amp; debug) log(&quot;evt: &quot; + map.getExtent().getCenterLonLat());
++    });
+     //
++    //
+     panel = new OpenLayers.Control.Panel(
+ 	    {div: document.getElementById(&quot;navPanel&quot;)}
+     );
+@@ -79,7 +89,11 @@
+       activeColor: &quot;white&quot;
+     });
+     map.addControl(myLayerSwitcher);
+-    panel.addControls([nav.next, nav.previous]);
++    // event binding for the new hover controlMenu ### ToDo: find a better place for this
++    jQuery(&quot;#mapControl&quot;).bind(&quot;mouseover&quot;, overMapControl);
++    jQuery(&quot;#mapControl&quot;).bind(&quot;mouseout&quot;, outMapControl);
++    // 
++    if (!onBerlinDe) panel.addControls([nav.next, nav.previous]);
+     map.addControl(panel);
+     // layerSwitcher, NavigationHistory, Panel
+     // setBounds
+@@ -97,8 +111,8 @@
+     // topHeight = topHeight - startHeight;
+     //
+     if (onBerlinDe) fullW = fullW - 1; // 
+-    var mapW = fullW - sideW - 7; // border
+-    // if (onBerlinDe) mapW = fullW - sideW - 7; // border
++    var mapW = fullW - sideW - 7;
++    if (onBerlinDe) mapW = fullW - sideW - 6; // border
+     var mapH = fullH - topHeight - startHeight - 1; // current labs headerHeight
+     if (onBerlinDe) jQuery(&quot;#bobody&quot;).css(&quot;width&quot;, fullW + 1);
+   	if (onBerlinDe) jQuery(&quot;#bohead&quot;).css(&quot;width&quot;, fullW + 1);
+@@ -110,8 +124,8 @@
+     jQuery(&quot;#map&quot;).css(&quot;width&quot;, mapW);
+     jQuery(&quot;#map&quot;).css(&quot;height&quot;, mapH);
+     //
+-    jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 185);
+-    jQuery(&quot;#mapControl&quot;).css(&quot;top&quot;, startHeight + 3);
++    jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 128);
++    jQuery(&quot;#mapControl&quot;).css(&quot;top&quot;, startHeight + topHeight + 8);
+     // jQuery(&quot;#mapSwitcher&quot;).css(&quot;left&quot;, 525);
+     if (onBerlinDe) jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 225);
+     else jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 345);
+@@ -902,25 +916,25 @@
+       var id = topicListToShow[m];
+       var featureToShow = checkDrawnFeaturesForTopicId(id);
+       if ( featureToShow != null ) { // is wether already drawn in cluster or normal, no need for handling it again
+-        // log(&quot;[WARNING] that topic (&quot;+id+&quot;)is already drawn in &quot; + featureToShow.data.topicName); 
+-        featureToShow.attributes.marker = &quot;hotspot&quot;;
+-        featureToShow.attributes.size = &quot;20&quot;;      
+         // skipping
+       } else {
+         featureToShow = checkFeatureById(id);
+         if ( featureToShow != null ) {
+           // there was a feature for this topic initialized
+           var pos = new OpenLayers.LonLat(featureToShow.data.lon, featureToShow.data.lat);
+-          var clusterFeature = checkLayerForVisibleFeatureOnPosition(pos); // for a visible feature on that position
++          // for a visible feature on that position which is not the same topic id
++          // // (occurs because topics are in multiple categories)
++          var clusterFeature = checkLayerForVisibleFeatureOnPosition(pos, id);
+           if ( clusterFeature != null ) { 
+             // on this position there is already a feature drawn, make it a cluster or at least append it
+             // clusterFeature.data.cluster.push(featureToShow.data);
+             if (featureToShow.data.cluster == null) { // is a new cluster
+               var newCluster = new Array();
++              // check if data.cluster is an Array of feature.data objects ???
+               if ( clusterFeature.data.cluster == null ) { // starting new cluster
+                 newCluster.push(clusterFeature.data);
+                 newCluster.push(featureToShow.data);
+-                log(&quot;&gt; starting a cluster at &quot; + pos + &quot; with &quot; + clusterFeature.data.topicName + &quot; / &quot; + featureToShow.data.topicName);
++                if (debug) log(&quot;&gt; starting a cluster at &quot; + pos + &quot; with &quot; + clusterFeature.data.topicName + &quot; / &quot; + featureToShow.data.topicName);
+               } else {
+                 for(j=0;j&lt;clusterFeature.data.cluster.length;j++) {
+                  newCluster.push(clusterFeature.data.cluster[j]);
+@@ -1164,25 +1178,24 @@
+     var myStyle = new OpenLayers.Style( { 
+       graphicName: &quot;circle&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;#378fe0&quot;, strokeColor: &quot;blue&quot;, pointRadius: 5, 
+       graphicTitle: &quot;${label}&quot;, labelYOffset: &quot;7px&quot;, externalGraphic: &quot;${iconUrl}&quot;, graphicWidth: &quot;${size}&quot;, 
+-      fontSize: &quot;10px&quot;, fontFamily: &quot;Verdana, Arial&quot;, fontColor: &quot;#ffffff&quot; } );
++      fontSize: &quot;10px&quot;, fontFamily: &quot;Verdana, Arial&quot;, fontColor: &quot;#ffffff&quot;} );
+     var symbolizer = OpenLayers.Util.applyDefaults( myStyle, OpenLayers.Feature.Vector.style[&quot;default&quot;]);
+     var myStyleMap = new OpenLayers.StyleMap({
+       &quot;default&quot;: symbolizer, 
+-      &quot;select&quot;: { strokeColor:&quot;red&quot;, fillOpacity: &quot;1&quot;, fillColor:&quot;white&quot;, strokeWidth: 2 , graphicWidth: 21 },
+-      &quot;temporary&quot;: { strokeColor:&quot;white&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;blue&quot;, strokeWidth: 2, graphicWidth: 21 }
++      &quot;select&quot;: {strokeColor:&quot;red&quot;, fillOpacity: &quot;1&quot;, fillColor:&quot;white&quot;, strokeWidth: 2 , graphicWidth: 21},
++      &quot;temporary&quot;: {strokeColor:&quot;white&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;blue&quot;, strokeWidth: 2, graphicWidth: 21}
+     });
+     //&quot;hotspot&quot;: {pointRadius: 8}});
+     var lookup = {
+-      &quot;normal&quot;: { pointRadius: 5 }, // normal
+-      &quot;hotspot&quot;: { pointRadius: 7 } // hotspot / cluster
++      &quot;normal&quot;: {pointRadius: 5}, // normal
++      &quot;hotspot&quot;: {pointRadius: 7} // hotspot / cluster
+     };
+     myStyleMap.addUniqueValueRules(&quot;default&quot;, &quot;marker&quot;, lookup);
+     // myStyleMap.addUniqueValueRules(&quot;temporary&quot;, &quot;label&quot;, labelook);
+     myNewLayer = new OpenLayers.Layer.Vector('Kiezatlas Marker', {
+-      styleMap: myStyleMap
++      styleMap: myStyleMap, displayInLayerSwitcher: false
+       // strategies: [ new OpenLayers.Strategy.Cluster() ]
+     });
+-    // create features..
+     var selectFeatureHandler = new OpenLayers.Control.SelectFeature(myNewLayer, {
+       multiple: false,
+       clickout: false,
+@@ -1191,38 +1204,58 @@
+       highlightOnly: false,
+       renderIntent: &quot;select&quot;,
+       onSelect: function() {
+-      jQuery(&quot;#memu&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;);  
++        // jQuery(&quot;#memu&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;);
+       }
+     });
+-    // its style display property is set to &#8216;none&#8217;,
+-    var highlightCtrl = new OpenLayers.Control.SelectFeature(myNewLayer, {
++    mainMap.addControl(selectFeatureHandler);
++    selectFeatureHandler.activate();
++    //
++    var featureHandler = new OpenLayers.Handler.Feature(selectFeatureHandler, myNewLayer, {
++      //stopClick: true,
++      stopUp: true,
++      stopDown: true,
++      click: function(feat) {
++        for (i=0; i&lt;myNewLayer.selectedFeatures.length; i++) {
++          selectFeatureHandler.unselect(myNewLayer.selectedFeatures[i]);
++        }
++        showInfoWindowForMarker(feat.data);
++        selectFeatureHandler.select(feat);
++      }, // clickFunction
++      clickout: function (feat) {
++        selectFeatureHandler.unselect(feat);
++        removeAllPopUps();
++      }
++    }); // end FeatureHandlerInit
++    /* commented out the mouseover cluster menu 
++      var highlightCtrl = new OpenLayers.Control.SelectFeature(myNewLayer, {
+       hover: true,
+       highlightOnly: true,
+       renderIntent: &quot;temporary&quot;,
+       eventListeners: { // makes use of the global propertyMap for eventListeners
+         // beforefeaturehighlighted: function(e) { e.feature.attributes.label = e.feature.data.topicName; },
++        // ### ToDo: most probably unused and to be removed
+         featurehighlighted: function(e) {
+           var marker = e.feature.attributes.marker;
+           if (marker == &quot;hotspot&quot;) {
+             //log(&quot;hotSpotFeature highlght, to show contextMenu at l:&quot; + e.feature.geometry.bounds.getCenterPixel()); // + &quot;b:&quot;+ e.feature.geometry.bounds.bottom);
+-          var centerPoint = myNewLayer.getViewPortPxFromLonLat(e.feature.geometry.bounds.getCenterLonLat());
+-          var htmlString = &quot;&quot;;
+-          if ( e.feature.data.cluster != null &amp;&amp; e.feature.data.cluster != undefined ) {
+-            for (i=0; i&lt;e.feature.data.cluster.length; i++) {
+-              htmlString += '&lt;a href=javascript:showInfoWindowForTopicId(&quot;'
+-                + e.feature.data.cluster[i].topicId+'&quot;);&gt;'+e.feature.data.cluster[i].topicName+'&lt;/a&gt;&lt;br/&gt;';
+-              }
+-              jQuery(&quot;#memu&quot;).html(htmlString);
+-              jQuery(&quot;#memu&quot;).css(&quot;visibility&quot;, &quot;visible&quot;);
+-              jQuery(&quot;#memu&quot;).css(&quot;left&quot;, centerPoint.x);
+-              jQuery(&quot;#memu&quot;).css(&quot;top&quot;, centerPoint.y + headerGap + 27); // ### headergap seems unneccessary
++            var centerPoint = myNewLayer.getViewPortPxFromLonLat(e.feature.geometry.bounds.getCenterLonLat());
++            var htmlString = &quot;&quot;;
++            if ( e.feature.data.cluster != null &amp;&amp; e.feature.data.cluster != undefined ) {
++              for (i=0; i&lt;e.feature.data.cluster.length; i++) {
++                htmlString += '&lt;a href=javascript:showInfoWindowForTopicId(&quot;'
++                  + e.feature.data.cluster[i].topicId+'&quot;);&gt;'+e.feature.data.cluster[i].topicName+'&lt;/a&gt;&lt;br/&gt;';
++                }
++                jQuery(&quot;#memu&quot;).html(htmlString);
++                jQuery(&quot;#memu&quot;).css(&quot;visibility&quot;, &quot;visible&quot;);
++                jQuery(&quot;#memu&quot;).css(&quot;left&quot;, centerPoint.x);
++                jQuery(&quot;#memu&quot;).css(&quot;top&quot;, centerPoint.y + headerGap + 27); // ### headergap seems unneccessary
+             }
+           } else {
+             // log(&quot;normalFeature just highlight&quot;);
+             // e.feature.attributes.label = &quot;&quot;;
+           }
+         },
+-        featureunhighlighted: function(e) { 
++        featureunhighlighted: function(e) {
+             // TODO: is wrong one, if one is already selected and the user wants to deal with a cluster
+             // log(&quot;feature&quot; + e.feature.data.topicId + &quot; unhighlighted&quot;);
+             var marker = e.feature.attributes.marker;
+@@ -1237,27 +1270,10 @@
+         }
+       } // eventListeners end
+     });
+-    mainMap.addControl(selectFeatureHandler);
+     mainMap.addControl(highlightCtrl);
+-    selectFeatureHandler.activate();
+     highlightCtrl.activate();
++    */
+     // mainMap.addControl(featureHandler);
+-    var featureHandler = new OpenLayers.Handler.Feature(selectFeatureHandler, myNewLayer, {
+-      //stopClick: true,
+-      stopUp: true,
+-      stopDown: true,
+-      click: function(feat) {
+-        for (i=0; i&lt;myNewLayer.selectedFeatures.length; i++) {
+-          selectFeatureHandler.unselect(myNewLayer.selectedFeatures[i]);
+-        }
+-        showInfoWindowForMarker(feat.data);
+-        selectFeatureHandler.select(feat);
+-      }, // clickFunction
+-      clickout: function (feat) {
+-        selectFeatureHandler.unselect(feat);
+-        removeAllPopUps();
+-      }
+-    }); // end FeatureHandlerInit
+     featureHandler.activate();
+     // log(&quot;featureHandler activated: &quot; + featureHandler.activate());// = true;
+     allFeatures = [points.length];
+@@ -1351,7 +1367,7 @@
+     return cluster;
+   }
+   
+-
++  /** yet unused method */
+   function checkLayerForFeatureOnPosition(lonlat) {
+     for(i=0; i&lt;myNewLayer.features.length; i++) {
+       if (parseFloat(myNewLayer.features[i].data.lon) == parseFloat(lonlat.lon) 
+@@ -1363,8 +1379,14 @@
+     return null;
+   }
+   
+-  function checkLayerForVisibleFeatureOnPosition(lonlat) {
+-    for (i=0; i&lt;myNewLayer.features.length; i++) {
++  /** used for creating cluster*/
++  function checkLayerForVisibleFeatureOnPosition(lonlat, topicId) {
++    for ( i = 0; i &lt; myNewLayer.features.length; i++) {
++      if (myNewLayer.features[i].data.topicId == topicId) {
++        // alert(&quot;skipped&quot; + topicId + &quot; caused by multiple categories &quot;)
++        // we don't want to cluster an item with itself cause it may be assigned to multiple categories'
++        return null;
++      }
+       if (myNewLayer.features[i].renderIntent != &quot;delete&quot;) {
+         if (parseFloat(myNewLayer.features[i].data.lon) == parseFloat(lonlat.lon) 
+             &amp;&amp; parseFloat(myNewLayer.features[i].data.lat) == parseFloat(lonlat.lat)) {
+@@ -1472,11 +1494,16 @@
+     var idString = &quot;&quot;+ featureData.topicId + &quot;&quot;;
+     var htmlString = '&lt;b&gt;' + featureData.topicName + '&lt;/b&gt;&lt;br/&gt;&lt;a href=javascript:showTopicInSideBar(&quot;'
+       + idString+'&quot;)&gt;weitere Details&lt;/a&gt;';
+-    if ( clusteredId != null ) {
+-      var clusteredTopic = getTopicById(clusteredId);
+-      idString = clusteredId;
+-      htmlString = '&lt;b&gt;' + clusteredTopic.name + '&lt;/b&gt;&lt;br/&gt;&lt;a href=javascript:showTopicInSideBar(&quot;'
+-        + idString+'&quot;)&gt;weitere Details&lt;/a&gt;';
++    // if ( clusteredId != null ) {
++    if ( featureData.cluster != null ) {
++      htmlString = &quot;&lt;b class=\&quot;redTitle\&quot;&gt;Es gibt hier mehrere M&ouml;glichkeiten an einem Ort:&lt;/b&gt;&lt;p/&gt;&quot;;
++      for (i=0; i &lt; featureData.cluster.length; i++) {
++        var clusterTopicId = featureData.cluster[i].topicId;
++        var clusterTopic = getTopicById(clusterTopicId);
++        htmlString += '&lt;b&gt;' + clusterTopic.name + '&lt;/b&gt;&nbsp; - &lt;a href=javascript:showTopicInSideBar(&quot;'
++          + clusterTopicId + '&quot;)&gt;weitere Details&lt;/a&gt;&lt;br/&gt;';
++      }
++      // htmlString += &quot;&lt;/li&gt;&quot;;
+     }
+     // just make sure that there is not more than 1active PopUpWindow
+     removeAllPopUps();
+@@ -1806,20 +1833,34 @@
+       map.panTo(newBounds.getCenterLonLat());
+       map.zoomTo(zoomLevel);
+     }
++    // render all markers as &quot;delete&quot; and deselect all categories
+     if (resetMarkers == true) {
+       reSetMarkers();
+     }
+-   
++    // in any case - reset the sidebar to the latest critIndex
++    updateCategoryList(crtCritIndex);
+   }
+   
++  /** called by the CustomLayerSwitcher.onInputClick */
++  function clickInfoForMapControlMenu() {
++    outMapControl();
++  }
++  
++  function overMapControl() {
++    jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 138);
++    toggleMapControl();
++  }
++  
++  function outMapControl() {
++    jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 20);
++    toggleMapControl();  
++  }
++  
+   function toggleMapControl() {
+     if (jQuery(&quot;#mapSwitcher&quot;).css(&quot;visibility&quot;) == &quot;hidden&quot;) {
+       jQuery(&quot;#mapSwitcher&quot;).css(&quot;visibility&quot;, &quot;visible&quot;);
+-      jQuery(&quot;#mapMarkerButtons&quot;).css(&quot;visibility&quot;, &quot;visible&quot;);
+     } else {
+       jQuery(&quot;#mapSwitcher&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;);
+-      jQuery(&quot;#mapMarkerButtons&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;);
+-      // jQuery(&quot;#mapMarkerButtons&quot;)
+     }
+   }
+   
+@@ -2034,4 +2075,4 @@
+       helpVisible = false;
+     }
+   }
+-  
+\ No newline at end of file
++  
+
+Modified: trunk/pages/be.de/landmaps.css
+===================================================================
+--- trunk/pages/be.de/landmaps.css	2010-08-30 15:14:19 UTC (rev 96)
++++ trunk/pages/be.de/landmaps.css	2010-09-08 13:02:51 UTC (rev 97)
+@@ -21,12 +21,16 @@
+ #focusAlternatives { position: absolute; top: 85px; width: 167px; background-color: #ffffff; opacity: 0.75; border: 1px solid #4170D4; border-top: 0px; font-size: 10px; padding: 5px; color: #000000; visibility: hidden; }
+ #searchInput { position: absolute; top: 3px; color: #4170D4; font-size: 10px; }
+ #searchInput input, #searchInput textarea { height: 15px; border: 1px solid #4170D4; padding-left: 4px; font-size: 10px; background-color:#fff; color: #000; width:140px;}
+-#headerButtons { position: absolute; top: 3px; }
+-#mapFunctions { position: absolute; top: 1px; }
+ #mapName { font: 10px Arial, Helvetica, sans-serif; font-weight: bold; position: absolute; left:3px; top: 6px; color: #4170D4; }
+-#mapControl { position: absolute; vertical-align: middle; width:250px; height:20px; color:#fff; }
++#headerButtons { position: absolute; top: 3px;}
++#mapControl { position: absolute; vertical-align: top; width:120px; height:20px; color:#4170D4; font: 10px Arial, Helvetica, sans-serif; font-weight: bold; background-color: #fff; border: 1px solid #4170D4; opacity: 0.8; }
+ #mapControl a { color:#4170D4; font-size: 10px; }
+-#mapSwitcher { font: 10px Arial, Helvetica, sans-serif; color: #4170d4 !important; }
++#moreLabel { position: relative; left: 4px; top: -1px; }
++#mapFunctions { position: relative; top: 1px; }
++#toggleMarkerHref { position: relative; left: 0px; top: 2px; }
++#resetMarkerHref { position: relative; left: 2px; top: 2px; }
++#divider { position: relative; left: 2px; top: 0px; }
++#mapSwitcher { font: 10px Arial, Helvetica, sans-serif; font-weight: bold; color: #4170d4 !important; text-align: right;  }
+ #mapMarkerButtons { font-family: sans-serif; font-size: smaller; color: #4170d4; font-weight:bold; !important; opacity: 0.75; text-decoration: none;}
+ #memu { position: absolute; background-color: #fff; width:325px; opacity:0.8; padding: 5px; padding-left: 10px; color:#3f5da6; }
+ #memu a .hover { color:#4170D4; }
+@@ -57,3 +61,8 @@
+ .topicRowSelected { background: #e6edff; }
+ .olControlAttribution { position:absolute; bottom: 3px !important; }
+ .redTitle { color: #b60033; }
++.layersDiv { position:relative; left: 5px;}
++.dataLbl { color: #4170D4; }
++.baseLbl { color: #4170D4; }
++.dataLayersDiv { border: 1px solid #e6edff; padding: 2px; }
++.baseLayersDiv { border: 1px solid #e6edff; padding: 2px; }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85">[ date ]</a>
+              <a href="thread.html#85">[ thread ]</a>
+              <a href="subject.html#85">[ subject ]</a>
+              <a href="author.html#85">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

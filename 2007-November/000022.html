@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r30 - trunk/pages
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r30%20-%20trunk/pages&In-Reply-To=%3C200711271709.lARH9Rg4030545%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000021.html">
+   <LINK REL="Next"  HREF="000023.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r30 - trunk/pages</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r30%20-%20trunk/pages&In-Reply-To=%3C200711271709.lARH9Rg4030545%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r30 - trunk/pages">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue Nov 27 18:09:27 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000021.html">[Kiezatlas-svn] r29 - trunk/pages
+</A></li>
+        <LI>Next message: <A HREF="000023.html">[Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22">[ date ]</a>
+              <a href="thread.html#22">[ thread ]</a>
+              <a href="subject.html#22">[ subject ]</a>
+              <a href="author.html#22">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-27 18:09:14 +0100 (Tue, 27 Nov 2007)
+New Revision: 30
+
+Modified:
+   trunk/pages/GeoObjectHome.jsp
+Log:
+Bug fixed: image is correctly displayed in edit frontend
+
+1) imagePath is now properly fetched from session
+
+Modified: trunk/pages/GeoObjectHome.jsp
+===================================================================
+--- trunk/pages/GeoObjectHome.jsp	2007-11-27 11:04:07 UTC (rev 29)
++++ trunk/pages/GeoObjectHome.jsp	2007-11-27 17:09:14 UTC (rev 30)
+@@ -5,10 +5,10 @@
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	TopicBean topicBean = (TopicBean) session.getAttribute(&quot;topicBean&quot;);
+ 	//render image if available from the virtual tomcat directory 8080/dm-images
+-	String imageFile = topicBean.getValue(&quot;Image / File&quot;);
++	String imageFile = (String) session.getAttribute(&quot;imagefile&quot;);
++	
+ 	if (imageFile != null) {
+-		String relativePath = &quot;../../dm-images/images/&quot;;
+-		String imageHtmlString = &quot;&lt;/br&gt;&lt;img src=&quot; + relativePath + imageFile + &quot;&gt;&quot;;
++		String imageHtmlString = &quot;&lt;/br&gt;&lt;img src=&quot; + imageFile + &quot;&gt;&quot;;
+ 		out.println(imageHtmlString);
+ 	}
+ 	topicBean.removeFieldsContaining(&quot;Image&quot;);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000021.html">[Kiezatlas-svn] r29 - trunk/pages
+</A></li>
+	<LI>Next message: <A HREF="000023.html">[Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#22">[ date ]</a>
+              <a href="thread.html#22">[ thread ]</a>
+              <a href="subject.html#22">[ subject ]</a>
+              <a href="author.html#22">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

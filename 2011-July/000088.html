@@ -1,0 +1,2028 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r102 - in trunk: db/patches icons pages pages/be.de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2011-July/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r102%20-%20in%20trunk%3A%20db/patches%20icons%20pages%20pages/be.de%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C20110706083931.0765E483387%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r102 - in trunk: db/patches icons pages pages/be.de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r102%20-%20in%20trunk%3A%20db/patches%20icons%20pages%20pages/be.de%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C20110706083931.0765E483387%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r102 - in trunk: db/patches icons pages pages/be.de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed Jul  6 10:39:30 CEST 2011</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88">[ date ]</a>
+              <a href="thread.html#88">[ thread ]</a>
+              <a href="subject.html#88">[ subject ]</a>
+              <a href="author.html#88">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2011-07-06 10:39:30 +0200 (Wed, 06 Jul 2011)
+New Revision: 102
+
+Added:
+   trunk/db/patches/doc-ka-1.6.8.2.txt
+   trunk/db/patches/ka-1.6.8.2.sql
+   trunk/icons/green-light.png
+   trunk/icons/orange-light.png
+   trunk/icons/red-light.png
+   trunk/pages/be.de/landmaps-ie.css
+Modified:
+   trunk/db/patches/ka-1.6.7.sql
+   trunk/db/patches/ka-1.6.8.sql
+   trunk/pages/GeoObjectList.jsp
+   trunk/pages/be.de/AlternativeAtlas.jsp
+   trunk/pages/be.de/BerlinAtlas.jsp
+   trunk/pages/be.de/CustomLayerSwitcher.js
+   trunk/pages/be.de/index.html
+   trunk/pages/be.de/kiezatlas.js
+   trunk/pages/be.de/landmaps.css
+   trunk/pages/be.de/maps.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/TimerServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+Log:
+Three bugfixes and a stalled commit - KiezAtlas 1.6.8.2 (nearly) at it's best
+
+FEATURES:
+- Introduced &quot;Stichworte&quot; for each and every GeoObjekt (and grips on all &quot;Name&quot;-Searches /browse.. /rpc..)
+- Introduced optional Property for &quot;GeoObjects&quot; named &quot;Barrierefrei&quot;
+
+FIXES:
+- AJAX Client berlin.de IE Fix
+- Removed doubled topics found via &quot;Stichworte&quot; from search results (this fixes the broken json-searches too)
+- DownloadWorker does not append files anymore
+
+
+Added: trunk/db/patches/doc-ka-1.6.8.2.txt
+===================================================================
+--- trunk/db/patches/doc-ka-1.6.8.2.txt	                        (rev 0)
++++ trunk/db/patches/doc-ka-1.6.8.2.txt	2011-07-06 08:39:30 UTC (rev 102)
+@@ -0,0 +1,16 @@
++-----------------------------------------------------------------------------------
++---- Introduction of Stichworte-Property and optional Barrierefrei-Property ---
++-----------------------------------------------------------------------------------
++
++--- NOTE - a-ka-137 is the last assocId in use in this patch
++
++--- create property Stichwort ---
++
++--- create property Barrierefreiheit ---
++
++--- Question After a new Property is introduced for a TopicType, can i preset a default PropertyValue for all 
++--- - current or new - instances of a TopicType with the following line
++
++--- NOTE - We leave it up to the super-administrator to equip the geotype of a workspace with the new Barrierefrei-Property
++
++--- assign new Stiwchwort-Property to GeoObject-TopicType
+
+Modified: trunk/db/patches/ka-1.6.7.sql
+===================================================================
+--- trunk/db/patches/ka-1.6.7.sql	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/db/patches/ka-1.6.7.sql	2011-07-06 08:39:30 UTC (rev 102)
+@@ -1,2 +1,6 @@
++---------------------------------------------------------------------------------
++--- Assignment of &quot;Password&quot;-Property to the &quot;CityMap&quot;-TopicType
++---------------------------------------------------------------------------------
++
+ INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-126', '', 'tt-ka-stadtplan', 1, 'pp-ka-password', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-126', 1, 'Ordinal Number', '360');
+
+Added: trunk/db/patches/ka-1.6.8.2.sql
+===================================================================
+--- trunk/db/patches/ka-1.6.8.2.sql	                        (rev 0)
++++ trunk/db/patches/ka-1.6.8.2.sql	2011-07-06 08:39:30 UTC (rev 102)
+@@ -0,0 +1,25 @@
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-stichwort', 'Stichworte');
++INSERT INTO TopicProp VALUES ('pp-ka-stichwort', 1, 'Name', 'Stichworte');
++INSERT INTO TopicProp VALUES ('pp-ka-stichwort', 1, 'Visualization', 'Input Field');
++
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-barrierefrei', 'Barrierefrei');
++INSERT INTO TopicProp VALUES ('pp-ka-barrierefrei', 1, 'Name', 'Barrierefrei');
++INSERT INTO TopicProp VALUES ('pp-ka-barrierefrei', 1, 'Visualization', 'Options Menu');
++INSERT INTO TopicProp VALUES ('pp-ka-barrierefrei', 1, 'Default Value', 'Nein');
++
++INSERT INTO Topic VALUES ('tt-constant', 1, 1, 'pp-ka-constant-yes', 'Ja');
++INSERT INTO TopicProp VALUES ('pp-ka-constant-yes', 1, 'Name', 'Ja');
++INSERT INTO Topic VALUES ('tt-constant', 1, 1, 'pp-ka-constant-constrained', 'Eingeschr&#195;&#164;nkt');
++INSERT INTO TopicProp VALUES ('pp-ka-constant-constrained', 1, 'Name', 'Eingeschr&#195;&#164;nkt');
++INSERT INTO Topic VALUES ('tt-constant', 1, 1, 'pp-ka-constant-no', 'Nein');
++INSERT INTO TopicProp VALUES ('pp-ka-constant-no', 1, 'Name', 'Nein');
++
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-134', '', 'pp-ka-barrierefrei', 1, 'pp-ka-constant-yes', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-134', 1, 'Ordinal Number', '2');
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-135', '', 'pp-ka-barrierefrei', 1, 'pp-ka-constant-constrained', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-135', 1, 'Ordinal Number', '3');
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-136', '', 'pp-ka-barrierefrei', 1, 'pp-ka-constant-no', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-136', 1, 'Ordinal Number', '1');
++
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-137', '', 'tt-ka-geoobject', 1, 'pp-ka-stichwort', 1);
++
+
+Modified: trunk/db/patches/ka-1.6.8.sql
+===================================================================
+--- trunk/db/patches/ka-1.6.8.sql	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/db/patches/ka-1.6.8.sql	2011-07-06 08:39:30 UTC (rev 102)
+@@ -3,8 +3,7 @@
+ --- Intro Importer Config Topic
+ -------------------------------
+ 
+---- TODO: Fixing patch Assocation ID from ka-1.6.7.sql change ID of Assocation from 1 of the 2 Assocs 
+----       the one which is the citymap's new &quot;pp-ka-password&quot;-property frmo 'a-ka-125' to 'a-ka-126'
++--- NOTE: &quot;a-ka-133&quot; is the last assocId in use in this patch
+ 
+ --- create topic type &quot;Importer Settings&quot; ---
+ 
+
+Added: trunk/icons/green-light.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/icons/green-light.png
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/icons/orange-light.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/icons/orange-light.png
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/icons/red-light.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/icons/red-light.png
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/GeoObjectList.jsp
+===================================================================
+--- trunk/pages/GeoObjectList.jsp	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/GeoObjectList.jsp	2011-07-06 08:39:30 UTC (rev 102)
+@@ -4,6 +4,7 @@
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	Vector insts = (Vector) session.getAttribute(&quot;institutions&quot;);
++	Vector taggedInsts = (Vector) session.getAttribute(&quot;taggedInsts&quot;);
+ 	Hashtable cats = (Hashtable) session.getAttribute(&quot;categories&quot;);
+ 	Hashtable addresses = (Hashtable) session.getAttribute(&quot;addresses&quot;);
+ 	String searchMode = (String) session.getAttribute(&quot;searchMode&quot;);
+@@ -13,25 +14,25 @@
+ 	if (searchMode.equals(KiezAtlas.SEARCHMODE_BY_NAME)) {
+ 		out.println(&quot;Suchergebnis &quot;);
+ 	}
+-        // --- ### align new back button at the right side
++  // --- ### align new back button at the right side
+ 	out.println(&quot;&lt;b&gt;&quot; + searchValue + &quot;&lt;/b&gt;&lt;br/&gt;&quot;);
+-        out.println(&quot;&lt;div class=\&quot;small\&quot;&gt;&quot; + insts.size() + &quot; Objekte&nbsp;&nbsp;&nbsp;&nbsp;&quot;);
+-        out.println(&quot;&lt;/div&gt;&quot;);
+-        out.println(&quot;&lt;a style=\&quot;position:relative; top: 3px; left:215px;\&quot; href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;\&quot;&gt;&lt;img src=\&quot;<A HREF="http://www.kiezatlas.de/client/icons/back-arrow.gif\">http://www.kiezatlas.de/client/icons/back-arrow.gif\</A>&quot; height=\&quot;13\&quot; text=\&quot;zur&#252;ck\&quot; title=\&quot;zur&#252;ck\&quot; alt=\&quot;zur&#252;ck\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
+-        out.println(&quot;&lt;a class=\&quot;small\&quot; style=\&quot;position:relative; left:218px;\&quot; href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;\&quot;&gt;zur&uuml;ck&lt;/a&gt;&quot;);
+-        out.println(&quot;&lt;a style=\&quot;position:relative; top: 4px; left:222px;\&quot; id=\&quot;enumeration\&quot; href=\&quot;javascript:toggleNumeration();\&quot;&gt;&lt;img src=\&quot;../images/pow-in-numbers-dark.png\&quot; height=\&quot;17\&quot; title=\&quot;Nummern einblenden\&quot; alt=\&quot;Nummern einblenden\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
+-        // out.println(&quot;&lt;a href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;&gt;zur&uuml;ck&lt;/a&gt;&quot;);
++    out.println(&quot;&lt;div class=\&quot;small\&quot;&gt;&quot; + insts.size() + &quot; Objekte&nbsp;&nbsp;&nbsp;&nbsp;&quot;);
++    out.println(&quot;&lt;/div&gt;&quot;);
++    out.println(&quot;&lt;a style=\&quot;position:relative; top: 3px; left:215px;\&quot; href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;\&quot;&gt;&lt;img src=\&quot;<A HREF="http://www.kiezatlas.de/client/icons/back-arrow.gif\">http://www.kiezatlas.de/client/icons/back-arrow.gif\</A>&quot; height=\&quot;13\&quot; text=\&quot;zur&#252;ck\&quot; title=\&quot;zur&#252;ck\&quot; alt=\&quot;zur&#252;ck\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++    out.println(&quot;&lt;a class=\&quot;small\&quot; style=\&quot;position:relative; left:218px;\&quot; href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;\&quot;&gt;zur&uuml;ck&lt;/a&gt;&quot;);
++    out.println(&quot;&lt;a style=\&quot;position:relative; top: 4px; left:222px;\&quot; id=\&quot;enumeration\&quot; href=\&quot;javascript:toggleNumeration();\&quot;&gt;&lt;img src=\&quot;../images/pow-in-numbers-dark.png\&quot; height=\&quot;17\&quot; title=\&quot;Nummern einblenden\&quot; alt=\&quot;Nummern einblenden\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++    // out.println(&quot;&lt;a href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; +selectedCriteria+ &quot;&gt;zur&uuml;ck&lt;/a&gt;&quot;);
+ 	// out.println();
+ 	out.println(&quot;&lt;p&gt;&quot;);
+ 	// --- list of institutions ---
+ 	out.println(&quot;&lt;table cellpadding=\&quot;4\&quot; cellspacing=\&quot;0\&quot;&gt;&quot;);
+ 	Enumeration e = insts.elements();
+-    int listIndex = 1;
++  int listIndex = 1;
+ 	while (e.hasMoreElements()) {
+ 		BaseTopic inst = (BaseTopic) e.nextElement();
+ 		out.println(&quot;&lt;tr valign=\&quot;top\&quot;&gt;&quot;);
+ 		out.println(&quot;&lt;td align=\&quot;right\&quot;&gt;&quot;);
+-            topicImages((Vector) cats.get(inst.getID()), html, out);
++    topicImages((Vector) cats.get(inst.getID()), html, out);
+ 		out.println(&quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&lt;span id=\&quot;numbers\&quot;&gt;&lt;b&gt;&quot; + listIndex + &quot;.&lt;/b&gt;&lt;/span&gt;&quot;);
+ 		out.println(&quot;&lt;a href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_GEO_INFO + &quot;&amp;id=&quot; + inst.getID() +
+@@ -40,12 +41,12 @@
+ 		Hashtable address = (Hashtable) addresses.get(inst.getID());
+ 
+ 		String street = (String) address.get(KiezAtlas.PROPERTY_STREET);
+-	    String postcode = (String) address.get(KiezAtlas.PROPERTY_POSTAL_CODE);
++	  String postcode = (String) address.get(KiezAtlas.PROPERTY_POSTAL_CODE);
+ 		String city = (String) address.get(KiezAtlas.PROPERTY_CITY);
+ 		out.println(&quot;&lt;br&gt;&lt;small&gt;&quot; + (street != null ? street + &quot;&nbsp;&nbsp;&nbsp;&quot; : &quot;&quot;) + (postcode != null ? postcode + &quot; &quot; : &quot;&quot;) + city + &quot;&lt;/small&gt;&quot;);
+ 		out.println(&quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;/tr&gt;&quot;);
+-        listIndex++;
++    listIndex++;
+ 	}
+ 	out.println(&quot;&lt;/table&gt;&quot;);
+ 
+
+Modified: trunk/pages/be.de/AlternativeAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/AlternativeAtlas.jsp	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/AlternativeAtlas.jsp	2011-07-06 08:39:30 UTC (rev 102)
+@@ -104,7 +104,7 @@
+         initLayerAllFeatures(gMarkers, map);
+         initBerlinDistrictsLayer();
+         reSetMarkers(myNewLayer);
+-        inputFieldBehaviour();
++        // inputFieldBehaviour();
+         // check if a special projectId was given through the entry url
+         if (linkTo != 'null') {
+           selectAndShowInMap(linkTo, false);
+
+Modified: trunk/pages/be.de/BerlinAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/BerlinAtlas.jsp	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/BerlinAtlas.jsp	2011-07-06 08:39:30 UTC (rev 102)
+@@ -23,8 +23,12 @@
+ &lt;head&gt;
+   &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html charset=UTF-8&quot;/&gt;
+   &lt;title&gt; &lt;%= title %&gt; &lt;/title&gt;
++  &lt;!--[if gte IE 7]&gt;
++    &lt;style type=&quot;text/css&quot;&gt;@import url(<A HREF="http://www.kiezatlas.de/maps/embed/landmaps-ie.css">http://www.kiezatlas.de/maps/embed/landmaps-ie.css</A>);&lt;/style&gt;
++  &lt;![endif]--&gt;
+   &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/landmaps.css">http://www.kiezatlas.de/maps/embed/landmaps.css</A>&quot;/&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/kiezatlas.js">http://www.kiezatlas.de/maps/embed/kiezatlas.js</A>&quot;&gt;&lt;/script&gt;
++  &lt;!-- This is a comment, without comment --&gt;
+   &lt;!-- &lt;script type=&quot;text/javascript&quot; src=&quot;../pages/be.de/kiezatlas.js&quot;&gt;&lt;/script&gt; --&gt;
+   &lt;!-- &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;../pages/be.de/landmaps.css&quot;/&gt; --&gt;
+   &lt;!-- <A HREF="http://openlayers.org/api/2.9/OpenLayers.js">http://openlayers.org/api/2.9/OpenLayers.js</A> // 2.9 or 2.9.1? --&gt;
+@@ -65,6 +69,7 @@
+     var markerLayer = &quot;&quot;;
+     // gui elements
+     var sideBarVisible = true;
++    var fullWindow = false;
+     var debug = false;
+     if (debug) {
+       var debug_window = window.open('','','width=400,height=600,scrollbars=1');
+@@ -73,14 +78,10 @@
+     var gKey = 'ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A';
+     //
+     jQuery(document).ready(function() {
+-      if (window.location.toString().indexOf(&quot;berlin.de&quot;) != -1) {
+-        onBerlinDe = true;
+-        // headerGap = 63;
+-        baseUrl = &quot;<A HREF="http://www.berlin.de/atlas/">http://www.berlin.de/atlas/</A>&quot;;
+-        SERVICE_URL = baseUrl + &quot;rpc/&quot;;
+-      } else {
+-        onBerlinDe = false;
+-      }
++      // if (window.location.toString().indexOf(&quot;berlin.de&quot;) != -1) {
++      onBerlinDe = true;
++      baseUrl = &quot;<A HREF="http://www.berlin.de/atlas/">http://www.berlin.de/atlas/</A>&quot;;
++      SERVICE_URL = baseUrl + &quot;rpc/&quot;;
+       // register resize
+       jQuery(window).resize(function() { handleResize(); });
+       if (onBerlinDe &amp; workspaceCriterias.result.length &gt; 4) districtNames = workspaceCriterias.result[4].categories;
+@@ -106,9 +107,9 @@
+         // clusters = findInitialClusters(gMarkers);
+         // createVectorizedMarkerLayer(gMarkers, map);
+         initLayerAllFeatures(gMarkers, map);
+-        initBerlinDistrictsLayer();
++        // initBerlinDistrictsLayer();
+         reSetMarkers(myNewLayer);
+-        inputFieldBehaviour();
++        // inputFieldBehaviour();
+         // check if a special projectId was given through the entry url
+         if (linkTo != 'null') {
+           selectAndShowInMap(linkTo, false);
+@@ -142,7 +143,8 @@
+ 		      &lt;/form&gt;
+ 		    &lt;/div&gt;
+ 		    &lt;div id=&quot;headerButtons&quot;&gt;
+-		      &lt;!-- &lt;div id=&quot;mapMarkerButtons&quot; style=&quot;position: relative; top: 5px; left: 70px; visibility: visible;&quot;&gt;--&gt;
++            &lt;img id=&quot;fullWindowButton&quot; title=&quot;Volle Fenstergr&ouml;&szlig;e nutzen&quot; onclick=&quot;javascript:toggleFullWindow()&quot; width=&quot;16&quot; height=&quot;16&quot;
++              src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/fullscreen-16.png">http://www.kiezatlas.de/maps/embed/img/fullscreen-16.png</A>&quot; alt=&quot;Volle Fenstergr&ouml;&szlig;e nutzen&quot;/&gt;
+ 			    &lt;img id=&quot;resizeButton&quot; title=&quot;Seitenleiste ausblenden&quot; onclick=&quot;javascript:handleSideBar()&quot; width=&quot;15&quot; height=&quot;15&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/go-last.png">http://www.kiezatlas.de/maps/embed/img/go-last.png</A>&quot; alt=&quot;Seitenleiste ausblenden&quot;/&gt;
+ 		    &lt;!-- &lt;/div&gt; --&gt;
+ 		    &lt;/div&gt;
+@@ -174,10 +176,12 @@
+ 		    &lt;div id=&quot;sideBarCriterias&quot;&gt;&lt;/div&gt;
+ 		    &lt;div id=&quot;sideBarCategories&quot;&gt;&lt;/div&gt;
+         &lt;div id=&quot;progContainer&quot;&gt;&lt;/div&gt;
++        &lt;div id=&quot;kafooter&quot;&gt;
++          &lt;a href=&quot;<A HREF="http://www.berlin.de/buergeraktiv/">http://www.berlin.de/buergeraktiv/</A>&quot;&gt;Impressum&lt;/a&gt; und 
++          &lt;a href=&quot;<A HREF="http://ehrenamt.index.de">http://ehrenamt.index.de</A>&quot;&gt;Haftungshinweise&lt;/a&gt;&lt;br/&gt;&lt;b&gt; powered by
++          &lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt;
++        &lt;/div&gt;
+       &lt;/div&gt;
+-      &lt;div id=&quot;kafooter&quot;&gt;
+-        &lt;a href=&quot;<A HREF="http://www.berlin.de/buergeraktiv/">http://www.berlin.de/buergeraktiv/</A>&quot;&gt;Impressum&lt;/a&gt; und &lt;a href=&quot;<A HREF="http://ehrenamt.index.de">http://ehrenamt.index.de</A>&quot;&gt;Haftungshinweise&lt;/a&gt;&lt;br/&gt;&lt;b&gt; powered by &lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt;
+-      &lt;/div&gt;
+       &lt;!-- &lt;a id=&quot;helpFont&quot; alt=&quot;Hilfe anzeigen&quot; text=&quot;Hilfe anzeigen&quot; href=&quot;javascript:help();&quot;&gt;zur Hilfe&lt;/a&gt; --&gt;
+       &lt;div id=&quot;sideBarControl&quot;&gt;&lt;/div&gt; &lt;!-- onclick=&quot;javascript:handleSideBar();&quot; --&gt;
+       &lt;div id=&quot;dialogMessage&quot; style=&quot;visibility: hidden;&quot; title=&quot;Dialog schlie&szlig;en&quot;&gt;
+
+Modified: trunk/pages/be.de/CustomLayerSwitcher.js
+===================================================================
+--- trunk/pages/be.de/CustomLayerSwitcher.js	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/CustomLayerSwitcher.js	2011-07-06 08:39:30 UTC (rev 102)
+@@ -524,7 +524,7 @@
+             if (navigator.appName == &quot;Microsoft Internet Explorer&quot;) {
+               this.P = document.createElement(&quot;p&quot;);
+               this.P.innerHTML = &quot;&nbsp;&quot;
+-              this.layersDiv.style.left = &quot;-65px&quot;;
++              this.layersDiv.style.left = &quot;-90px&quot;;
+               // this.layersDiv.style.top = &quot;15px&quot;;
+             }
+             this.BR = document.createElement(&quot;br&quot;);
+@@ -539,7 +539,7 @@
+             if (navigator.appName == &quot;Microsoft Internet Explorer&quot;) {
+               this.P = document.createElement(&quot;p&quot;);
+               this.P.innerHTML = &quot;&nbsp;&quot;
+-              this.layersDiv.style.left = &quot;-65px&quot;;
++              this.layersDiv.style.left = &quot;-90px&quot;;
+               // this.layersDiv.style.top = &quot;15px&quot;;
+             }
+             this.BR = document.createElement(&quot;br&quot;);
+
+Modified: trunk/pages/be.de/index.html
+===================================================================
+--- trunk/pages/be.de/index.html	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/index.html	2011-07-06 08:39:30 UTC (rev 102)
+@@ -8,7 +8,7 @@
+     &lt;/style&gt;
+     &lt;script&gt;
+       function initialize() {
+-		window.location = &quot;<A HREF="http://www.berlin.de/buergeraktiv/atlas/bmap.php?topicId=t-331302&amp;workspaceId=t-331306">http://www.berlin.de/buergeraktiv/atlas/bmap.php?topicId=t-331302&amp;workspaceId=t-331306</A>&quot;;
++        window.location = &quot;<A HREF="http://www.berlin.de/buergeraktiv/atlas/bmap.php?topicId=t-331302&amp;workspaceId=t-331306">http://www.berlin.de/buergeraktiv/atlas/bmap.php?topicId=t-331302&amp;workspaceId=t-331306</A>&quot;;
+       }
+     &lt;/script&gt;
+  &lt;/head&gt;
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/kiezatlas.js	2011-07-06 08:39:30 UTC (rev 102)
+@@ -5,7 +5,7 @@
+    * @author Malte Rei&szlig;ig (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">malte at deepamehta.org</A>)
+    * @license GPL v3
+    * 
+-   * Latest Modifications: 24 of April 2011
++   * @modified 16.May 2011
+    *
+    * @requires OpenLayers.js (2.9), jQuery(1.3.2 - 1.5.2).js
+    * 
+@@ -37,6 +37,7 @@
+   var debugUI = false;
+   // deployment default settings
+   var onBerlinDe = false;
++  var fullWindow = false;
+   var headerGap = 0;
+   var kiezKey = &quot;ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&quot;;
+   var berlinKey = &quot;ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A&quot;;
+@@ -106,63 +107,70 @@
+     // if (onBerlinDe) { map.zoomTo(LEVEL_OF_CITY_ZOOM); }
+     reSetMarkers();
+   }
+-  
++
++  /**
++   * craziest method ever - if (theres not something) else like that out there
++   * notes: does handle our basic html-layout-wireframe in 3 variations, plus all for internet explorer
++   **/
+   function setLayout(fullH, fullW) {
++    // onBerlinDe: fixed Width, downed under from Top, adjusted sideBarHeight, 
+     var sideW = 320;
+-    if (onBerlinDe &amp;&amp;  jQuery.browser.msie) {
+-      jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, 151);
+-      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 52);
+-      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 164);
+-      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, 180);
++    if (onBerlinDe &amp;&amp; jQuery.browser.msie &amp;&amp; !fullWindow) {
++      // jQuery(&quot;#kiezatlas&quot;).css(&quot;top&quot;, &quot;153px&quot;);
++      jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, 153);
++      // jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 2);
++      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 166);
++      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, 182);
++      jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;, sideW + 2);
++      jQuery(&quot;#bo_header #main_navigation&quot;).css(&quot;width&quot;, 1036);
++    } else if (jQuery.browser.msie &amp;&amp; !onBerlinDe) { // maps-labs on ie
++      jQuery(&quot;#focusInput&quot;).css(&quot;top&quot;, 9);
++      jQuery(&quot;#focusInput input textarea&quot;).css(&quot;padding-top&quot;, 2);
++      jQuery(&quot;#searchInput&quot;).css(&quot;top&quot;, 9);
++      jQuery(&quot;#searchInput input textarea&quot;).css(&quot;padding-top&quot;, 2);
+     }
+     var topHeight = jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;);
+     var startHeight = jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;);
+     topHeight = parseInt(topHeight.substr(0, topHeight.length-2));
+     startHeight = parseInt(startHeight.substr(0, startHeight.length-2));
+     jQuery(&quot;#kiezatlas&quot;).css(&quot;visibility&quot;, &quot;visible&quot;);
+-    // topHeight = topHeight + 10;   
+-    // }
+     //
+-    if (onBerlinDe) {
++    if (onBerlinDe &amp;&amp; !fullWindow) {
+       fullW = 1037 - 1; // else fullW = fullW - 7;
+       jQuery(&quot;#kiezatlas&quot;).css(&quot;width&quot;, fullW);
++      jQuery(&quot;#kiezatlas&quot;).css(&quot;height&quot;, mapH + 153);
++    } else if (onBerlinDe &amp;&amp; fullWindow) {
++      fullW = fullW - 1;
++      mapH = mapH - 5;
++      jQuery(&quot;#kiezatlas&quot;).css(&quot;width&quot;, fullW);
+     }
+     var mapW = mapW = fullW - sideW - 6; // border fullW - sideW - 7;
+     var mapH = fullH - topHeight - startHeight - 1; // current labs headerHeight
+     jQuery(&quot;#kaheader&quot;).css(&quot;width&quot;, fullW);
+-    if (onBerlinDe) {
+-      berlinSideBarHeight = mapH - 35;
+-      jQuery(&quot;#kiezatlas&quot;).css(&quot;height&quot;, berlinSideBarHeight);
+-    } else if (onBerlinDe &amp;&amp; jQuery.browser.msie) {
+-      berlinSideBarHeight = mapH + 29;
+-      jQuery(&quot;#kiezatlas&quot;).css(&quot;height&quot;, berlinSideBarHeight);
+-    }
+-    // if (onBerlinDe) jQuery(&quot;#kiezatlas&quot;).css(&quot;height&quot;, mapH - 35); // make the wrapping container high
+-    // jQuery(&quot;#kiezatlas&quot;).css(&quot;height&quot;, fullH - startHeight);
+-    // if (jQuery.browser.msie) {
+-      // mapH = mapH;
+-    // }
+-    // if (onBerlinDe) jQuery(&quot;#bobody&quot;).css(&quot;width&quot;, fullW + 1);
+-    // if (onBerlinDe) jQuery(&quot;#bohead&quot;).css(&quot;width&quot;, fullW + 1);
+-    // if (onBerlinDe)
+-    // jQuery(&quot;#kiezatlas&quot;).css(&quot;visibility&quot;, &quot;visible&quot;); // make the wrapping container visible
++    // 
+     jQuery(&quot;#map&quot;).css(&quot;top&quot;, startHeight + topHeight + 1);
+     jQuery(&quot;#map&quot;).css(&quot;width&quot;, mapW);
+     jQuery(&quot;#map&quot;).css(&quot;height&quot;, mapH);
+     //
+     jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 129);
+     jQuery(&quot;#mapControl&quot;).css(&quot;top&quot;, startHeight + topHeight + 8);
+-    // jQuery(&quot;#mapSwitcher&quot;).css(&quot;left&quot;, 525);
+-    if (onBerlinDe) {
++    if (onBerlinDe &amp;&amp; !fullWindow) {
+       jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 240);
++      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 166);
+       jQuery(&quot;#focusAlternatives&quot;).css(&quot;left&quot;, 310);
+-      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 20);
++      jQuery(&quot;#permaLink&quot;).css(&quot;left&quot;, 275);
++      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 46);
++    } else if (onBerlinDe &amp;&amp; fullWindow) {
++      //
++      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 46);
++      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, topHeight);
++      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, topHeight + 8);
++      // jQuery(&quot;#permaLink&quot;).css(&quot;left&quot;, window);
+     } else {
+       jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 345);
+       jQuery(&quot;#focusAlternatives&quot;).css(&quot;left&quot;, 420);
+       jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 30);
+     }
+-    //jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 205);
+     jQuery(&quot;#searchInput&quot;).css(&quot;left&quot;, fullW - sideW + 10);
+     // sidebarControl is 5px fat
+     jQuery(&quot;#sideBarControl&quot;).css(&quot;left&quot;, mapW);
+@@ -180,37 +188,37 @@
+     jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, jQuery(&quot;#kaheader&quot;).height()-4);
+     //
+     var critHeight = jQuery(&quot;#sideBarCriterias&quot;).height();
+-    // critHeight = parseInt(critHeight.substr(0, critHeight.length-2));
+     if (critHeight == 0 || isNaN(critHeight)) {
+       critHeight = 110;
+     } else {
+       critHeight = critHeight + 5;
+     }
+-    var footerHeight = 35;
+-    // jQuery(&quot;#kafooter&quot;).css(&quot;height&quot;, footerHeight);
+-    // footerHeight  = parseInt(footerHeight.substr(0, footerHeight.length-2));
++    var footerHeight = 35; // ### FIXME: to be removed
+     var sideBarHeight = mapH - critHeight - footerHeight;
+     jQuery(&quot;#sideBarCategories&quot;).css(&quot;height&quot;, sideBarHeight);
+     jQuery(&quot;#sideBarCategories&quot;).css(&quot;width&quot;, sideW - 7);
++    // get the position for our footer-div, which is placed outside #sideBar at labs-maps and inside at berlin.de
+     var fWidth = sideW - 6;
+     var fOrientation = mapW - 3;
+     jQuery(&quot;#kafooter&quot;).css(&quot;width&quot;, fWidth - 15);
+-    jQuery(&quot;#kafooter&quot;).css(&quot;left&quot;, fOrientation + 10);
+-    jQuery(&quot;#helpFont&quot;).css(&quot;left&quot;, fOrientation + 22);
++    if (!onBerlinDe) {
++      jQuery(&quot;#kafooter&quot;).css(&quot;left&quot;, fOrientation + 10);
++    } else {
++      jQuery(&quot;#kafooter&quot;).css(&quot;left&quot;, 5);
++    }
+     jQuery(&quot;#layersDiv&quot;).css(&quot;left&quot;, -25);
+-    // ugly but convenient for dealing with ie7/8 layout fixes now
+-    // jQuery(&quot;#sideBarControl&quot;).css(&quot;left&quot;, jQuery(&quot;#sideBarControl&quot;).scrollLeft()+2);
+-    // jQuery(&quot;#sideBar&quot;).css(&quot;left&quot;, jQuery(&quot;#sideBar&quot;).scrollLeft()+2);
+-    //
+-    // jQuery(&quot;#kiezatlas&quot;).css(&quot;top&quot;, jQuery(&quot;#kiezatlas&quot;).css(&quot;top&quot;)+10);
+-    // jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;, 22);
++    if (!sideBarToggle &amp;&amp; onBerlinDe) {
++      // if sidebar is toggled away and user wants to get into fullscreen mode
++      handleSideBar();
++    }
+   }
+-  
++
++  // ### FIXME: refactor: the width to restore should not be of interest for hiding or showing sideBar
+   function handleSideBar() { // e
+     var breitSeite; // complete content-window-width
+     if(sideBarToggle) {
+       // jQuery(&quot;#sideBarControl&quot;).css(&quot;cursor&quot;, &quot;w-resize&quot;);
+-      if (onBerlinDe) breitSeite = 1036 - 5; // new layout
++      if (onBerlinDe &amp;&amp; !fullWindow) breitSeite = 1036 - 5; // new layout
+       else breitSeite = windowWidth() - 5; // 1339;//
+       // breitSeite = windowWidth() - 5; // 1317;//
+       jQuery(&quot;#sideBarControl&quot;).css(&quot;left&quot;, breitSeite);
+@@ -219,7 +227,8 @@
+       jQuery(&quot;#helpFont&quot;).hide(&quot;fast&quot;);
+       // jQuery(&quot;#kafooter&quot;).css(&quot;opacity&quot;, &quot;0.4&quot;);
+       jQuery(&quot;#kafooter&quot;).css(&quot;background&quot;, &quot;transparent&quot;);
+-      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 20);
++      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 30);
++      // jQuery(&quot;#kafooter&quot;).show();
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;src&quot;, &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/go-first.png">http://www.kiezatlas.de/maps/embed/img/go-first.png</A>&quot;);
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
+@@ -228,14 +237,16 @@
+     } else {
+       // jQuery(&quot;#kafooter&quot;).css(&quot;opacity&quot;, &quot;1.0&quot;);
+       jQuery(&quot;#kafooter&quot;).css(&quot;background&quot;, &quot;#fff&quot;);
+-      if (onBerlinDe) breitSeite = 1036; // new layout
++      if (onBerlinDe &amp;&amp; !fullWindow) breitSeite = 1036; // new layout
+       else breitSeite = windowWidth(); // 1339;//
+       // jQuery(&quot;#sideBar&quot;).show(&quot;fast&quot;);
+       // jQuery(&quot;#sideBarControl&quot;).attr(&quot;onclick&quot;, &quot;javascript:handleSideBar();&quot;);
+       sideBarToggle = true;
+   	  jQuery(&quot;#helpFont&quot;).show(&quot;fast&quot;);
+       jQuery(&quot;#kafooter&quot;).css(&quot;background&quot;, &quot;white&quot;);
+-      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 2);
++      // if (onBerlinDe &amp;&amp; !fullWindow) jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 0);
++      //else
++      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 3);
+       // jQuery(&quot;#headerButtons&quot;).html(imgTag);
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;src&quot;, &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/go-last.png">http://www.kiezatlas.de/maps/embed/img/go-last.png</A>&quot;);
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
+@@ -247,6 +258,25 @@
+     if (debug) log('[DEBUG] handleSidebar got: ' + e.type + ' at '+ posx+':'+posy + '');
+   }
+ 
++  function toggleFullWindow() {
++    // special feature for berlin.de
++    if (fullWindow) {
++      jQuery(&quot;#kiezatlas&quot;).css(&quot;z-index&quot;, &quot;0&quot;);
++      if (onBerlinDe &amp;&amp; jQuery.browser.msie) {
++        jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, &quot;153px&quot;);
++      } else if (onBerlinDe) {
++        jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, &quot;143px&quot;);
++      }
++      fullWindow = false;
++      handleResize(); // substract the top-height from overall height..
++    } else {
++      jQuery(&quot;#kiezatlas&quot;).css(&quot;z-index&quot;, &quot;1&quot;);
++      jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, &quot;0px&quot;);
++      fullWindow = true;
++      handleResize(windowWidth());
++    }
++  }
++
+   function showDialog(renderFlag, title, message) {
+     if (!renderFlag) {
+       jQuery(&quot;#dialogMessage&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;);
+@@ -272,7 +302,7 @@
+   }
+ 
+   function updatePermaLink(newLink) {
+-    if (map.baseLayer.name == &quot;OpenStreetMap&quot;) {
++    if (map.baseLayer != undefined &amp;&amp; map.baseLayer.name == &quot;OpenStreetMap&quot;) {
+       // OpenStreetMap
+       if (newLink.indexOf(&quot;baseLayer=osm&quot;) != -1) {
+         //  is already part of the permalink..
+@@ -284,10 +314,7 @@
+         // updatePermaLink(permaLink + &quot;?baseLayer=osm&quot;);
+         newLink = newLink + &quot;?baseLayer=osm&quot;;
+       }
+-    } else if (map.baseLayer.name == &quot;Google Maps&quot;) {
+-      // ### TEST: possibly remove &quot;baseLayer=osm&quot; if
+-      // permaLink = permaLink.substr(0, permaLink.length-14);
+-      // alert(&quot;newLink has baseLayerOsm included... &quot;);
++    } else if (map.baseLayer != undefined &amp;&amp; map.baseLayer.name == &quot;Google Maps&quot;) {
+       newLink = newLink.replace(&quot;&amp;baseLayer=osm&quot;, &quot;&quot;);
+       newLink = newLink.replace(&quot;?baseLayer=osm&quot;, &quot;&quot;);
+       // GMaps
+@@ -324,90 +351,8 @@
+       beforeSend: function(xhr) {xhr.setRequestHeader(&quot;Content-Type&quot;, &quot;application/json&quot;)},
+       dataType: 'json',
+ 	    success: function(obj) {
+-	      var topic = obj.result; 
+-	      hideProgressFromSideBar();
+-	      resultHandler.empty();
+-	      var imgSrc = getImageSource(topic);
+-        if (imgSrc != &quot;undefined&quot;) {
+-	        imgSrc = IMAGES_URL + imgSrc;
+-	        // var imgWidth = jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;);
+-  	      resultHandler.append('&lt;img src=&quot;'+imgSrc+'&quot;/&gt;&lt;br/&gt;');
+-	      }
+-	      resultHandler.append('&lt;b&gt;'+topic.name+'&lt;/b&gt;&lt;br/&gt;');
+-        // address related stuff follows
+-        var cityName = getTopicCity(topic);
+-        var street = getTopicAddress(topic);
+-	      if (cityName == &quot; Berlin&quot; || cityName == &quot;Berlin&quot; || onBerlinDe) { // TODO: sloppy condition for maps berlin.de
+-          var publicTransportURL = '<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>' + street +
+-            '&amp;search=Suchen&amp;formquery=&amp;address=true';
+-          var imageLink = '&lt;a href=&quot;'+ publicTransportURL + '&quot; target=&quot;_blank&quot;&gt;'
+-            + '&lt;img src=\&quot;'+IMAGES_URL+'fahrinfo.gif&quot; border=&quot;0&quot; hspace=&quot;20&quot;/&gt;&lt;/a&gt;';
+-          if (onBerlinDe || topicId == &quot;t-331302&quot;) { // ehrenamt map datasets have no city property
+-            resultHandler.append(''+getTopicPostalCode(topic) + ' Berlin&lt;br/&gt;'); 
+-          } else { 
+-            resultHandler.append(''+getTopicPostalCode(topic) + ' ' + cityName + '&lt;br/&gt;');
+-          }
+-          resultHandler.append('' + street + '&nbsp;' + imageLink + '&lt;p/&gt;');
+-        } else {
+-          if (topicId == &quot;t-331302&quot;) { // ehrenamt map on datasets have no city property
+-            resultHandler.append(''+getTopicPostalCode(topic) + ' Berlin&lt;br/&gt;');
+-          } else {
+-            resultHandler.append(''+getTopicPostalCode(topic) + ' ' + cityName + '&lt;br/&gt;');
+-          }
+-          resultHandler.append('' + street + '&lt;p/&gt;');
+-        }
+-	      // stripping unwanted fields of the data container
+-	      topic = stripFieldsContaining(topic, &quot;LAT&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;LONG&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Locked Geometry&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Forum / Aktivierung&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Image&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Icon&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;YADE&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Stadt&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Address&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Name&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Description&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;Timestamp&quot;);
+-	      topic = stripFieldsContaining(topic, &quot;OriginId&quot;);
+-	      var propertyList = '&lt;p&gt;'; //&lt;table width=&quot;100%&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tbody&gt;';
+-	      for (var i=0; i &lt; topic.properties.length; i++) {
+-	        // propertyList += '&lt;tr&gt;';
+-	        if (topic.properties[i].label.indexOf(&quot;Sonstiges&quot;) != -1) {
+-            propertyList += '&lt;p class=&quot;additionalInfoWhite&quot;&gt;';
+-          } else if (topic.properties[i].label.indexOf(&quot;Administrator&quot;) != -1) {
+-            propertyList += '&lt;p class=&quot;additionalInfo&quot;&gt;';
+-          } else {
+-            propertyList += '&lt;p&gt;&lt;span class=&quot;propertyLabel&quot;&gt;'+topic.properties[i].label+':&nbsp;&lt;/span&gt;';
+-          }
+-	        if (topic.properties[i].type == 0) {
+-	          // DM Property Type Single
+-	          propertyList += '&lt;span class=&quot;propertyField&quot;&gt;'+topic.properties[i].value+'&lt;/span&gt;&lt;/p&gt;';
+-	        } else {
+-	          // DM Property Type Multi
+-            propertyList += '&lt;span class=&quot;propertyField&quot;&gt;';
+-		        for (var k=0; k &lt; topic.properties[i].values.length; k++) {
+-	            stringValue = topic.properties[i].values[k].name;
+-	            var htmlValue = &quot;&quot;;
+-	            if (stringValue.startsWith(&quot;<A HREF="http://">http://</A>&quot;)) {
+-	              htmlValue = makeWebpageLink(stringValue, stringValue);
+-	            } else if (stringValue.indexOf(&quot;@&quot;) != -1) {
+-	              htmlValue = makeEmailLink(stringValue, stringValue);
+-              } else {
+-	              htmlValue = stringValue;
+-	            }
+-	            propertyList += '&lt;br/&gt;&lt;img style=&quot;border-style: none; vertical-align: middle;&quot; '
+-                + ' src=&quot;'+ICONS_URL+''+topic.properties[i].values[k].icon+'&quot;/&gt;&nbsp;' + htmlValue;
+-	          }
+-            propertyList += '&lt;/span&gt;&lt;/p&gt;';
+-	        }
+-	        propertyList += '&lt;/p&gt;';
+-	      }
+-	      resultHandler.append(propertyList);
+-        //
+-        updatePermaLink(baseUrl+mapAlias+&quot;?topicId=&quot;+topic.id);
+-        // window.location.replace(permaLink);
+-	      // return resultObj = topic;
++	      var topic = obj.result;
++        showGeoObjectInfo(topic, resultHandler);
+ 	    }, // end of success handler
+ 	    error: function(x, s, e){ 
+ 	      if (debug) log('<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">Error at GeoObjectInfo</A> Request' + x.statusText);
+@@ -421,61 +366,12 @@
+     });
+   }
+ 
+-  function setCityMapName(title) {
+-    jQuery(&quot;#mapName&quot;).html('&lt;b&gt;Stadtplan: &lt;/b&gt; ' + title);
+-  }
+-  
+-  /** toload all topics with javascript, not with php, is currently #unused but possible */ 
+-  function loadCityMapTopics(mapId, workspaceId) {
+-    // log('requesting mapTopics for: ' + mapId);
+-    var url = SERVICE_URL; // + 'getMapTopics.php?topicId=' + mapId + '&amp;workspaceId=' + workspaceId;
+-    var body = '{&quot;method&quot;: &quot;getMapTopics&quot;, &quot;params&quot;: [&quot;' + mapId+ '&quot; , &quot;' + workspaceId + '&quot;]}';
+-    jQuery.ajax({
+-      type: &quot;POST&quot;,
+-      url: url,
+-      async: false,
+-      data: body,
+-      beforeSend: function(xhr) {xhr.setRequestHeader(&quot;Content-Type&quot;, &quot;application/json&quot;)},
+-      dataType: 'json',
+-      success: function(obj){
+-        mapTopics = obj;
+-        if (debug) log('loading of '+mapTopics.result.topics.length+' Topics for map ' + mapId + ' was successful');
+-      },
+-      error: function(x, s, e){ 
+-     	  if (debug) log('Error wile loading mapTopis ' + x);	  
+-      }
+-    });
+-    log(&quot;running out in laoding CityMapTopics with &quot; + mapTopics.result.topics.length);
+-  }
+-
+-  function loadWorkspaceCriterias(workspaceId) {
+-    var url = SERVICE_URL;
+-    var body = '{&quot;method&quot;: &quot;getWorkspaceCriterias&quot;, &quot;params&quot;: [&quot;' + topicId + '&quot;]}';
+-    jQuery.ajax({
+-	    type: &quot;POST&quot;,
+-	    url: url,
+-	    data: body,
+-	    async: false,
+-      beforeSend: function(xhr) {xhr.setRequestHeader(&quot;Content-Type&quot;, &quot;application/json&quot;)},
+-	    dataType: 'json',
+-	    success: function(obj){
+-        workspaceCriterias = obj;
+-	      if (debug) {
+-          log('loading of '+workspaceCriterias.resultp.length+' criterias for workspace'+workspaceId+' was successful');
+-        }
+-	    },
+-	    error: function(x, s, e){ 
+-     	  if (debug) log('Error wile loading workspaceCriterias ' + x);	  
+-	    }
+-    });
+-    if (debug) log(&quot;running out in laoding CityMapCriterias with &quot; + workspaceCriterias.result.length);
+-  }
+-
+   /** ask my kiezatlas.de proxy for geoObjects */
+   function searchRequest(query) {
+     showDialog(false);
++    var queryString = &quot;&quot;;
+     if (typeof query == &quot;undefined&quot;) {
+-      var queryString= jQuery(&quot;#searchInputField&quot;).attr(&quot;value&quot;);
++      queryString = jQuery(&quot;#searchInputField&quot;).attr(&quot;value&quot;);
+     } else {
+       queryString = query;
+       jQuery(&quot;#searchInputField&quot;).attr(&quot;value&quot;, query);
+@@ -484,7 +380,7 @@
+     queryString = urlencode(queryString);
+     // + 'searchGeoObjects.php?query=' + queryString + '&amp;topicmapId=' + topicId + '&amp;workspaceId=' + workspaceId;
+     var body = '{&quot;method&quot;: &quot;searchGeoObjects&quot;, &quot;params&quot;: [&quot;'+queryString+'&quot;, &quot;'+topicId+'&quot;, &quot;'+workspaceId+'&quot;]}';
+-      showProgressInSideBar(&quot;Suchanfrage&quot;);
++    showProgressInSideBar(&quot;Suchanfrage&quot;);
+     jQuery.ajax({
+       type: &quot;POST&quot;,
+       url: SERVICE_URL,
+@@ -493,9 +389,7 @@
+       dataType: 'json',
+       async: true,
+       success: function(obj){
+-		    // log('got respoonse ' + obj.result.toString());
+-		    initResultList(obj.result);
+-		    if (debug) log('search delivered ' + obj.result.length + ' results');
++		    initResultList(obj.result, queryString);
+         updatePermaLink(baseUrl+mapAlias+&quot;?search=&quot;+queryString);
+       },
+       error: function(x, s, e){
+@@ -508,12 +402,112 @@
+       }
+     });
+   }
++
++  function showGeoObjectInfo(givenTopic, resultHandler) {
++    hideProgressFromSideBar();
++    resultHandler.empty();
++    var imgSrc = getImageSource(givenTopic);
++    if (imgSrc != &quot;undefined&quot;) {
++      imgSrc = IMAGES_URL + imgSrc;
++      // var imgWidth = jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;);
++      resultHandler.append('&lt;img src=&quot;'+imgSrc+'&quot;/&gt;&lt;br/&gt;');
++    }
++    resultHandler.append('&lt;b&gt;'+givenTopic.name+'&lt;/b&gt;&lt;br/&gt;');
++    // address related stuff follows
++    var cityName = getTopicCity(givenTopic);
++    var street = getTopicAddress(givenTopic);
++    if (cityName == &quot; Berlin&quot; || cityName == &quot;Berlin&quot; || onBerlinDe) { // ### FIXME sloppy
++      var publicTransportURL = '<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>' + street +
++        '&amp;search=Suchen&amp;formquery=&amp;address=true';
++      var imageLink = '&lt;a href=&quot;'+ publicTransportURL + '&quot; target=&quot;_blank&quot;&gt;'
++        + '&lt;img src=\&quot;'+IMAGES_URL+'fahrinfo.gif&quot; border=&quot;0&quot; hspace=&quot;20&quot;/&gt;&lt;/a&gt;';
++      if (onBerlinDe || topicId == &quot;t-331302&quot;) { // ehrenamt map datasets have no city property
++        resultHandler.append(''+getTopicPostalCode(givenTopic) + ' Berlin&lt;br/&gt;');
++      } else {
++        resultHandler.append(''+getTopicPostalCode(givenTopic) + ' ' + cityName + '&lt;br/&gt;');
++      }
++      resultHandler.append('' + street + '&nbsp;' + imageLink + '&lt;p/&gt;');
++    } else {
++      if (topicId == &quot;t-331302&quot;) { // ehrenamt map on datasets have no city property
++        resultHandler.append(''+getTopicPostalCode(givenTopic) + ' Berlin&lt;br/&gt;');
++      } else {
++        resultHandler.append(''+getTopicPostalCode(givenTopic) + ' ' + cityName + '&lt;br/&gt;');
++      }
++      resultHandler.append('' + street + '&lt;p/&gt;');
++    }
++    // stripping unwanted fields of the data container
++    givenTopic = stripFieldsContaining(givenTopic, &quot;LAT&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;LONG&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Locked Geometry&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Forum / Aktivierung&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Image&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Icon&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;YADE&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Stadt&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Address&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Name&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Description&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Timestamp&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;OriginId&quot;);
++    var propertyList = '&lt;p&gt;'; //&lt;table width=&quot;100%&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tbody&gt;';
++    for (var i=0; i &lt; givenTopic.properties.length; i++) {
++      // propertyList += '&lt;tr&gt;';
++      if (givenTopic.properties[i].label.indexOf(&quot;Sonstiges&quot;) != -1) {
++        propertyList += '&lt;p class=&quot;additionalInfoWhite&quot;&gt;';
++      } else if (givenTopic.properties[i].label.indexOf(&quot;Administrator&quot;) != -1) {
++        propertyList += '&lt;p class=&quot;additionalInfo&quot;&gt;';
++      } else if (givenTopic.properties[i].label == &quot;Barrierefrei&quot; &amp;&amp; givenTopic.properties[i].value == &quot;&quot;) {
++        // skip rendering Barrierefrei-Field cause value was not set yet
++      } else {
++        propertyList += '&lt;p&gt;&lt;span class=&quot;propertyLabel&quot;&gt;'+givenTopic.properties[i].label+':&nbsp;&lt;/span&gt;';
++      }
++      if (givenTopic.properties[i].type == 0) {
++        if (givenTopic.properties[i].label.indexOf(&quot;Barrierefrei&quot;) == -1) {
++          // ordinary rendering for DM Property Type Single Value
++          propertyList += '&lt;span class=&quot;propertyField&quot;&gt;'+givenTopic.properties[i].value+'&lt;/span&gt;&lt;/p&gt;';
++        } else {
++          // special rendering for the &quot;BARRIERFREE_ACCESS&quot;-Property
++          if (givenTopic.properties[i].value == &quot;&quot;) {
++            // skip rendering Barrierefrei-Field cause value was not set yet
++          } else if (givenTopic.properties[i].value == &quot;Ja&quot;) {
++            propertyList += '&lt;img src=&quot;'+ICONS_URL+'green-light.png&quot;/ width=&quot;15&quot; height=&quot;15&quot; border=&quot;0&quot; style=&quot;position: relative; top: 2px;&quot; title=&quot;Ja, barrierefreier Zugang&quot; alt=&quot;Ja, barrierefreier Zugang&quot;&gt;&lt;/p&gt;';
++          } else if (givenTopic.properties[i].value.indexOf(&quot;Eingeschr&quot;) != -1) {
++            propertyList += '&lt;img src=&quot;'+ICONS_URL+'orange-light.png&quot;/ width=&quot;15&quot; height=&quot;15&quot; border=&quot;0&quot; style=&quot;position: relative; top: 2px;&quot; title=&quot;Eingeschr&auml;nkter, barrierefreier Zugang&quot; alt=&quot;Eingeschr&auml;nkter, barrierefreier Zugang&quot;&gt;&lt;/p&gt;';
++          } else if (givenTopic.properties[i].value == &quot;Nein&quot;) {
++            propertyList += '&lt;img src=&quot;'+ICONS_URL+'red-light.png&quot;/ width=&quot;15&quot; height=&quot;15&quot; border=&quot;0&quot; style=&quot;position: relative; top: 2px;&quot; title=&quot;Nein, kein barrierefreier Zugang&quot; alt=&quot;Nein, kein barrierefreier Zugang&quot;&gt;&lt;/p&gt;';
++          }
++        }
++      } else {
++        // DM Property Type Multi Value
++        propertyList += '&lt;span class=&quot;propertyField&quot;&gt;';
++        for ( var k=0; k &lt; givenTopic.properties[i].values.length; k++ ) {
++          stringValue = givenTopic.properties[i].values[k].name;
++          var htmlValue = &quot;&quot;;
++          if (stringValue.startsWith(&quot;<A HREF="http://">http://</A>&quot;)) {
++            htmlValue = makeWebpageLink(stringValue, stringValue);
++          } else if (stringValue.indexOf(&quot;@&quot;) != -1) {
++            htmlValue = makeEmailLink(stringValue, stringValue);
++          } else {
++            htmlValue = stringValue;
++          }
++          propertyList += '&lt;br/&gt;&lt;img style=&quot;border-style: none; vertical-align: middle;&quot; '
++            + ' src=&quot;'+ICONS_URL+''+givenTopic.properties[i].values[k].icon+'&quot;/&gt;&nbsp;' + htmlValue;
++        }
++        propertyList += '&lt;/span&gt;&lt;/p&gt;';
++      }
++      propertyList += '&lt;/p&gt;';
++    }
++    resultHandler.append(propertyList);
++    //
++    updatePermaLink(baseUrl+mapAlias+&quot;?topicId=&quot;+givenTopic.id);
++  }
+   
+-  /** sends an ajax request to the google geocoder through a proxy script 
+-    * and moves the center / focuse of the mapTiles to the first result of coordinates
+-    * 
+-    * ### TODO: improve the dynamic localization of the viewPortBias, try again to make use of mapBounds
+-    */
++  /**
++   * sends an ajax request to the google geocoder through a proxy script
++   * and moves the center / focuse of the mapTiles to the first result of coordinates
++   * 
++   * ### TODO: improve the dynamic localization of the viewPortBias, try again to make use of mapBounds
++   **/
+   function focusRequest() {
+     if (debug) log('focusRqeust for ' + streetFocus);
+     var streetFocus = jQuery(&quot;#streetNameField&quot;).val();
+@@ -560,48 +554,7 @@
+           // select_alternative_item(autocomplete_item);
+           select_current_item();
+           focus_current_item();
+-        }/* else {
+-          // alert(&quot;Exact 0 Reuslts for: &quot; + alternativ_items[0].name);
+-          var item = alternative_items[autocomplete_item];
+-          var toLonLat= new OpenLayers.LonLat(item.Point.coordinates[0], item.Point.coordinates[1]);
+-          // map.setCenter(toLonLat.transform(map.displayProjection, map.projection), LEVEL_OF_DETAIL_ZOOM);
+-          map.panTo(toLonLat);
+-          map.zoomTo(LEVEL_OF_DETAIL_ZOOM); // level of detail
+-          /// showDialog(true, &quot;Die Umkreissuche meldet einen OK'n Fehler: &quot;, &quot;\&quot;&quot;+obj.name+&quot;\&quot; (&quot;+obj.Status.code+&quot;)&lt;br/&gt;&quot; + toLonLat.transform(map.displayProjection, map.projection).toString());
+-        } */
+-        /* if (obj.Placemark != undefined) {
+-          //
+-          // showDialog(true, &quot;Die Umkreissuche meldet einen Fehler: &quot;, &quot;\&quot;&quot;+obj.name+&quot;\&quot; (&quot;+obj.Status.code+&quot;)&quot;);
+-        } else {
+-          // alert(&quot;PLacemarksLength: &quot; + obj.Placemark.length);
+-          // showDialog(true, &quot;Die Umkreissuche meldet einen Fehler:&quot;, &quot;Your Search Request could not be processed correctly! (&quot;+obj.Status.code+&quot;)&quot;);
+-        }*/
+-        /* if (obj.results != undefined) {
+-          alternative_items = obj.results;
+-          jQuery(&quot;#permaLink&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;); // ### FIXME use showPermaLink(false)..
+-          if (alternative_items.length == 1) {
+-            select_current_item();
+-            focus_current_item();
+-          } else if (alternative_items.length &gt; 1) {
+-            show_alternatives_list(jQuery(&quot;#focusAlternatives&quot;));
+-            // select_alternative_item(autocomplete_item);
+-            select_current_item();
+-            focus_current_item();
+-          } else {
+-            var item = alternative_items[autocomplete_item];
+-            // NOTE: has to be inside the map.maxExtend-Viewport otherwise request will be silently ignored by OL
+-            var toLonLat = new OpenLayers.LonLat(item.geometry.location.lng, item.geometry.location.lat);
+-            if (!map.getMaxExtent().containsLonLat(toLonLat.transform(map.displayProjection, map.projection))) {
+-              var errorMessage = &quot;Die von ihnen ausgewU+00E4hlte StraU+00DFe ist nicht Teil dieses Stadtplans.\n&quot;
+-                + &quot;Bitte geben sie zusU+00E4tzliche Angaben, wie z.B. PLZ ein, oder wU+00E4hlen sie eine Alternative aus.&quot;;
+-              alert(errorMessage); // ### TODO: build a proper message dialog
+-            } else {
+-              map.setCenter(toLonLat.transform(map.displayProjection, map.projection), LEVEL_OF_DETAIL_ZOOM);
+-            }
+-          }
+-        } else {
+-          alert(&quot;Warning: Yor Search Request could not be processed correctly!&quot;);
+-        }*/
++        }
+       },
+       error: function(x, s, e) {
+         showDialog(true, &quot;ERROR&quot;, &quot;x: &quot; + x + &quot; s: &quot; + s + &quot; e: &quot; + e);
+@@ -618,9 +571,9 @@
+   //
+   
+   /**
+-   *  Alternatives List for focusRequest and mapNavigation
+-   *  inspired by the plain_document.js implementation of the deepamehta3-client
+-   */
++   * Alternatives List for focusRequest and mapNavigation
++   * inspired by the plain_document.js implementation of the deepamehta3-client
++   **/
+   function show_alternatives_list(input_element) {
+       var innerHtml = &quot;&lt;i&gt;Es wurden &auml;hnliche Orte gefunden&lt;/i&gt;&lt;br/&gt;&quot;;
+       for (r = 0; r &lt; alternative_items.length; r++) {
+@@ -733,11 +686,12 @@
+   // --- Sidebar Specific GUI Code
+   // 
+   
+-  function initResultList(resultObjects) {
++  function initResultList(resultObjects, lastQuery) {
+     hideProgressFromSideBar();
+     var topicIdsToShow = new Array();
+     jQuery(&quot;#sideBarCategories&quot;).empty();
+-    jQuery(&quot;#sideBarCategories&quot;).append('&nbsp;&nbsp;&lt;b class=&quot;redTitle&quot;&gt;Suchergebnisse sind:&lt;/b&gt;&lt;p/&gt;');
++    jQuery(&quot;#sideBarCategories&quot;).append('&nbsp;&lt;b class=\&quot;redTitle\&quot;&gt;' + resultObjects.length + '&lt;/b&gt; ');
++    jQuery(&quot;#sideBarCategories&quot;).append('Suchergebnisse f&uuml;r &lt;b class=\&quot;redTitle\&quot;&gt;\&quot;' + lastQuery + '\&quot;&lt;/b&gt;&lt;p/&gt;');
+     jQuery(&quot;#sideBarCategories&quot;).append('&lt;table width=&quot;100%&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot; ' +
+       'id=&quot;sideBarCategoriesTable&quot;&gt;&lt;/table&gt;');
+     for (var i=0; i &lt; resultObjects.length; i++) {
+@@ -747,9 +701,9 @@
+       } else {
+         jQuery(&quot;#sideBarCategoriesTable&quot;).append('&lt;tr id=&quot;topicRow-'+resultBaseTopic.id+'&quot; width=&quot;100%&quot; '
+           + ' class=&quot;topicRowDeselected&quot;&gt;&lt;td width=&quot;20px&quot; valign=&quot;center&quot; align=&quot;center&quot;&gt;&lt;b&gt;'+(i+1)+'. &lt;/b&gt;&lt;/td&gt;'
+-          + '&lt;td valign=&quot;center&quot;&gt;&lt;a href=&quot;#&quot; id=&quot;topicRowHref-'+resultBaseTopic.id+'&quot;&gt;'+resultBaseTopic.name+'&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;');
+-        jQuery(&quot;#topicRow-&quot;+resultBaseTopic.id).attr('onclick', 'javascript:showTopicInMap(&quot;'+resultBaseTopic.id+'&quot;);');
+-        jQuery(&quot;#topicRowHref-&quot;+resultBaseTopic.id).attr('href', 'javascript:showTopicInMap(&quot;'+resultBaseTopic.id+'&quot;);');
++          + '&lt;td valign=&quot;center&quot;&gt;&lt;a href=&quot;#&quot; id=&quot;topicRowHref-'+resultBaseTopic.id+'&quot;&gt;' + resultBaseTopic.name + '&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;');
++        jQuery(&quot;#topicRow-&quot;+resultBaseTopic.id).attr('onclick', 'javascript:showTopicInMap(&quot;' + resultBaseTopic.id + '&quot;);');
++        jQuery(&quot;#topicRowHref-&quot;+resultBaseTopic.id).attr('href', 'javascript:showTopicInMap(&quot;' + resultBaseTopic.id + '&quot;);');
+         topicIdsToShow.push(resultBaseTopic.id);
+       }
+     }
+@@ -757,10 +711,10 @@
+     showTopicFeatures(topicIdsToShow, &quot;&quot;);
+   }
+   
+-  /** depends on an available #sideBarCriterias Element*/
++  /**
++   * depends on an available #sideBarCriterias div-Container
++   **/
+   function initCriteriaList() {
+-    // Auslesen der Kriterien, die eine Umschaltung zu den einzelnen Nutzerabfragen er&#195;&#182;ffnen. 
+-    // Erstellen der Kriterien Buttons und Labels
+     jQuery(&quot;#progContainer&quot;).hide();
+     var critListElement = jQuery(&quot;#sideBarCriterias&quot;);
+     var onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
+@@ -800,10 +754,10 @@
+       critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; align=&quot;right&quot; class=&quot;critLinkNormal&quot;&gt;'
+         + critName + '&lt;/td&gt;';
+       if (crtCritIndex == i) {
+-        critLinkList += '&lt;td align=&quot;left&quot;&gt;&#8226;&lt;/td&gt;&lt;/tr&gt;';} else {critLinkList += '&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;';
++        critLinkList += '&lt;td align=&quot;left&quot;&gt;&#8226;&lt;/td&gt;&lt;/tr&gt;';
++      } else {
++        critLinkList += '&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;';
+       }
+-      // in any case, when switchin the criteria updateSidebar --
+-      // radio.setAttribute('onclick', 'javascript:updateCategoryList(&quot;' + i + '&quot;)'); 
+     }
+     critLinkList += '&lt;/tbody&gt;';
+     critLinkList += '&lt;/table&gt;';
+@@ -819,18 +773,22 @@
+     setWorkspaceInfos();
+   }
+ 
++  /**
++   * renders a listing of slim-items displaying all geo-objects associated with one given category
++   * note: caches categoryId in our little helper list of markerGroupIds for later re-selection
++   **/
+   function showCatInSideBar(catId, catName) {
+-    reSetMarkers();
+-    showDialog(false);
++    reSetMarkers(); // clean up the category and map state
++    showDialog(false); // hide our info-dialog, if necessary
+     //
+     var topicsToShow = getAllTopicsInCat(catId);
+-    topicsToShow.sort(topicSort);
++    topicsToShow.sort(topicSort); // alphabetical ascending
+     var topicIdsToShow = new Array();
+     //
+     var sideBarCategories = jQuery(&quot;#sideBarCategories&quot;);
+     sideBarCategories.empty();
+-    sideBarCategories.append('&nbsp;&lt;b class=&quot;redTitle&quot;&gt;'+catName+'&lt;/b&gt;&lt;br/&gt;&nbsp;&nbsp;' 
+-      + '&lt;small&gt;('+topicsToShow.length+ ' Objekte)&lt;/small&gt;&lt;p/&gt;');
++    sideBarCategories.append('&nbsp;&lt;b class=&quot;redTitle&quot;&gt;&lt;a href=&quot;javascript:renderCritCatListing('+ crtCritIndex+')&quot; title=&quot;Zur&uuml;ck&quot;&gt;' +catName + '&lt;/a&gt;&lt;/b&gt;&lt;br/&gt;&nbsp;&nbsp;');
++    sideBarCategories.append('&lt;small&gt;('+topicsToShow.length+ ' Objekte)&lt;/small&gt;&lt;p/&gt;');
+     sideBarCategories.append('&lt;table width=&quot;100%&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot; id=&quot;sideBarCategoriesTable&quot;&gt;&lt;/table&gt;');
+     for (var i = 0; i &lt; topicsToShow.length; i++) {
+       jQuery(&quot;#sideBarCategoriesTable&quot;).append('&lt;tr width=&quot;100%&quot; class=&quot;topicRowDeselected&quot;&gt;' 
+@@ -841,6 +799,8 @@
+       jQuery(&quot;#topicRowHref-&quot;+topicsToShow[i].id).attr('href', 'javascript:showTopicInMap(&quot;'+topicsToShow[i].id+'&quot;);');
+       topicIdsToShow.push(topicsToShow[i].id);
+     }
++    // mark category as currently selected, visible
++    markerGroupIds.push(catId);
+     // showTopicsInMap(topicsToShow);
+     showTopicFeatures(topicIdsToShow, catId);
+     // calculateNewBounds if its a &quot;District&quot; criteria
+@@ -854,26 +814,20 @@
+     }
+   }
+ 
+-  function topicSort(a, b) {
+-    var nameA = a.name.toLowerCase();
+-    var nameB = b.name.toLowerCase();
+-    if (nameA &lt; nameB) // sort string ascending
+-      return -1
+-    if (nameA &gt; nameB)
+-      return 1
+-    return 0 //default return value (no sorting)
+-    //Compare &quot;a&quot; and &quot;b&quot; in some fashion, and return -1, 0, or 1
+-  }
+-  
+-  /** resetsMarkers, removePopups, and renders the current criteria and category list*/
++  /** resetsMarkers, removePopups, and renders the current criteria and category list */
+   function updateCategoryList(criteriaIndex) {
+     // clear`s catList and hides all visible marker
+     reSetMarkers();
+-    removeAllPopUps();
++    hideAllInfoWindows();
+     renderCritCatListing(criteriaIndex);
+   }
+ 
+-  /* initializes the upper list of criterias and lower list of categories depending on &quot;var crtCritIndex&quot;  **/
++  /**
++   * a) (@see updateCategoryList) initializes the upper list of criterias + lower list of categories based on given idx
++   * b) (@see showCatInSideBar-Href-Back-Trigger) initializes the upper list of criterias + renders the list of
++   *    categories but the formerly selected one as selected
++   * info: displays markerGroupIds[catId] as selected
++   ***/
+   function renderCritCatListing(criteria) {
+     crtCritIndex = criteria; // update the in memory criteria index/pointer
+     updatePermaLink(baseUrl+mapAlias+&quot;?critId=&quot;+(parseInt(criteria)+1)); // permalink: cause users start counting from 1
+@@ -895,11 +849,9 @@
+         var catName = [workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catName];
+         var catId = new String([workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catId]);
+         var catCSS = &quot;catRowDeselected&quot;;
+-        /** deactivated category row selection effect
+         if (isCategoryVisible(catId)) {
+-          if (debug) log(&quot;..updateCategeryList.isVisibleCat - reSelect in GUI! &quot;);
+           catCSS = &quot;catRowSelected&quot;;
+-        }*/
++        }
+         //
+         var html = '&lt;tr id=&quot;catRow-'+catId+'&quot; width=&quot;100%&quot; class=&quot;'+catCSS+'&quot;&gt;'
+           + ' &lt;td width=&quot;25px&quot; class=&quot;iconCell&quot; valign=&quot;center&quot; align=&quot;center&quot;&gt;&lt;a href=&quot;&quot; id=&quot;toggleHref-'+catId+'&quot;&gt;'
+@@ -932,14 +884,14 @@
+     footer += '&lt;span id=&quot;footerPoweredBy&quot;&gt;'+footerMessage+'&lt;/span&gt;';
+     jQuery(&quot;#kafooter&quot;).html(footer);
+     jQuery(&quot;#sideBarLogo&quot;).attr('src', '' + IMAGES_URL + workspaceLogo);
+-    jQuery(&quot;#sideBarLogo&quot;).attr('title', 'The KiezAtlas 1.7 Logo');
++    jQuery(&quot;#sideBarLogo&quot;).attr('title', 'Das KiezAtlas Logo (Version 1.6.8.2)');
+     jQuery(&quot;#sideBarLogo&quot;).attr('alt', mapTitle + ' Logo');
+     jQuery(&quot;#sideBarLogoLink&quot;).attr('href', workspaceHomepage);
+     if (debug) log(&quot;set sideBar to: &quot; + jQuery(&quot;#sideBarLogo&quot;).attr('src') + &quot; and logo is: &quot; + jQuery(&quot;#sideBarLogo&quot;).attr('title'));
+   }
+ 
+   function isCategoryVisible(myCatId) {
+-  // log('howManyCatsVisible: ' + markerGroupIds.length);
++    // log('howManyCatsVisible: ' + markerGroupIds.length);
+     for (var i = 0; i &lt; markerGroupIds.length; i++) {
+       if (markerGroupIds[i] == myCatId) {
+         return true;
+@@ -948,6 +900,18 @@
+     return false;
+   }
+ 
++  // compare &quot;a&quot; and &quot;b&quot; in some fashion, and return -1, 0, or 1
++  function topicSort(a, b) {
++    var nameA = a.name.toLowerCase();
++    var nameB = b.name.toLowerCase();
++    if (nameA &lt; nameB) // sort string ascending
++      return -1
++    if (nameA &gt; nameB)
++      return 1
++    return 0 //default return value (no sorting)
++  }
++
++  /** convenient method to render listing of categories according to the latest chosen criteria */
+   function showCritCatList() {
+     // reSets all Markers, removes all Popups and renders criteria list
+     updateCategoryList(crtCritIndex);
+@@ -992,9 +956,9 @@
+   // --
+ 
+   /**
+-    * put numerous marker in the layer and draw them
+-    * @see initResultList, showCatInSidebar
+-    * info: is used to display search or catSearch results _ontop/independent of already visible categories_
++    * renders numerous marker on the vector layer with their &quot;default&quot;-style
++    * (@see initResultList, showCatInSideBar)
++    * info: is used to display search or catSearch results _ontop or independent of already visible categories_
+     */
+   function showTopicsInMap(topicsToShow) {
+     for (var i = 0; i &lt; topicsToShow.length; i++) {
+@@ -1044,7 +1008,11 @@
+       showInfoWindowForMarker(featureToToggle.data);
+     }
+   }
+-  
++
++  /**
++   * called when single topics are linked in, addressed from outside
++   * @see jQuery.load(...)
++   **/
+   function selectAndShowInMap(originId, isTopicId) {
+     var feature = null;
+     if (isTopicId) {
+@@ -1053,8 +1021,7 @@
+       feature = checkFeatureByOriginId(originId);
+     }
+     if (feature == null) {
+-      // project could not be assoiciated with a correct address, though is not published
+-      // ### TODO: showInfo in SideBar
++      // project could not be associated with a correct address, though is not published
+         var helpHtmlOne = '&lt;br/&gt;&lt;b class=&quot;redTitle&quot;&gt;Entschuldigen sie bitte, die Projektadresse ist unbekannt.&lt;/b&gt;&lt;p/&gt; '
+           + 'F&uuml;r diese &lt;i&gt;Einsatzm&ouml;glichkeit&lt;/i&gt; ist die Adresse des Einsatzortes nicht bekannt bzw. '
+           + 'fehlerhaft und daher k&ouml;nnen wir ihnen an dieser Stelle keine zus&auml;tzlichen Informationen anzeigen. &lt;p/&gt;'
+@@ -1070,8 +1037,8 @@
+       // TODO: createSlimGeoObject(has to assemble the crtierias with the help of CityMpa.getSeachCriteria() 
+       // to mach always to the first criteria);
+       // NOTE: just works for the herewith fixed default 2
+-      // var catId = getTopicById(feature.data.topicId).criterias[1].categories[0];
+-      // if (catId != undefined) toggleMarkerGroups(catId);
++      // var topCatId = getTopicById(feature.data.topicId).criterias[1].categories[0];
++      // if (topCatId  != undefined) toggleMarkerGroups(topCatId);
+       //
+       showTopicInMap(feature.data.topicId);
+       //
+@@ -1079,23 +1046,25 @@
+     }
+   }
+ 
+-  /** NOTE: topic must be already rednered in map, otherwise method will fail,
+-   *        just call showTopicInMap(topicId) in before
+-   *  TODO: checkDrawnFeatures &amp;&amp; checkFeatures
+-   *  Focus a show infos for a drawn topic in map and load the corresponding data container */
++  /**
++   * NOTE: topic must be already rednered in map, otherwise method will fail, just call showTopicInMap(topicId) in before
++   * Focus and show infos for a drawn topic in map and load the corresponding data container
++   **/
+   function showTopicInSideBar(topicId) {
+     // sideBar related stuff
+     //
+     var handler = jQuery(&quot;#sideBarCategories&quot;);
+     handler.empty();
+     jQuery(&quot;#progContainer&quot;).show(&quot;fast&quot;);
+-    var topicFeature = checkDrawnFeaturesForTopicId(topicId);
+-    if(topicFeature != null) {
++    getGeoObjectInfo(topicId, handler);
++    //
++    /** var topicFeature = checkDrawnFeaturesForTopicId(topicId);
++    if ( topicFeature != null ) {
+       topicFeature.renderIntent = &quot;select&quot;;
+       myNewLayer.redraw();
+-    }
+-    showInfoWindowForMarker(topicFeature.data);
+-    getGeoObjectInfo(topicId, handler);
++      // topi undrawn but infowMarker is still there, which is OK
++      showInfoWindowForMarker(topicFeature.data);
++    } */
+   }
+ 
+   function getAllTopicsInCat(catId) {
+@@ -1128,19 +1097,19 @@
+       log('&lt;b&gt;MarkerGroupIds before showing: ' + markerGroupIds.toString() + ' in which are: '+topics.length+'&lt;/b&gt;');
+     } else {
+       // remove catId from our little helper List
+-      // markerGroupIds.sort();
+       for (var m = 0; m &lt; markerGroupIds.length; m++) {
+         if (category == markerGroupIds[m]) {
+           markerGroupIds.splice(m,1); // = null; // delete catId from the list of currently visible categories
+           // printOut('cleaned up List.. ' + markerGroupIds.length + '.. removed ' + category);
+         }
+       }
+-      var topics = hideMarkerGroup(category);
+-      hideTopicFeatures(topics);
++      var topicsToToggle = hideMarkerGroup(category);
++      hideTopicFeatures(topicsToToggle);
+       if (debug) log('.toggleMarkerGroups.before hiding: ' + markerGroupIds.toString() + ', '+topics.length+'&lt;/b&gt;');
+     }
+   }
+-  
++
++  /** ### FIXME: cleanup **/
+   function hideTopicFeatures(topicListToHide) {
+     // log(&quot;..starting to Hide &quot;+topicListToHide.length+&quot;Features&quot;);
+     for (m=0; m&lt;topicListToHide.length; m++) {
+@@ -1233,7 +1202,7 @@
+             clusterFeature.data.cluster = newCluster;
+             if ( catIconURL == &quot;&quot; || catIconURL == &quot;blackdot.gif&quot; ) { // <A HREF="http://www.kiezatlas.de/client/icons/">http://www.kiezatlas.de/client/icons/</A>
+               // paint a circle instead
+-              //clusterFeature.attributes.renderer = &quot;circle&quot;;
++              // clusterFeature.attributes.renderer = &quot;circle&quot;;
+               // clusterFeature.attributes.renderer = &quot;icon&quot;;
+               clusterFeature.attributes.marker = &quot;hotspot&quot;;
+               clusterFeature.attributes.size = &quot;20&quot;;
+@@ -1387,16 +1356,15 @@
+         fontFamily: &quot;Arial,Helvetica,sans-serif&quot;, fontColor: &quot;#B60033&quot;}
+     });
+     var districtLayer = new OpenLayers.Layer.Vector(&quot;Bezirksgrenzen&quot;, {
+-      styleMap: dStyleMap,
+-      zIndexing: true,
++      styleMap: dStyleMap, zIndexing: true,
+       projection: map.displayProjection,
+       strategies: [new OpenLayers.Strategy.Fixed()],
+       protocol: new OpenLayers.Protocol.HTTP({
+-          url: &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/districts.kml">http://www.kiezatlas.de/maps/embed/img/districts.kml</A>&quot;,
+-          format: new OpenLayers.Format.KML({
+-              extractStyles: false,
+-              extractAttributes: true
+-          })
++        url: &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/districts.kml">http://www.kiezatlas.de/maps/embed/img/districts.kml</A>&quot;,
++        format: new OpenLayers.Format.KML({
++          extractStyles: false,
++          extractAttributes: true
++        })
+       })
+     });
+     //
+@@ -1426,8 +1394,7 @@
+     }
+     */
+     map.addControl(districtSelect);
+-    districtSelect.deactivate();
+-
++    districtSelect.activate();
+     //
+   }
+ 
+@@ -1436,18 +1403,13 @@
+    * TOOD: cleanup..
+    **/
+   function initLayerAllFeatures(points, mainMap) {
+-    // create a lookup table with different symbolizers for the different
+-    // state values
+-    var context = function(feature) {
+-      return feature;
+-    }
++    var context = function(feature) {return feature;} // a magic line from somewhere..
+     var myStyle = new OpenLayers.Style( { 
+       graphicName: &quot;circle&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;#378fe0&quot;, strokeColor: &quot;blue&quot;, pointRadius: 5, 
+       graphicTitle: &quot;${label}&quot;, labelYOffset: &quot;7px&quot;, externalGraphic: &quot;${iconUrl}&quot;, graphicWidth: &quot;${size}&quot;, 
+       fontSize: &quot;10px&quot;, fontFamily: &quot;Verdana, Arial&quot;, fontColor: &quot;#ffffff&quot;} );
+     var symbolizer = OpenLayers.Util.applyDefaults( myStyle, OpenLayers.Feature.Vector.style[&quot;default&quot;]);
+-    var myStyleMap = new OpenLayers.StyleMap({
+-      &quot;default&quot;: symbolizer, 
++    var myStyleMap = new OpenLayers.StyleMap({&quot;default&quot;: symbolizer,
+       &quot;select&quot;: {strokeColor:&quot;red&quot;, fillOpacity: &quot;1&quot;, fillColor:&quot;white&quot;, strokeWidth: 2 , graphicWidth: 21},
+       &quot;temporary&quot;: {strokeColor:&quot;white&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;blue&quot;, strokeWidth: 2, graphicWidth: 21}
+     });
+@@ -1463,12 +1425,8 @@
+       // strategies: [ new OpenLayers.Strategy.Cluster() ]
+     });
+     var selectFeatureHandler = new OpenLayers.Control.SelectFeature(myNewLayer, {
+-      multiple: false,
+-      clickout: false,
+-      toggle: false,
+-      hover: false,
+-      highlightOnly: false,
+-      renderIntent: &quot;select&quot;,
++      multiple: false, clickout: false, toggle: false,
++      hover: false, highlightOnly: false, renderIntent: &quot;select&quot;,
+       onSelect: function() {
+         // jQuery(&quot;#memu&quot;).css(&quot;visibility&quot;, &quot;hidden&quot;);
+       }
+@@ -1478,10 +1436,9 @@
+     //
+     var featureHandler = new OpenLayers.Handler.Feature(selectFeatureHandler, myNewLayer, {
+       //stopClick: true,
+-      stopUp: true,
+-      stopDown: true,
++      stopUp: true, stopDown: true,
+       click: function(feat) {
+-        for (i=0; i&lt;myNewLayer.selectedFeatures.length; i++) {
++        for ( i = 0; i &lt; myNewLayer.selectedFeatures.length; i++) {
+           selectFeatureHandler.unselect(myNewLayer.selectedFeatures[i]);
+         }
+         showInfoWindowForMarker(feat.data);
+@@ -1489,17 +1446,16 @@
+       }, // clickFunction
+       clickout: function (feat) {
+         selectFeatureHandler.unselect(feat);
+-        removeAllPopUps();
++        hideAllInfoWindows();
+       }
+     }); // end FeatureHandlerInit
+-    /* commented out the mouseover cluster menu  */
+-      var highlightCtrl = new OpenLayers.Control.SelectFeature(myNewLayer, {
+-      hover: true,
+-      highlightOnly: true,
++      /* commented out the mouseover cluster menu  */
++    var highlightCtrl = new OpenLayers.Control.SelectFeature(myNewLayer, {
++      hover: true, highlightOnly: true,
+       renderIntent: &quot;temporary&quot;,
+       eventListeners: { // makes use of the global propertyMap for eventListeners
+         beforefeaturehighlighted: function(e) {
+-          // e.feature.attributes.label = e.feature.data.topicName;
++          e.feature.attributes.label = e.feature.data.topicName;
+           // no menu just label
+           var marker = e.feature.attributes.marker;
+           if (marker == &quot;hotspot&quot;) {
+@@ -1545,17 +1501,11 @@
+     });
+     mainMap.addControl(highlightCtrl);
+     highlightCtrl.activate();
+-    // mainMap.addControl(featureHandler);
+     featureHandler.activate();
+-    // log(&quot;featureHandler activated: &quot; + featureHandler.activate());// = true;
+     allFeatures = [points.length];
+-    // log(&quot;[INFO] &quot;+points.length+&quot; Features are like: &quot; 
+-    //   + points[0].topicName + &quot;(&quot; +points[0].topicId+ &quot;)&quot; + points[0].lonlat.lon + &quot;:&quot; + points[0].lonlat.lat);
+-    for (var i=0; i&lt;points.length; i++) {
+-      allFeatures[i] = new OpenLayers.Feature.Vector(
+-        new OpenLayers.Geometry.Point(
+-          points[i].lonlat.lon, points[i].lonlat.lat), 
+-          {&quot;marker&quot;: &quot;normal&quot;, &quot;label&quot;: &quot;&quot;}
++    for ( var i = 0; i &lt; points.length; i++ ) {
++      allFeatures[i] = new OpenLayers.Feature.Vector (
++        new OpenLayers.Geometry.Point(points[i].lonlat.lon, points[i].lonlat.lat), {&quot;marker&quot;: &quot;normal&quot;, &quot;label&quot;: &quot;&quot;}
+       );
+       allFeatures[i].data = {
+         topicName: points[i].topicName, topicId: points[i].topicId, defaultIcon: points[i].defaultIcon, 
+@@ -1570,10 +1520,14 @@
+       // add new feature
+       myNewLayer.addFeatures(allFeatures[i]);
+     }
+-    log('newLayer with overall: ' + myNewLayer.features.length + ' features');
++    if (debug) log('newLayer with overall: ' + myNewLayer.features.length + ' features');
+     map.addLayer(myNewLayer);
+   }
+-  
++
++  /**
++   * note: we may remove dependency to OpenLayers.Marker and switch to OpenLayers.Features only (solely SVG-rendering)
++   * ### FIXME: REFACTOR gMarkers + .long
++   **/
+   function setupOpenMarkers() {
+     // var bounds = new GLatLngBounds();
+     gMarkers = new Array();
+@@ -1669,7 +1623,7 @@
+     return null;
+   }
+   
+-  /** checks all features on a layer, if they are a cluster if they contain already a specific topic */
++  /** checks all features on a layer, if they are a cluster and if they contain already a specific topic */
+   function checkIfAlreadyInCluster(topicId) {
+     for(i=0; i&lt;myNewLayer.features.length; i++) {
+       // look in every feature on the layer which is a cluster ?? and 
+@@ -1689,9 +1643,9 @@
+   
+   /** getFeature from Layer by topicId */
+   function checkFeatureById(topicId) {
+-    if (myNewLayer != null) {
+-      for(i=0; i&lt;myNewLayer.features.length; i++) {
+-        if(myNewLayer.features[i].data.topicId == topicId) {
++    if ( myNewLayer != null ) {
++      for( i = 0; i &lt; myNewLayer.features.length; i++ ) {
++        if( myNewLayer.features[i].data.topicId == topicId ) {
+           // log(&quot;found a feature &quot;+ myNewLayer.features[i].id + &quot; on myNewLayer.. displayStyle is:&quot;
+           //  + myNewLayer.features[i].attributes);
+           return myNewLayer.features[i];
+@@ -1703,13 +1657,12 @@
+   
+   /** getFeature from Layer by topicId */
+   function checkFeatureByOriginId(givenId) {
+-    for ( i=0; i&lt;myNewLayer.features.length; i++ ) {
++    for ( i=0; i &lt; myNewLayer.features.length; i++ ) {
+       if ( myNewLayer.features[i].data.originId == givenId ) {
+        return myNewLayer.features[i];
+       }
+     }
+-    // ### TODO: Show Notification to User
+-    log(&quot;[ERROR] found no feature on myNewLayer for &quot; + givenId);
++    if (debug) log(&quot;[ERROR] found no feature on myNewLayer for &quot; + givenId);
+     return null;
+   }
+ 
+@@ -1720,15 +1673,14 @@
+        return myNewLayer.features[i];
+       }
+     }
+-    // ### TODO: Show Notification to User
+     if (debug) log(&quot;[ERROR] found no feature on myNewLayer for &quot; + givenId);
+     return null;
+   }
+ 
+   /** check all Drawn Features if they are a topicId or contain a topicId in their cluster*/
+   function checkDrawnFeaturesForTopicId(topicId) {
+-    if (myNewLayer != null) {
+-      for( i=0; i&lt;myNewLayer.features.length; i++ ) {
++    if ( myNewLayer != null ) {
++      for( i=0; i &lt; myNewLayer.features.length; i++ ) {
+         if ( myNewLayer.features[i].renderIntent != &quot;delete&quot; ) {
+           // just go on with the check if feature is currently visible
+           if ( myNewLayer.features[i].data.topicId == topicId ) {
+@@ -1737,8 +1689,8 @@
+             //   + myNewLayer.features[i].attributes);
+             return myNewLayer.features[i];
+           } else if ( myNewLayer.features[i].data.cluster != null ) {
+-          // or if this is a cluster then check if topic is indirect visible in here
+-            for( j=0; j&lt;myNewLayer.features[i].data.cluster.length; j++ ) {
++            // or if this is a cluster then check if topic is indirect visible in here
++            for( j=0; j &lt; myNewLayer.features[i].data.cluster.length; j++ ) {
+               if ( myNewLayer.features[i].data.cluster[j].topicId == topicId ) {
+                 log(&quot;[INFO] &quot; + myNewLayer.features[i].data.cluster[j].topicName + &quot; is &lt;i&gt;visibleInCluster&lt;/i&gt;&quot;);
+                 return myNewLayer.features[i];
+@@ -1793,7 +1745,7 @@
+       // htmlString += &quot;&lt;/li&gt;&quot;;
+     }
+     // just make sure that there is not more than 1active PopUpWindow
+-    removeAllPopUps();
++    hideAllInfoWindows();
+     // var htmlString = '&lt;b&gt;' + featureData.topicName 
+     // + '&lt;/b&gt;&lt;br/&gt;&lt;a href=javascript:showTopicInSideBar(&quot;'+idString+'&quot;)&gt;weitere Details&lt;/a&gt;';
+     var lonlat = new OpenLayers.LonLat(featureData.lon, featureData.lat);
+@@ -1816,7 +1768,7 @@
+   /** create and show popuop and render marker as selected */
+   function showInfoWindowForTopicId(topicId) {
+     // just make sure that there is not more than 1active PopUpWindow
+-    removeAllPopUps();
++    hideAllInfoWindows();
+     //var topicInfo = getTopicById(data.topicId);
+     var idString = &quot;&quot;+ topicId + &quot;&quot;;
+     var featureData = checkFeatureById(topicId).data;
+@@ -1964,8 +1916,12 @@
+   }
+ 
+   function handleResize(width) {
+-    var fHeight = windowHeight();// - $('toolbar').height() - 30;
++    var fHeight = windowHeight();
+     var fWidth = windowWidth();
++    var crtHeightFromTop = parseInt(jQuery(&quot;#kiezatlas&quot;).css(&quot;top&quot;));
++    if (crtHeightFromTop &gt; 0) { // leaving fullWindow onBerlinDe-Hack
++      fHeight = fHeight - crtHeightFromTop;
++    }
+     if ( width != null) {
+       fWidth = width;
+     }
+@@ -2143,29 +2099,16 @@
+   
+   /** called by the CustomLayerSwitcher.onInputClick */
+   function clickInfoForMapControlMenu() {
+-    /* if (map.baseLayer.name == &quot;OpenStreetMap&quot;) {
+-      // OpenStreetMap
+-      if (permaLink.indexOf(&quot;baseLayer=osm&quot;) != -1) {
+-        //  is already part of the permalink..
+-      } else if (permaLink.indexOf(&quot;?&quot;) != -1) {
+-        updatePermaLink(permaLink + &quot;&amp;baseLayer=osm&quot;);
+-      } else {
+-        updatePermaLink(permaLink + &quot;?baseLayer=osm&quot;);
+-      }
+-    } else {
+-      // ### TEST: possibly remove &quot;baseLayer=osm&quot; if
+-      if (permaLink.indexOf(&quot;baseLayer=osm&quot;) != -1) {
+-        permaLink = permaLink.substr(0, permaLink.length-14);
+-      }
+-      // GMaps
+-      updatePermaLink(permaLink);
+-    }*/
+     updatePermaLink(permaLink);
+     outMapControl();
+   }
+   
+   function overMapControl() {
+-    jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 145);
++    if (onBerlinDe) {
++      jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 105);
++    } else {
++      jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 145);
++    }
+     toggleMapControl();
+   }
+   
+@@ -2195,10 +2138,11 @@
+     }
+   }
+   
+-  /** TODO: nearly redundant code to removeAllMarker  */
++  /** TODO: nearly redundant code to hideAllKiezatlasFeatures  */
+   function reSetMarkers() {
+     // if (myNewLayer != null) { // check for missing baseLayers
+-    removeAllMarker(); // and popups
++    hideAllInfoWindows();
++    hideAllKiezatlasFeatures(); // and popups
+     deSelectAllCategories();
+     // }
+   }
+@@ -2206,7 +2150,7 @@
+   /** TODO: redundant code to reSetMarkers  
+    * should be refactorde to hideAllMarker
+    */
+-  function removeAllMarker() {
++  function hideAllKiezatlasFeatures() {
+     // showProgressInSideBar(&quot;Platzieren der Markierer&quot;);
+     /* for (var i = 0; i &lt; gMarkers.length; i++) {
+       markerLayer.removeMarker(gMarkers[i]);
+@@ -2220,7 +2164,6 @@
+         featureToToggle.renderIntent = &quot;delete&quot;;
+       }
+       myNewLayer.redraw();
+-      removeAllPopUps();
+     }
+   }
+ 
+@@ -2260,6 +2203,10 @@
+     }
+   }
+ 
++  function setCityMapName(title) {
++    jQuery(&quot;#mapName&quot;).html('&lt;b&gt;Stadtplan: &lt;/b&gt; ' + title);
++  }
++
+   /** TODO: check what they actually need todo 
+    *  helper for the inputFields to send Requests to our Proxyscript with encoding the blanks
+    */
+@@ -2295,7 +2242,7 @@
+     return urlMarkup
+   }
+   
+-  function removeAllPopUps() {
++  function hideAllInfoWindows() {
+     if (map != undefined &amp;&amp; map.popups != undefined) {
+       for (var i=0; i &lt; map.popups.length; i++) {
+         // map.removePopup(map.popups[i]);
+
+Added: trunk/pages/be.de/landmaps-ie.css
+===================================================================
+--- trunk/pages/be.de/landmaps-ie.css	                        (rev 0)
++++ trunk/pages/be.de/landmaps-ie.css	2011-07-06 08:39:30 UTC (rev 102)
+@@ -0,0 +1,15 @@
++/* 
++ * Kiezatlas Alternative CityMaps Interface - berlin.de/atlas Internet Explorer Stylesheet
++ * 
++ * @author Malte Rei&szlig;ig - <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A> (15th of May 2011)
++ */
++
++/** fixing berlin.de landeslayout **/
++.horizontal li {
++   display: inline;
++   float: left;
++   margin-right: 0.5em;
++   margin-bottom: 0px;
++   margin-left: 0px;
++   padding-right: 0.5em;
++}
+
+Modified: trunk/pages/be.de/landmaps.css
+===================================================================
+--- trunk/pages/be.de/landmaps.css	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/landmaps.css	2011-07-06 08:39:30 UTC (rev 102)
+@@ -14,15 +14,15 @@
+ .olControlPanel .olControlNavigationItemInactive { background-color: #aaa  font: 76% Arial,Helvetica,sans-serif}
+ ; background-color: #6C6C6C; background-image: <A HREF="http://www.berlin.de/.img/bde/menubar-grey-bg.gif;">http://www.berlin.de/.img/bde/menubar-grey-bg.gif;</A> border-right-color: white; border-right-style: groove; border-right-width: 2px; border-left-style: groove; border-left-width: 2px; 
+ */
+-#kiezatlas { font: 100% Arial, Helvetica, sans-serif;  }
+-#kaheader { position: absolute; left:0px; top:141px; background: #e6edff; height: 21px; border: 0px solid #4170D4; border-right: 1px solid #4170D4; border-bottom: 1px solid #4170D4; font: Arial, Helvetica, sans-serif; }
++#kiezatlas { position: absolute; top: 0px; left:0px; font: 100% Arial, Helvetica, sans-serif; }
++#kaheader { position: absolute; left:0px; top:143px; background: #e6edff; height: 21px; border: 0px solid #4170D4; border-right: 1px solid #4170D4; border-bottom: 1px solid #4170D4; font: Arial, Helvetica, sans-serif; }
+ #kiezatlas #focusInput { position: absolute; top: 5px; color: #4170D4; font-size: 10px; }
+ #kiezatlas #focusInput input, #kiezatlas #focusInput textarea {  height: 15px; border: 1px solid #4170D4; padding-left: 4px; font-size:10px; background-color:#fff; color: #000; width:180px;}
+-#kiezatlas #focusAlternatives { position: absolute; top: 164px; width: 167px; background-color: #ffffff; opacity: 0.75; border: 1px solid #4170D4; border-top: 0px; font-size: 10px; padding: 5px; color: #000000; visibility: hidden; }
++#kiezatlas #focusAlternatives { position: absolute; top: 166px; width: 167px; background-color: #ffffff; opacity: 0.75; border: 1px solid #4170D4; border-top: 0px; font-size: 10px; padding: 5px; color: #000000; visibility: hidden; }
+ #kiezatlas #searchInput { position: absolute; top: 5px; color: #4170D4; font-size: 10px; }
+ #kiezatlas #searchInput input, #kiezatlas #searchInput textarea { height: 15px; border: 1px solid #4170D4; padding-left: 4px; font-size: 10px; background-color:#fff; color: #000; width:140px;}
+-#kiezatlas #mapName { font: 10px Arial, Helvetica, sans-serif; position: absolute; left:3px; top: 8px; color: #4170D4; }
+-#kiezatlas #headerButtons { position: absolute; top: 3px;}
++#kiezatlas #mapName { font: 10px Arial, Helvetica, sans-serif; position: absolute; left:3px; top: 6px; color: #4170D4; }
++#kiezatlas #headerButtons { position: absolute; top: 3px; }
+ #kiezatlas #mapControl { position: absolute; vertical-align: top; width:120px; height:20px; color:#4170D4; font: 10px Arial, Helvetica, sans-serif; font-weight: bold; background-color: #fff; border: 1px solid #4170D4; opacity: 0.8; }
+ #kiezatlas #mapControl a { color:#4170D4; font-size: 10px; }
+ #kiezatlas #moreLabel { position: relative; left: 4px; top: -1px; }
+@@ -30,7 +30,7 @@
+ #kiezatlas #toggleMarkerHref { position: relative; left: 0px; top: 1px; }
+ #kiezatlas #resetMarkerHref { position: relative; left: 2px; top: 1px; }
+ #kiezatlas #permaLinkHref { position: relative; top: 1px; }
+-#kiezatlas #permaLink { position: absolute; left: 275px; top: 170px; } /** width: 300px; height: 20px; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; color: #009; background-color: #fff; opacity: 0.8; */
++#kiezatlas #permaLink { position: absolute; left: 275px; top: 172px; } /** width: 300px; height: 20px; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; color: #009; background-color: #fff; opacity: 0.8; */
+ #kiezatlas #permaLinkLabel { cursor: pointer; border: 1px solid #4170D4; position: absolute; right: 760px; top: 35px; width: 100px; height: 20px; font-weight:bold; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; color: #009; background-color: #fff; opacity: 0.8; }
+ #kiezatlas #permaLink input,#kiezatlas #permaLink textarea { border: 1px solid #4170D4; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; padding-right:4px; padding-bottom: 0px; padding-top: 2px; padding-left: 4px; height: 18px; background-color:#fff; color: #009; width: 290px; opacity: 0.8; }
+ #kiezatlas #dialogMessage { position: absolute; top: 250px; left: 200px; width: 300px; height: 160px; background-color: #fff; border: 1px solid #3f5da6; }
+@@ -49,17 +49,20 @@
+ #kiezatlas #sideBarCategories { position:relative; left:5px; top:10px; overflow:auto; }
+ #kiezatlas #sideBarControl { position: absolute; width:5px; top:29px; background: #4170D4; }
+ #kiezatlas #progContainer { position:absolute; top:45%; left:35%; width:50%; height:50%; opacity: 0.6; }
+-#kiezatlas #kafooter { background: #fff; height:35px; position:absolute; bottom:2px; }
++#kiezatlas #kafooter { background: #fff; height:35px; position:absolute; bottom: 3px; }
+ #kiezatlas #footerImprint { position:absolute; right:8px; bottom: 18px; }
+ #kiezatlas #footerImprint a { color: #b60033; text-decoration: none; font-weight: bold; }
+ #kiezatlas #footerPoweredBy { position:absolute; right:8px; bottom: 3px; }
+ #kiezatlas #footerPoweredBy a {  color: #b60033; text-decoration: none; font-weight: bold;}
+ #kiezatlas #helpFont { position: absolute; bottom: 5px; font-size: 12px; font-weight: bold; color: #4170d4; text-decoration: none;}
+ #kiezatlas #helpPageOne { position: relative; left: 0px; top: 0px; }
++#kiezatlas #resizeButton { cursor:pointer; position: relative; left: 2px; top: -2px; }
++#kiezatlas #fullWindowButton { cursor:pointer; position: relative; top: -1px; }
+ /** overwriting new bde css */
+-#kiezatlas tr { vertical-align: middle; }
++#kiezatlas tr, td, th { vertical-align: middle !important; }
+ #kiezatlas table { border-collapse: separate; border-spacing: 0px; font-size: 100%; }
+ /** some classy definitions */
++.redTitle a, .redTitle a:hover, .redTitle a:-webkit-any-link { color: #b60033; }
+ #kiezatlas .berlinMapName { position: relative; left: 3em; top: 0px; width: 145px; height: 30px; background: url(&quot;/.img/bde/menubar-grey-bg.gif&quot;) repeat-x scroll 0 0 #6C6C6C; border-top: 0px solid #fff; border-left: 1px solid #fff; border-right: 1px solid #fff; border-bottom: 0px solid #fff; }
+ #kiezatlas .critLinkNormal { text-decoration: underline; }
+ #kiezatlas .catRowDeselected { background: #fff; }
+@@ -69,7 +72,6 @@
+ #kiezatlas .propertyField { position:relative; left: 1px; }
+ #kiezatlas .topicRowDeselected { background: #fff; }
+ #kiezatlas .topicRowSelected { background: #e6edff; }
+-#kiezatlas .redTitle { color: #b60033; }
+ #kiezatlas .layersDiv { position:relative; left: 5px; max-width: 110px; text-align: right; }
+ #kiezatlas .dataLbl { color: #4170D4; }
+ #kiezatlas .baseLbl { color: #4170D4; }
+@@ -81,3 +83,4 @@
+ #kiezatlas .olControlLayerSwitcher olControlNoSelect { background-color: #4170D4; position: absolute; top: 352px !important; }
+ #kiezatlas .olControlLayerSwitcher { background-color: #4170D4; position: absolute; top: 352px !important; }
+ #kiezatlas .olControlAttribution { position:absolute; bottom: 3px !important; }
++
+
+Modified: trunk/pages/be.de/maps.css
+===================================================================
+--- trunk/pages/be.de/maps.css	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/pages/be.de/maps.css	2011-07-06 08:39:30 UTC (rev 102)
+@@ -5,6 +5,8 @@
+  */
+ 
+ #kiezatlas { font: 76% Arial, Helvetica, sans-serif; width:100%; }
++#kiezatlas a { text-decoration: none; }
++#kiezatlas a:hover { text-decoration: underline; }
+ #kaheader { position: absolute; left:0px; top:0px; height:27px; background:#3f5da6; }
+ #focusInput { position: absolute; height: 22px; top:5px; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 11px; color: #fff }
+ #focusInput input, #focusInput textarea { border: 1px solid #ffffff; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 11px; padding: 4px; background-color:#009; color: #fff; width:180px; }
+@@ -55,7 +57,7 @@
+ .topicRowDeselected { background: #fff; }
+ .topicRowSelected { background: #e6edff; }
+ .olControlAttribution { position:absolute; bottom: 5px !important; right: 5px ! important; font-weight: bold;}
+-.redTitle { color: #b60033; }
++.redTitle a, .redTitle a:hover, .redTitle a:-webkit-any-link { color: #b60033; }
+ .layersDiv { position:relative; left: 5px }
+ .dataLbl { color: #4170D4; }
+ .baseLbl { color: #4170D4; }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -216,19 +216,40 @@
+ 			String instTypeID = getInstitutionType(session).getID();
+ 			String searchMode = getSearchMode(session);
+ 			Vector insts;
+-            // enable the rendering of enumeration
+-            session.setAttribute(&quot;enumerationFlag&quot;, true);
++      Vector taggedInsts;
++      Hashtable propertyFilter;
++      // enable the rendering of enumeration
++      session.setAttribute(&quot;enumerationFlag&quot;, true);
+ 			if (searchMode.equals(SEARCHMODE_BY_NAME)) {
+ 				insts = cm.getViewTopics(mapID, 1, instTypeID, getSearchValue(session));
++        if (!getSearchValue(session).equals(&quot;&quot;)) {
++          propertyFilter = new Hashtable();
++          propertyFilter.put(PROPERTY_TAGFIELD, getSearchValue(session));
++          taggedInsts = cm.getTopics(getInstitutionType(session).getID(), propertyFilter, mapID);
++          for (int k = 0; k &lt; taggedInsts.size(); k++) {
++            BaseTopic taggedTopic = (BaseTopic) taggedInsts.get(k);
++            Vector pts = cm.getViewTopics(mapID, 1, instTypeID, taggedTopic.getName());
++            System.out.println(&quot;newSearchMode fetched additionally &quot; + pts.size() + &quot; tagged Institutions byName!&quot;);
++            if (pts.size() &gt;= 1) {
++              if (!insts.contains(pts.get(0))) {
++                insts.add(pts.get(0));
++                System.out.println(&quot;newSearchMode added fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
++              } else {
++                System.out.println(&quot;newSearchMode skipped fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
++              }
++            } // insts.add(new PresentableTopic(topic, new Point()));
++          }
++          session.setAttribute(&quot;taggedInstitutions&quot;, taggedInsts);
++        }
+ 				// hotspots
+ 				setHotspots(insts, ICON_HOTSPOT, session);
+-                session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
++        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
+ 			} else {
+ 				String catID = params.getValue(&quot;id&quot;);
+ 				insts = cm.getRelatedViewTopics(mapID, 1, catID, ASSOCTYPE_ASSOCIATION, instTypeID, 1);	// ### copy in setCategoryHotspots()
+ 				// hotspots + return the index of the current CatID in the multi-dimensional hotspot vector
+ 				int catIndex = setSearchedCategoryHotspots(session, catID);
+-                session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
++        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
+ 			}
+ 			session.setAttribute(&quot;institutions&quot;, insts);
+ 			// categories &amp; addresses
+@@ -528,7 +549,7 @@
+ 		Vector presentables = new Vector(topics);
+ 		presentables.insertElementAt(as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH + icon, 0);
+ 		hotspots.addElement(presentables);
+-		// ### System.out.println(&quot;Have to handle clusters in here&quot;);
++		// 
+ 		makeCluster(hotspots, cluster);
+ 		session.setAttribute(&quot;cluster&quot;, cluster);
+ 		session.setAttribute(&quot;hotspots&quot;, hotspots);
+@@ -621,9 +642,9 @@
+ 	}
+ 
+ 	private PresentableTopic findPT(PresentableTopic pt, Vector hotspots) {
+-		for(int p=0; p &lt; hotspots.size(); p++){
+-			Vector scnd = (Vector)hotspots.get(p);
+-			for(int o=1; o &lt; scnd.size(); o++){
++		for (int p=0; p &lt; hotspots.size(); p++) {
++			Vector scnd = (Vector) hotspots.get(p);
++			for (int o=1; o &lt; scnd.size(); o++) {
+ 				PresentableTopic toCheck = (PresentableTopic) scnd.get(o);
+ 				if (toCheck.getGeometry().equals(pt.getGeometry()) &amp; (!toCheck.getID().equals(pt.getID()))) {
+ 					// if the topics don't have the same id but have the same point, they belong together
+
+Modified: trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -54,7 +54,8 @@
+             InputStreamReader isr = new InputStreamReader(fis, &quot;ISO-8859-1&quot;);
+             File fileToWrite = new File(filePath);
+             fileToWrite.delete(); // delete the former file and start to write the new one
+-            FileOutputStream fout = new FileOutputStream(filePath, true);
++            System.out.println(&quot;DownloadWorker.fileToWrite: \&quot;&quot;+fileToWrite.getAbsolutePath()+&quot;\&quot; still exists: &quot; + fileToWrite.exists());
++            FileOutputStream fout = new FileOutputStream(fileToWrite.getAbsolutePath(), false);
+             OutputStreamWriter out = new OutputStreamWriter(fout, &quot;ISO-8859-1&quot;);
+             while(isr.ready()) {
+                 out.write(isr.read());
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -140,6 +140,8 @@
+ 	static final String PROPERTY_COMMENT_AUTHOR = &quot;Autor&quot;;
+ 	static final String PROPERTY_COMMENT_DATE = &quot;Datum&quot;;
+ 	static final String PROPERTY_COMMENT_TIME = &quot;Uhrzeit&quot;;
++  //
++  static final String PROPERTY_TAGFIELD = &quot;Stichworte&quot;;
+ 	//
+ 	static final String PROPERTY_TARGET_WEBALIAS = &quot;Target Web Alias&quot;;
+ 	//
+@@ -279,10 +281,10 @@
+   public static final String ACTION_RESET_CRITERIAS = &quot;resetCritCats&quot;;
+   // Maps Servlets
+   public static final String ACTION_GEO_CODE = &quot;geoCode&quot;;
++  
+ 
+ 
+ 
+-
+ 	// --------------------
+ 	// --- Search Modes ---
+ 	// --------------------
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -147,41 +147,38 @@
+         String query = parameters[0];
+         String topicmapId = parameters[1];
+         String workspaceId = parameters[2];
+-        // String topicmapId = parameters[2];
+         query = query.substring(2, query.length()-1);
+         topicmapId = topicmapId.substring(2, topicmapId.length()-1);
+         workspaceId = workspaceId.substring(2, workspaceId.length()-2);
+-        // LOG System.out.println(&quot;INFO: query: &quot; + query + &quot;, &quot; + &quot;workspaceId: &quot; + workspaceId);
+         Vector criterias = getKiezCriteriaTypes(workspaceId);
+         BaseTopic geoType = getWorkspaceGeoType(workspaceId);
+-        Hashtable props = new Hashtable();
+-        props.put(PROPERTY_NAME, query);
+-        // String typeID, Hashtable propertyFilter, String topicmapID
+-        // getTopics: String typeID, String nameFilter, Hashtable propertyFilter, String relatedTopicID
+-        Vector results = cm.getTopics(geoType.getID(), props, topicmapId, false);
+-        /*Vector topicsToQuery = cm.getViewTopics(topicmapId, 1);
+-        Vector streetResults = new Vector();
+-        for (int i = 0; i &lt; topicsToQuery.size(); i++) {
+-            BaseTopic topic = (BaseTopic) topicsToQuery.get(i);
+-            // if (topic.getName().indexOf(query) != -1) results.add(topic); // by name
+-            Vector addresses = cm.getRelatedTopics(topic.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2);
+-            for (int j = 0; j &lt; addresses.size(); j++) {
+-                BaseTopic addressTopic = (BaseTopic) addresses.get(j);
+-                String streetName = as.getTopicProperty(addressTopic, PROPERTY_STREET);
+-                if (streetName.indexOf(query) != -1) {
+-                    streetResults.add(topic);
+-                    // System.out.println(&quot;&gt;&gt;&gt;&gt; streetFound + &quot; + streetName+ &quot; for &quot; + topic.getName());
+-                }
+-            }
+-        }*/
+-        // results.addAll(streetResults);
+-        System.out.println(&quot;&gt;&gt;&gt;&gt; found &quot; + results.size() + &quot; by name&quot;);// +&quot; named and &quot;+streetResults.size()+ &quot; streetnames like &quot; + query);
++        // perform search
++        Vector results = cm.getViewTopics(topicmapId, 1, geoType.getID(), query);
++        if (!query.equals(&quot;&quot;)) {
++          Hashtable propertyFilter = new Hashtable();
++          propertyFilter.put(PROPERTY_TAGFIELD, query);
++          Vector taggedInsts = cm.getTopics(geoType.getID(), propertyFilter, topicmapId);
++          for (int k = 0; k &lt; taggedInsts.size(); k++) {
++            BaseTopic taggedTopic = (BaseTopic) taggedInsts.get(k);
++            Vector pts = cm.getViewTopics(topicmapId, 1, geoType.getID(), taggedTopic.getName());
++            System.out.println(&quot;newGeoSearchMode fetched additionally &quot; + pts.size() + &quot; tagged Institutions byName!&quot;);
++            if (pts.size() &gt;= 1) {
++              if (!results.contains(pts.get(0))) { // prevent doublings..
++                results.add(pts.get(0));
++                System.out.println(&quot;newGeoSearchMode added fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
++              } else {
++                System.out.println(&quot;newGeoSearchMode skipped fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
++              }
++            } // insts.add(new PresentableTopic(topic, new Point()));
++          }
++        }
++        System.out.println(&quot;&gt;&gt;&gt;&gt; found &quot; + results.size() + &quot; by name and tag&quot;);// +&quot; named and &quot;+streetResults.size()+ &quot; streetnames like &quot; + query);
+         //
+         result.append(&quot;[&quot;);
+         for (int i=0; i &lt; results.size(); i++) {
+             BaseTopic topic = (BaseTopic) results.get(i);
+             result.append(createSlimGeoObject(topic, criterias, new StringBuffer()));
+-            if (results.indexOf(topic) == results.size()-1) {
++            if (results.indexOf(topic) == results.size()-1) { // does not allow doublings
+                 result.append(&quot;]&quot;);
+             } else {
+                 result.append(&quot;, &quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -13,6 +13,7 @@
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+ import de.deepamehta.topics.TypeTopic;
++import de.deepamehta.util.DeepaMehtaUtils;
+ 
+ import java.io.File;
+ import java.io.FileOutputStream;
+@@ -335,7 +336,6 @@
+       Vector allTopics = cm.getViewTopics(map.getID(), 1);
+       System.out.println(&quot;&gt;&gt;&gt; ListServlet got request to export \&quot;&quot; + mapAlias + &quot;\&quot; with &quot; + instType.getName() + &quot; (&quot;+ allTopics.size() +&quot;)&quot;);
+       // ### ToDo render approximate waiting time into the displayed result webpage
+-      // String absoluteFileNamePath = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;+mapAlias+&quot;.csv&quot;; // ### hardcoded
+       String absoluteFileNamePath = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;+mapAlias+&quot;.csv&quot;; // ### hardcoded
+       File fileToWrite = new File(absoluteFileNamePath); //
+       // Time
+@@ -351,16 +351,16 @@
+               // check wether the file is pretty fresh or not
+               System.out.println(&quot;  &gt; file already exists and\&quot;&quot; + absoluteFileNamePath + &quot;\&quot;&quot;);
+               System.out.println(&quot;  &gt; and system knows that now it's &quot; + now + &quot; and the file was touched &quot; + fileToWrite.lastModified());
+-              if (now-21600000 &lt; touched) { // timestamp is smaller than now minus 10 000 seconds
+-                  session.setAttribute(&quot;title&quot;, &quot;Die Daten sind aktueller als 6 Stunden und werden daher vorerst nicht wieder aktualisiert.&quot;);
+-              } else {
++              // if (now-21600000 &lt; touched) { // timestamp is smaller than now minus 10 000 seconds
++                 //  session.setAttribute(&quot;title&quot;, &quot;Die Daten sind aktueller als 6 Stunden und werden daher vorerst nicht wieder aktualisiert.&quot;);
++              // } else {
+                   // go ahead and write the file
+                   worker = new Thread(new DownloadWorker(as, cm, map, absoluteFileNamePath));
+                   // start the worker to export the map to the document-repository
+                   worker.start();
+                   // System.out.println(&quot;&gt;&gt; File is going to be written, data is older than 6hrs and the user requested so&quot;);
+                   session.setAttribute(&quot;title&quot;, &quot;In wenigen Minuten stehen die aktuellsten Daten des Stadtplans zum Download bereit&quot;);
+-              }
++              // }
+           } else {
+               // go ahead and write the file
+               worker = new Thread(new DownloadWorker(as, cm, map, absoluteFileNamePath));
+@@ -418,11 +418,13 @@
+ 				String instTypeID = getInstTypeID(session);
+ 				Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+ 				Vector topicBeans = new Vector();
++        System.out.println(&quot;ListServlet.DEBUG: starting to create &quot; + insts.size() + &quot; topicBeans...: &quot; + DeepaMehtaUtils.getTime(true) );
+ 				for (int i = 0; i &lt; insts.size(); i++) {
+           // Creates TopicBean
+ 					TopicBean topic = as.createTopicBean(insts.get(i).toString(), 1);
+ 					topicBeans.add(topic);
+ 				}
++        System.out.println(&quot;ListServlet.DEBUG: finished creating &quot; + insts.size() + &quot; topicBeans...&quot; + DeepaMehtaUtils.getTime(true));
+         //
+ 				setCachedTopicList(topicBeans, session);
+ 				System.out.println(&quot;&gt;&gt;&gt; refreshed &quot;+topicBeans.size()+&quot; topics for the fat list&quot;);
+@@ -448,9 +450,9 @@
+ 				// System.out.println(&quot;&gt;&gt;&gt; used cached or filtered topic list&quot;);
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			}
+-            System.out.println(&quot;&gt;&gt;&gt;&gt; Runtime has: &quot; + Runtime.getRuntime().maxMemory()/1024/1024 + &quot;mb &quot; +
+-                    &quot; of max, &quot; + Runtime.getRuntime().totalMemory()/1024/1024 + &quot; of total, &quot; +
+-                    &quot;&quot;+Runtime.getRuntime().freeMemory()/1024/1024 +&quot; in memory&quot;);
++      System.out.println(&quot;&gt;&gt;&gt;&gt; Runtime has: &quot; + Runtime.getRuntime().maxMemory()/1024/1024 + &quot;mb &quot; +
++              &quot; of max, &quot; + Runtime.getRuntime().totalMemory()/1024/1024 + &quot; of total, &quot; +
++              &quot;&quot;+Runtime.getRuntime().freeMemory()/1024/1024 +&quot; in memory&quot;);
+ 			// prepare the correct mailto link
+ 			if(getFilterField(session) != null) {
+ 				Vector beans = getListedTopics(session);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/TimerServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/TimerServlet.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/TimerServlet.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -52,7 +52,7 @@
+   public static final String EVENTMAP_TO_PUBLISH = &quot;t-453286&quot;;
+   
+   public void init(ServletConfig config) throws ServletException {
+-    System.out.println(&quot;DEBUG: Starting to initialize the SlimerServlet...&quot;);
++    System.out.println(&quot;DEBUG: Starting to initialize the TimerServlet...&quot;);
+     sc = config.getServletContext();
+     // --- create application service ---
+ 	  String service = sc.getInitParameter(&quot;service&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2011-05-09 14:42:50 UTC (rev 101)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2011-07-06 08:39:30 UTC (rev 102)
+@@ -33,7 +33,7 @@
+ 
+ 
+ 
+-	static final String VERSION = &quot;1.6.7&quot;;
++	static final String VERSION = &quot;1.6.8.2&quot;;
+ 	static {
+ 		System.out.println(&quot;&gt;&gt;&gt; Kiezatlas &quot; + VERSION);
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88">[ date ]</a>
+              <a href="thread.html#88">[ thread ]</a>
+              <a href="subject.html#88">[ subject ]</a>
+              <a href="author.html#88">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

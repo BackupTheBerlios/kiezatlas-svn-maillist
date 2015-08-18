@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r72 - in trunk/src/de/kiezatlas/deepamehta: . topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r72%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200905131339.n4DDdt2V018394%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000059.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r72 - in trunk/src/de/kiezatlas/deepamehta: . topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r72%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200905131339.n4DDdt2V018394%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r72 - in trunk/src/de/kiezatlas/deepamehta: . topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed May 13 15:39:55 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000059.html">[Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60">[ date ]</a>
+              <a href="thread.html#60">[ thread ]</a>
+              <a href="subject.html#60">[ subject ]</a>
+              <a href="author.html#60">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-05-13 15:39:53 +0200 (Wed, 13 May 2009)
+New Revision: 72
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+List- &amp; KiezServlet improved
+* JSON Conform Request Body
+* ListServlet updateGeo -&gt; always setGPSCoordinates 
+* Better Reporting
+
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-05-12 00:36:15 UTC (rev 71)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-05-13 13:39:53 UTC (rev 72)
+@@ -41,12 +41,12 @@
+ 
+     private String getGeoObjectInfo(String params)
+     {
+-        System.out.println(&quot;&gt;&gt;&gt; getGeoObjectInfo(&quot; + params + &quot;)&quot;);
+-        String parameters[] = params.split(&quot;:&quot;);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; getGeoObjectInfo(&quot; + params + &quot;)&quot;);
++        String parameters[] = params.split(&quot;,&quot;);
+         String topicId = parameters[0];
+         StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+-        String geoObjectString = createGeoObjectBean(cm.getTopic(topicId, 1), messages);
++        String geoObjectString = createGeoObjectBean(cm.getTopic(topicId.substring(2,topicId.length()-2), 1), messages);
+         result.append(geoObjectString);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         // System.out.println(&quot;result: &quot;+ result.toString());
+@@ -62,12 +62,12 @@
+      */
+     private String getWorkspaceCriterias(String params)
+     {
+-        System.out.println(&quot;&gt;&gt;&gt; getWorkspaceCriterias(&quot; + params + &quot;)&quot;);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; getWorkspaceCriterias(&quot; + params + &quot;)&quot;);
+         String parameters[] = params.split(&quot;:&quot;);
+         String workspaceId = parameters[0];
+         StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+-        String criteriaList = createListOfCategorizations(workspaceId);
++        String criteriaList = createListOfCategorizations(workspaceId.substring(2, workspaceId.length()-2));
+         result.append(criteriaList);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         return result.toString();
+@@ -82,23 +82,25 @@
+      * @return
+      */
+     private String searchTopics(String params, CorporateDirectives directives) {
+-        System.out.println(&quot;&gt;&gt;&gt; searchGeoObjects(&quot; + params +&quot;)&quot;);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; searchGeoObjects(&quot; + params +&quot;)&quot;);
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+         StringBuffer messages = null;
+-        String parameters[] = params.split(&quot;:&quot;);
++        String parameters[] = params.split(&quot;,&quot;);
+         String query = parameters[0];
++        query = query.substring(2, query.length()-1);
+         String workspaceId = parameters[1];
+         // String topicmapId = parameters[2];
++        workspaceId = workspaceId.substring(2, workspaceId.length()-2);
++        // LOG System.out.println(&quot;INFO: query: &quot; + query + &quot;, &quot; + &quot;workspaceId: &quot; + workspaceId);
+         Vector criterias = getKiezCriteriaTypes(workspaceId);
+         BaseTopic geoType = getWorkspaceGeoType(workspaceId);
+         Hashtable props = new Hashtable();
+         props.put(PROPERTY_NAME, query);
+         Vector results = cm.getTopics(geoType.getID(), props); // getTopic(query, props, topicmapId, directives);
+-        System.out.println(&quot;&gt;&gt;&gt; found &quot; + results.size() + &quot; geoObjects with name &quot; + query);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; found &quot; + results.size() + &quot; geoObjects with name &quot; + query);
+         result.append(&quot;[&quot;);
+         for (int i=0; i &lt; results.size(); i++) {
+             BaseTopic topic = (BaseTopic) results.get(i);
+-            
+             result.append(createSlimGeoObject(topic, criterias, new StringBuffer()));
+             if (results.indexOf(topic) == results.size()-1) {
+                 result.append(&quot;]&quot;);
+@@ -120,10 +122,13 @@
+      */
+     private String getGeoMapTopics(String params, Session session, CorporateDirectives directives)
+     {
+-        System.out.println(&quot;&gt;&gt;&gt; getGeoMapTopics(&quot; + params + &quot;)&quot;);
+-        String parameters[] = params.split(&quot;:&quot;);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; getGeoMapTopics(&quot; + params + &quot;)&quot;);
++        String parameters[] = params.split(&quot;,&quot;);
+         String mapId = parameters[0];
+         String workspaceId = parameters[1];
++        mapId = mapId.substring(2,mapId.length()-2);
++        workspaceId = workspaceId.substring(2, workspaceId.length()-2);
++        // LOG System.out.println(&quot;INFO: mapId is &quot; + mapId + &quot;, &quot; + &quot; and workspaceId is &quot; + workspaceId);
+         StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+         StringBuffer mapTopics = new StringBuffer(&quot;{ \&quot;map\&quot;: \&quot;&quot; + mapId + &quot;\&quot;, \&quot;topics\&quot;: [&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-05-12 00:36:15 UTC (rev 71)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-05-13 13:39:53 UTC (rev 72)
+@@ -1,6 +1,5 @@
+ package de.kiezatlas.deepamehta;
+ 
+-import de.deepamehta.AmbiguousSemanticException;
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ //
+@@ -11,15 +10,11 @@
+ import de.deepamehta.service.TopicBeanField;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+-import java.io.BufferedReader;
+ import java.io.File;
+ import java.io.FileOutputStream;
+ import java.io.FileWriter;
+ import java.io.IOException;
+-import java.io.InputStreamReader;
+ import java.io.OutputStreamWriter;
+-import java.net.URL;
+-import java.net.URLConnection;
+ import java.util.Collections;
+ import java.util.Comparator;
+ import javax.servlet.ServletException;
+@@ -82,7 +77,6 @@
+ 			// --- update geo object ---
+ 			// Note: the timestamp is updated through geo object's propertiesChanged() hook
+ 			updateTopic(geo.getType(), params, session, directives, cityMap.getID(), VIEWMODE_USE);
+-            // setGPSCoordinates(geo, directives); ### should load coordinates if address was changed
+ 			// --- store image / files---
+ 			for (int a = 0; a &lt; params.getUploads().size(); a++) {
+ 				FileItem f = (FileItem) params.getUploads().get(a);
+@@ -90,6 +84,7 @@
+ 			}
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
++            setGPSCoordinates(geo, directives); // ### should load coordinates if address was changed
+ 			setUseCache(Boolean.FALSE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-05-12 00:36:15 UTC (rev 71)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-05-13 13:39:53 UTC (rev 72)
+@@ -596,10 +596,10 @@
+                 directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Die Adresse hat &quot;+point[2]+&quot;,&quot;+point[3]+&quot; als GPS Koordinaten zugewiesen bekommen.&quot;, new Integer(NOTIFICATION_DEFAULT));
+                 System.out.println(&quot;GeoObjectTopic.setGPSCoordinates(): successful to &quot; + point[2] +&quot;,&quot; + point[3] +&quot; for address:&quot; + getAddressString());
+             } else {
+-                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates.&quot;, new Integer(NOTIFICATION_ERROR));
++                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates. Leaving the topic like it is. &quot;, new Integer(NOTIFICATION_ERROR));
+             }
+         } else {
+-            directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates.&quot;, new Integer(NOTIFICATION_ERROR));
++            directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates. Leaving the topic like it is. &quot;, new Integer(NOTIFICATION_ERROR));
+         }
+     }
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000059.html">[Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#60">[ date ]</a>
+              <a href="thread.html#60">[ thread ]</a>
+              <a href="subject.html#60">[ subject ]</a>
+              <a href="author.html#60">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,1799 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r106 - in trunk: . pages pages/be.de	pages/be.de/img src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2012-August/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r106%20-%20in%20trunk%3A%20.%20pages%20pages/be.de%0A%09pages/be.de/img%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C20120821172311.CAF5B55B0C%40scm.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r106 - in trunk: . pages pages/be.de	pages/be.de/img src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at scm.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r106%20-%20in%20trunk%3A%20.%20pages%20pages/be.de%0A%09pages/be.de/img%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C20120821172311.CAF5B55B0C%40scm.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r106 - in trunk: . pages pages/be.de	pages/be.de/img src/de/kiezatlas/deepamehta">maltito at scm.berlios.de
+       </A><BR>
+    <I>Tue Aug 21 19:23:11 CEST 2012</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#91">[ date ]</a>
+              <a href="thread.html#91">[ thread ]</a>
+              <a href="subject.html#91">[ subject ]</a>
+              <a href="author.html#91">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2012-08-21 19:23:11 +0200 (Tue, 21 Aug 2012)
+New Revision: 106
+
+Added:
+   trunk/pages/be.de/img/Fullscreen.png
+   trunk/pages/be.de/img/berlin.delogo.png
+Modified:
+   trunk/
+   trunk/build.xml
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/WorkspaceObjectForm.jsp
+   trunk/pages/be.de/AlternativeAtlas.jsp
+   trunk/pages/be.de/BerlinAtlas.jsp
+   trunk/pages/be.de/PrintAtlas.html
+   trunk/pages/be.de/kiezatlas.js
+   trunk/pages/be.de/landmaps-ie.css
+   trunk/pages/be.de/landmaps.css
+   trunk/pages/be.de/maps.css
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/WorkspaceServlet.java
+Log:
+Adjusted the design/layout of berlin.de/atlas/* AJAX-CityMap-Client.
+Extending the recently added /submit/*-Servlet.
+
+FEATURES:
+Added new MapBox based OSM Layer for self-styled map tiles.
+Hovering of Layer-Select in AJAX-CityMap-Client.
+The /submit-Servlet sends now notificatons after submission about the newly created dataset to either
+- the mailbox of the logged in user/submitter if assigned (default)
+- the given author-mailbox in the form (which is prioritized) 
+- datasets (GeoObject-Topics) created via the /submit-Servlet now get an UUID-Random WebAlias assigned during creation
+
+The notification mail should not send out the so called hiddenProps to the user. This is to be tested.
+
+FIXES:
+- fixed deep-linking to a search in AJAX-CityMap Clients
+- revised the kiezatlas.setLayout()-Method
+- fixed fahrinfo link configuration. link is now querying fahrinfo for addresses instead of bus and other stops
+- fixed issue with authentication in /submit/*-Servlet
+
+ADMINSTRATIVE CHANGES:
+- /map/*-Servlet: removed the Google Maps API from both AJAX-CityMap Clients due to a suddenly invalid key
+- added more descriptive comments into kiezatlas.js
+
+IMPORTANT:
+Requires DepaMehta2 in rev387 because the Form-Generator was extended to render hints above label/inputfield pair
+
+
+
+Property changes on: trunk
+___________________________________________________________________
+Added: svn:ignore
+   + build
+.goutputstream-7QABJW
+.goutputstream-KFIAJW
+
+
+Modified: trunk/build.xml
+===================================================================
+--- trunk/build.xml	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/build.xml	2012-08-21 17:23:11 UTC (rev 106)
+@@ -11,7 +11,7 @@
+ 	&lt;property name=&quot;build&quot; location=&quot;build&quot;/&gt;
+ 
+ 	&lt;!-- &lt;property name=&quot;dm.base-dir&quot; location=&quot;/home/tito/source/deepaMehtaTrunk&quot;/&gt; --&gt; &lt;!-- for mre --&gt;
+-	&lt;property name=&quot;dm.base-dir&quot; location=&quot;../deepaMehta/&quot;/&gt;
++	&lt;property name=&quot;dm.base-dir&quot; location=&quot;../../deepaMehta/&quot;/&gt;
+ 
+ 	&lt;import file=&quot;${dm.base-dir}/config.xml&quot; /&gt;
+ 
+@@ -24,7 +24,7 @@
+ 			&lt;classpath&gt;
+ 				&lt;pathelement location=&quot;${server}/DeepaMehtaService.jar&quot;/&gt;
+ 				&lt;pathelement location=&quot;${server}/DeepaMehtaTopics.jar&quot;/&gt;
+-				&lt;pathelement location=&quot;../deepaMehta/libs/commons-fileupload-1.0.jar&quot;/&gt;
++				&lt;pathelement location=&quot;../../deepaMehta/libs/commons-fileupload-1.0.jar&quot;/&gt;
+ 				&lt;pathelement location=&quot;libs/quartz-1.8.4.jar&quot;/&gt;
+ 				&lt;pathelement location=&quot;${web.servlet.lib}&quot;/&gt;
+ 			&lt;/classpath&gt;
+@@ -49,11 +49,11 @@
+         &lt;include name=&quot;images/*&quot;/&gt;
+         &lt;include name=&quot;pages/*&quot;/&gt;
+         &lt;include name=&quot;pages/be.de/*&quot;/&gt;
+-	&lt;include name=&quot;pages/be.de/211/*&quot;/&gt;
++        &lt;include name=&quot;pages/be.de/211/*&quot;/&gt;
+         &lt;include name=&quot;pages/be.de/211/img/*&quot;/&gt;
+         &lt;include name=&quot;pages/be.de/211/theme/*&quot;/&gt;
+-	&lt;include name=&quot;pages/be.de/211/theme/default/*&quot;/&gt;
+-	&lt;include name=&quot;pages/be.de/211/theme/default/img/*&quot;/&gt;
++        &lt;include name=&quot;pages/be.de/211/theme/default/*&quot;/&gt;
++        &lt;include name=&quot;pages/be.de/211/theme/default/img/*&quot;/&gt;
+         &lt;include name=&quot;pages/be.de/img/*&quot;/&gt;
+         &lt;include name=&quot;pages/be.de/theme/*&quot;/&gt;
+         &lt;include name=&quot;pages/be.de/proxies/*&quot;/&gt;
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/KiezAtlas.jsp	2012-08-21 17:23:11 UTC (rev 106)
+@@ -1,3 +1,5 @@
++&lt;%@page import=&quot;java.net.URLEncoder&quot;%&gt;
++&lt;%@page import=&quot;java.net.URL&quot;%&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.KiezAtlas&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.GeoObject&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.topics.GeoObjectTopic&quot; %&gt;
+@@ -217,7 +219,9 @@
+ 		StringBuffer html = new StringBuffer();
+ 		// render fahr-info link if address is in berlin
+ 		if (city.startsWith(&quot;Berlin&quot;) &amp;&amp; isSet(street)) {
+-			String mapURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>&quot; + street + &quot;&amp;search=Suchen&amp;formquery=&amp;address=true&quot;;
++      String target = URLEncoder.encode(street + &quot; &quot; + postalCode + &quot; &quot; + city, &quot;ISO-8859-1&quot;);
++			// String mapURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>&quot; + target + &quot;&amp;search=Suchen&amp;formquery=&amp;address=true&quot;;
++      String mapURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=">http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=</A>&quot; + target + &quot;&amp;REQ0JourneyStopsZA1=2&amp;start=1&quot;;
+ 			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/fahrinfo.gif\&quot; border=\&quot;0\&quot; &quot; +
+ 				&quot;hspace=\&quot;20\&quot;&gt;&lt;/a&gt;&quot;;
+ 			html.append(street + imageLink + &quot;&lt;br&gt;&quot; + postalCode + &quot; &quot; + city + googleLink(street, postalCode, city));
+
+Modified: trunk/pages/WorkspaceObjectForm.jsp
+===================================================================
+--- trunk/pages/WorkspaceObjectForm.jsp	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/WorkspaceObjectForm.jsp	2012-08-21 17:23:11 UTC (rev 106)
+@@ -5,8 +5,10 @@
+ 	static String[] hiddenProps = {
+ 		KiezAtlas.PROPERTY_ICON,
+ 		KiezAtlas.PROPERTY_ADMINISTRATION_INFO,
+-		KiezAtlas.PROPERTY_LAST_MODIFIED,
+-    &quot;Description&quot;,
++		KiezAtlas.PROPERTY_LAST_MODIFIED, 
++    &quot;Stra&#223;e&quot;, KiezAtlas.PROPERTY_STREET, &quot;Postleitzahl&quot;, KiezAtlas.PROPERTY_CITY, KiezAtlas.PROPERTY_TAGFIELD,
++    KiezAtlas.PROPERTY_GPS_LONG, KiezAtlas.PROPERTY_GPS_LAT, KiezAtlas.PROPERTY_PASSWORD, KiezAtlas.PROPERTY_WEB_ALIAS,
++    &quot;Description&quot;, &quot;Image&quot;, &quot;YADE x&quot;, &quot;YADE y&quot;, &quot;Telefon&quot;, &quot;Stra&szlig;e&quot;,
+ 		&quot;Forum Aktivierung&quot;,	/* can't use PROPERTY_FORUM_ACTIVITION because */
+ 								/* relabled by GeoObjectTopic's propertyLabel() hook */
+ 		&quot;Title&quot;, &quot;Content&quot;,
+
+Modified: trunk/pages/be.de/AlternativeAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/AlternativeAtlas.jsp	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/AlternativeAtlas.jsp	2012-08-21 17:23:11 UTC (rev 106)
+@@ -33,7 +33,7 @@
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= basePath %&gt;/pages/be.de/maps.css&quot; type=&quot;text/css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= basePath %&gt;/pages/be.de/211/theme/default/style.css&quot; type=&quot;text/css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= basePath %&gt;/pages/be.de/211/theme/default/google.css&quot; type=&quot;text/css&quot;&gt;
+-  &lt;script src=&quot;<A HREF="http://maps.google.com/maps/api/js?v=3.5&amp;amp;key=ABQIAAAAfPcn9RYcEecc-d1iHvHCIRTIIy1nlKSG8dPHOYwqi5UhuTLB2hT534VlXBVGCIqcQXQ-a4z45J0w6A&amp;amp;sensor=false">http://maps.google.com/maps/api/js?v=3.5&amp;key=ABQIAAAAfPcn9RYcEecc-d1iHvHCIRTIIy1nlKSG8dPHOYwqi5UhuTLB2hT534VlXBVGCIqcQXQ-a4z45J0w6A&amp;sensor=false</A>&quot;&gt;&lt;/script&gt;
++  &lt;!-- script src=&quot;<A HREF="http://maps.google.com/maps/api/js?v=3.5&amp;amp;key=AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&amp;amp;sensor=false">http://maps.google.com/maps/api/js?v=3.5&amp;key=AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&amp;sensor=false</A>&quot;&gt;&lt;/script--&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/211/OpenLayers.js&quot;&gt;&lt;/script&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/CustomLayerSwitcher.js&quot;&gt;&lt;/script&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/jquery.min.js&quot;&gt;&lt;/script&gt;
+@@ -94,11 +94,7 @@
+       jQuery(window).resize(function() {
+         handleResize();
+       });
+-      if (window.location.toString().indexOf(&quot;berlin.de&quot;) != -1) {
+-        onBerlinDe = true;
+-      } else {
+-        onBerlinDe = false;
+-      }
++      onBerlinDe = false;
+       if (onBerlinDe &amp; workspaceCriterias.result.length &gt; 4) districtNames = workspaceCriterias.result[4].categories;
+       // ### the following two are used in kiezatlas.js..
+       var onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
+@@ -130,7 +126,9 @@
+         // inputFieldBehaviour();
+         // check if a special projectId was given through the entry url
+         reSetMarkers(myNewLayer);
+-        if (linkTo != 'null') {
++        if (searchTerm != 'null') {
++          searchRequest(searchTerm);
++        } else if (linkTo != 'null') {
+           selectAndShowInMap(linkTo, false);
+         } else if (linkToTopicId != 'null') {
+           selectAndShowInMap(linkToTopicId, true);
+@@ -140,8 +138,6 @@
+             // pre-select the categories encoded in url
+             toggleMarkerGroups(catId);
+           }
+-        } else if (searchTerm != 'null') {
+-          searchRequest(searchTerm);
+         }
+         // show all markers at the beginning for these two scenarios..
+         if (onProjectMap || onEventMap) {
+
+Modified: trunk/pages/be.de/BerlinAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/BerlinAtlas.jsp	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/BerlinAtlas.jsp	2012-08-21 17:23:11 UTC (rev 106)
+@@ -4,53 +4,60 @@
+ 	BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspace&quot;);
+ 	String mapTopics = (String) session.getAttribute(&quot;mapTopics&quot;);
+   String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
+-  String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
+   String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
+   String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
+   String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
+-  String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
++  String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
++	String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
+-  String catIds = (String) session.getAttribute(&quot;categories&quot;);
+-	String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
++	String catIds = (String) session.getAttribute(&quot;categories&quot;);
++  String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
++  String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
++  // String basePath = &quot;<A HREF="http://www.berlin.de/atlas">http://www.berlin.de/atlas</A>&quot;;
++  // String basePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
++  String resourcePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
+   //
+-  String title = &quot;Kiezatlas Stadtplan - &quot; + map.getName();
+-  if (map.getName().indexOf(&quot;Ehrenamt&quot;) != -1) {
+-    title = &quot;Ehrenamtsatlas - B&#252;rgeraktiv im Kiezatlas&quot;;
+-  }
++  String title = &quot;&quot; + map.getName() + &quot; im Kiezatlas&quot;;
++
+ %&gt;
+ &lt;% startMaps(session, out); %&gt;
+ &lt;head&gt;
+   &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html charset=UTF-8&quot;/&gt;
+   &lt;title&gt; &lt;%= title %&gt; &lt;/title&gt;
+   &lt;!--[if gte IE 7]&gt;
+-    &lt;style type=&quot;text/css&quot;&gt;@import url(<A HREF="http://www.kiezatlas.de/maps/embed/landmaps-ie.css">http://www.kiezatlas.de/maps/embed/landmaps-ie.css</A>);&lt;/style&gt;
++    &lt;style type=&quot;text/css&quot;&gt;@import url(&lt;%= resourcePath %&gt;/landmaps-ie.css);&lt;/style&gt;
+   &lt;![endif]--&gt;
+-  &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/landmaps.css">http://www.kiezatlas.de/maps/embed/landmaps.css</A>&quot;/&gt;
+-  &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/kiezatlas.js">http://www.kiezatlas.de/maps/embed/kiezatlas.js</A>&quot;&gt;&lt;/script&gt;
+-  &lt;!-- This is a comment, without comment --&gt;
+-  &lt;!-- &lt;script type=&quot;text/javascript&quot; src=&quot;../pages/be.de/kiezatlas.js&quot;&gt;&lt;/script&gt; --&gt;
+-  &lt;!-- &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;../pages/be.de/landmaps.css&quot;/&gt; --&gt;
+-  &lt;!-- <A HREF="http://openlayers.org/api/2.9/OpenLayers.js">http://openlayers.org/api/2.9/OpenLayers.js</A> // 2.9 or 2.9.1? --&gt;
+-  &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/OpenLayers.js">http://www.kiezatlas.de/maps/embed/OpenLayers.js</A>&quot;&gt;&lt;/script&gt;
+-  &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/CustomLayerSwitcher.js">http://www.kiezatlas.de/maps/embed/CustomLayerSwitcher.js</A>&quot;&gt;&lt;/script&gt;
+-  &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/jquery.min.js">http://www.kiezatlas.de/maps/embed/jquery.min.js</A>&quot;&gt;&lt;/script&gt;
+-  &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://maps.google.com/maps?file=api&amp;amp;v=2&amp;amp;oe=utf-8&amp;amp;key=ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A">http://maps.google.com/maps?file=api&amp;v=2&amp;oe=utf-8&amp;key=ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A</A>&quot;&gt;&lt;/script&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= resourcePath %&gt;/landmaps.css&quot; type=&quot;text/css&quot;&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= resourcePath %&gt;/theme/default/style.css&quot; type=&quot;text/css&quot;&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= resourcePath %&gt;/theme/default/google.css&quot; type=&quot;text/css&quot;&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;!-- script src=&quot;<A HREF="http://maps.google.com/maps/api/js?v=3.5&amp;amp;key=AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&amp;amp;sensor=false">http://maps.google.com/maps/api/js?v=3.5&amp;key=AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&amp;sensor=false</A>&quot;&gt;&lt;/script--&gt;
++  &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= resourcePath %&gt;/OpenLayers.js&quot;&gt;&lt;/script&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= resourcePath %&gt;/CustomLayerSwitcher.js&quot;&gt;&lt;/script&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= resourcePath %&gt;/jquery.min.js&quot;&gt;&lt;/script&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= resourcePath %&gt;/kiezatlas.js&quot;&gt;&lt;/script&gt; &lt;!-- fix: needs absolute url for deployment --&gt;
++  &lt;!-- &lt;script type=&quot;text/javascript&quot; src=&quot;../pages/be.de/jquery-1.3.2.js&quot;&gt;&lt;/script&gt;--&gt;
++  &lt;!-- &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://maps.google.com/maps?file=api&amp;amp;v=2&amp;amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ">http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ</A>&quot;&gt;&lt;/script&gt; --&gt;
+   &lt;script type=&quot;text/javascript&quot;&gt;
++    var basePath = '&lt;%= basePath %&gt;';
+     var mapTitle = '&lt;%= map.getName() %&gt;';
+     var mapAlias = '&lt;%= mapAlias %&gt;';
+-    var topicId = '&lt;%= map.getID()%&gt;';
++    var topicId = '&lt;%= map.getID() %&gt;'; // unlike the topicId param from the requestURL
+     var baseLayer = '&lt;%= baseLayer %&gt;';
+     var workspaceId = '&lt;%= workspace.getID() %&gt;';
++    // options
+     var crtCritIndex = &lt;%= critIndex %&gt;;
+     var cats = '&lt;%= catIds %&gt;';
+     var catIds = cats.split(&quot;,&quot;);
+     var searchTerm = '&lt;%= searchTerm %&gt;';
++    var linkToTopicId = '&lt;%= topicId %&gt;';
+     var linkTo = '&lt;%= originId %&gt;';
+-    var linkToTopicId = '&lt;%= topicId %&gt;';
+-    var mapTopics = &lt;%= mapTopics %&gt;;
+-    var workspaceCriterias = &lt;%= workspaceCriterias %&gt;;
++    // body
++    var mapTopics = &lt;%= mapTopics %&gt;; // null; //eval('(' + &lt;?php echo json_encode($mapTopics) ?&gt; + ')');
++    var workspaceCriterias = &lt;%= workspaceCriterias %&gt;; // eval('(' + &lt;?php echo json_encode($workspaceCriterias) ?&gt; + ')');
++    kiezatlas.setCityMapId(topicId);
++    kiezatlas.setWorkspaceCriterias(workspaceCriterias);
+     // var workspaceInfos = null;
+     var workspaceHomepage = '&lt;%= workspaceHomepage %&gt;';
+     var workspaceLogo = '&lt;%= workspaceLogo %&gt;';
+@@ -65,8 +72,6 @@
+     var districtNames = [];
+     var markerGroupIds = new Array();
+     var helpVisible = false;
+-    // 
+-    // var kiezatlas = new kiezatlas();
+     // var slimWidth = false;
+     // var totalWidth = 1000; // 953
+     var map = &quot;&quot;;
+@@ -74,22 +79,25 @@
+     var markerLayer = &quot;&quot;;
+     // gui elements
+     var sideBarVisible = true;
+-    var fullWindow = false;
++    //
+     var debug = false;
+     if (debug) {
+       var debug_window = window.open('','','width=400,height=600,scrollbars=1');
+     }
+-    jQuery.noConflict();
++    // 212: ABQIAAAAfPcn9RYcEecc-d1iHvHCIRTIIy1nlKSG8dPHOYwqi5UhuTLB2hT534VlXBVGCIqcQXQ-a4z45J0w6A
++    // var gKey = 'ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ';
+     var gKey = 'ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A';
+     //
+     jQuery(document).ready(function() {
+-      // if (window.location.toString().indexOf(&quot;berlin.de&quot;) != -1) {
+       onBerlinDe = true;
+-      baseUrl = &quot;<A HREF="http://www.berlin.de/atlas/">http://www.berlin.de/atlas/</A>&quot;;
+-      SERVICE_URL = baseUrl + &quot;rpc/&quot;;
++      // baseUrl = &quot;<A HREF="http://www.berlin.de/atlas/">http://www.berlin.de/atlas/</A>&quot;;
++      // SERVICE_URL = baseUrl + &quot;rpc/&quot;;
+       // register resize
+-      jQuery(window).resize(function() { handleResize(); });
++      jQuery(window).resize(function() {
++        handleResize();
++      });
+       if (onBerlinDe &amp; workspaceCriterias.result.length &gt; 4) districtNames = workspaceCriterias.result[4].categories;
++      // ### the following two are used in kiezatlas.js..
+       var onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
+       var onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
+       // check if a special criteria was set through an entry url
+@@ -100,45 +108,50 @@
+       bounds = calculateInitialBounds(mapTopics);
+       // after the dom is loaded we can init our parts of the app
+       jQuery(window).load(function() {
+-        document.namespaces;
++        // if (console != undefined) console.log(&quot;testLog...&quot;);
++        document.namespaces; // some curios ie workaround for openlayers
+         setWorkspaceInfos(workspaceHomepage, workspaceLogo, workspaceImprint, mapTitle);
+-        setCityMapName(mapTitle);
++        setCityMapNameWs(mapTitle, workspaceId);
++        // setCityMapNameWs(mapTitle, workspaceId);
+         handleResize(); // do the layout
+-        renderCritCatListing(crtCritIndex);
+-        // updateCategoryList(crtCritIndex);
+         // setup mapObject and layers
+         openLayersInit(bounds, baseLayer);
++        // ...
++        /// renderCritCatListing(crtCritIndex);
++        renderCritCatListing(crtCritIndex); //, baseUrl, mapAlias, workspaceCriterias, crtCritIndex, mapTitle, onBerlinDe);
+         // create an array of OpenLayoers.Marker based on mapTopics
+         gMarkers = setupOpenMarkers(mapTopics);
+         // initialize Features and their control
+-        // clusters = findInitialClusters(gMarkers);
+-        // createVectorizedMarkerLayer(gMarkers, map);
+         initLayerAllFeatures(gMarkers, map);
+-        // initBerlinDistrictsLayer();
+-        reSetMarkers(myNewLayer);
+-        if (onEventMap) showAllMarker();
++        if (onBerlinDe) {
++          initBerlinDistrictsLayer('&lt;%= resourcePath %&gt;' + &quot;/img&quot;);
++        } else {
++          initBerlinDistrictsLayer(basePath + &quot;/pages/be.de/img&quot;);
++        }
+         // inputFieldBehaviour();
+         // check if a special projectId was given through the entry url
+-        if (linkTo != 'null') {
++        reSetMarkers(myNewLayer);
++        if (searchTerm != 'null') {
++          searchRequest(searchTerm);
++        } else if (linkTo != 'null') {
+           selectAndShowInMap(linkTo, false);
+         } else if (linkToTopicId != 'null') {
+           selectAndShowInMap(linkToTopicId, true);
+         } else if (catIds.length &gt; 0) {
+           for (var catIdx = 0; catIdx &lt; catIds.length; catIdx++) {
+             var catId = catIds[catIdx];
+-            // catId = catId.replace(&quot;%2C&quot;, &quot;&quot;);
+-            // alert(&quot;catIds: &quot; + catIds + &quot; toggle : \&quot;&quot; + catId + &quot;\&quot;&quot;);
+             // pre-select the categories encoded in url
+             toggleMarkerGroups(catId);
+           }
+         }
+-        if (searchTerm != 'null') {
+-          searchRequest(searchTerm);
++        // show all markers at the beginning for these two scenarios..
++        if (onProjectMap || onEventMap) {
++          showAllMarker();
+         }
+         map.events.register(&quot;zoomend&quot;, map, redrawAfterZoomOperation);
++        // map.maxExtent = bounds;
+         map.raiseLayer(myNewLayer);
+-        // if (jQuery.browser.msie)
+-        handleResize();
++        if (jQuery.browser.msie) handleResize(); // fix the layout for ie..
+       });
+     });
+   &lt;/script&gt;
+@@ -146,23 +159,25 @@
+   &lt;body&gt;
+     &lt;div id=&quot;kiezatlas&quot; style=&quot;visibility: hidden;&quot;&gt;
+       &lt;div id=&quot;kaheader&quot;&gt;
+-		    &lt;div id=&quot;mapName&quot;&gt;&lt;/div&gt;
+ 		    &lt;div id=&quot;focusInput&quot;&gt;
+ 		      &lt;form id=&quot;autoLocateInputField&quot; action=&quot;javascript:focusRequest()&quot;&gt;
+-			    &lt;label for=&quot;streetNameField&quot;&gt;Umkreissuche&lt;/label&gt;
+-			    &lt;input id=&quot;streetNameField&quot; type=&quot;text&quot; size=&quot;18&quot; value=&quot;Stra&szlig;enname / Hnr.&quot;/&gt;
++            &lt;label for=&quot;streetNameField&quot;&gt;In der N&auml;he von&lt;/label&gt;
++            &lt;input id=&quot;streetNameField&quot; type=&quot;text&quot; size=&quot;18&quot; value=&quot;Stra&szlig;enname / Hnr.&quot;/&gt;
++            &lt;label for=&quot;streetNameField&quot;&gt;im&lt;/label&gt;
++            &lt;span id=&quot;mapName&quot;&gt;&lt;/span&gt;
+ 		      &lt;/form&gt;
+ 		    &lt;/div&gt;
++        &lt;div id=&quot;cityMapDialog&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;/div&gt;
+ 		    &lt;div id=&quot;searchInput&quot;&gt;
+ 		      &lt;form id=&quot;searchForm&quot; action=&quot;javascript:searchRequest()&quot;&gt;
+ 			    &lt;label for=&quot;searchInputField&quot;&gt;Suche&lt;/label&gt;
+-			    &lt;input id=&quot;searchInputField&quot; type=&quot;text&quot; value=&quot;Einsatzm&#246;glichkeit&quot; size=&quot;15&quot;/&gt;
++			    &lt;input id=&quot;searchInputField&quot; type=&quot;text&quot; value=&quot;Name / Stichwort&quot; size=&quot;15&quot;/&gt;
+ 		      &lt;/form&gt;
+ 		    &lt;/div&gt;
+ 		    &lt;div id=&quot;headerButtons&quot;&gt;
+-            &lt;img id=&quot;fullWindowButton&quot; title=&quot;Volle Fenstergr&ouml;&szlig;e nutzen&quot; onclick=&quot;javascript:toggleFullWindow()&quot; width=&quot;16&quot; height=&quot;16&quot;
+-              src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/fullscreen-16.png">http://www.kiezatlas.de/maps/embed/img/fullscreen-16.png</A>&quot; alt=&quot;Volle Fenstergr&ouml;&szlig;e nutzen&quot;/&gt;
+-			    &lt;img id=&quot;resizeButton&quot; title=&quot;Seitenleiste ausblenden&quot; onclick=&quot;javascript:handleSideBar()&quot; width=&quot;15&quot; height=&quot;15&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/go-last.png">http://www.kiezatlas.de/maps/embed/img/go-last.png</A>&quot; alt=&quot;Seitenleiste ausblenden&quot;/&gt;
++          &lt;img id=&quot;fullWindowButton&quot; title=&quot;Volle Fenstergr&ouml;&szlig;e nutzen&quot; onclick=&quot;javascript:toggleFullWindow()&quot; width=&quot;22&quot; height=&quot;22&quot;
++               src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/Fullscreen.png">http://www.kiezatlas.de/maps/embed/img/Fullscreen.png</A>&quot; alt=&quot;Volle Fenstergr&ouml;&szlig;e nutzen&quot;/&gt;
++			    &lt;img id=&quot;resizeButton&quot; title=&quot;Seitenleiste ausblenden&quot; onclick=&quot;javascript:handleSideBar()&quot; src=&quot;<A HREF="http://www.kiezatlas.de/pages/be.de/img/go-last.png">http://www.kiezatlas.de/pages/be.de/img/go-last.png</A>&quot; width=&quot;22&quot; height=&quot;22&quot; alt=&quot;Seitenleiste ausblenden&quot;&gt;
+ 		    &lt;!-- &lt;/div&gt; --&gt;
+ 		    &lt;/div&gt;
+       &lt;/div&gt;
+@@ -173,19 +188,22 @@
+       &lt;/div&gt;
+       &lt;div id=&quot;mapControl&quot;&gt;&nbsp;
+         &lt;a href=&quot;javascript:showPermaLink();&quot; id=&quot;permaLinkHref&quot;&gt;
+-		      &lt;img border=&quot;0&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/gnome_permalink.png">http://www.kiezatlas.de/maps/embed/img/gnome_permalink.png</A>&quot; alt=&quot;Permalink-Symbol&quot; title=&quot;Permalink anzeigen&quot; width=&quot;16&quot; height=&quot;16&quot;/&gt;
++          Permalink
+         &lt;/a&gt;
+         &lt;a href=&quot;javascript:showAllMarker();&quot; id=&quot;toggleMarkerHref&quot;&gt;
+-          &lt;img border=&quot;0&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/FreiwilligenAgentur.png">http://www.kiezatlas.de/maps/embed/img/FreiwilligenAgentur.png</A>&quot; alt=&quot;Markierer-Symbol&quot; title=&quot;Alle Markierer einblenden&quot; width=&quot;15&quot; height=&quot;15&quot;/&gt;
++          &lt;!-- &lt;img border=&quot;0&quot; src=&quot;../pages/be.de/img/FreiwilligenAgentur.png&quot; title=&quot;Alle Markierer einblenden&quot; alt=&quot;Markierer-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;&gt; --&gt;
++          Alles einblenden
+         &lt;/a&gt;
+         &lt;!-- &lt;img border=&quot;0&quot; id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
+ 		      &lt;!-- &lt;a href=&quot;javascript:removeAllMarker();&quot; style=&quot;text-decoration: none;&quot;&gt;&gt; Alle ausblenden&lt;/a&gt; &lt;br/&gt;--&gt;
+ 		    &lt;a href=&quot;javascript:updateVisibleBounds(null, true, null, true);&quot; id=&quot;resetMarkerHref&quot;&gt;
+-		      &lt;img border=&quot;0&quot; src=&quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/Stop.png">http://www.kiezatlas.de/maps/embed/img/Stop.png</A>&quot; title=&quot;zur&#252;cksetzen der Kartenansicht und Informationsebenen&quot; alt=&quot;Reset-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;/&gt;
++		      &lt;!-- &lt;img border=&quot;0&quot; src=&quot;../pages/be.de/img/Stop.png&quot; title=&quot;zur&#252;cksetzen der Kartenansicht und Informationsebenen&quot; alt=&quot;Reset-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;&gt; --&gt;
++          Karte zur&uuml;cksetzen
+         &lt;/a&gt;
+-        &lt;!-- &lt;img border=&quot;0&quot; id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
+-        &lt;span id=&quot;moreLabel&quot;&gt;Mehr..&lt;/span&gt;
+-		    &lt;div id=&quot;mapSwitcher&quot; style=&quot;position: absolute; visibility: hidden;&quot;&gt;&lt;/div&gt;
++        &lt;img src=&quot;<A HREF="http://www.kiezatlas.de/client/images/dropdown-btn.png">http://www.kiezatlas.de/client/images/dropdown-btn.png</A>&quot; title=&quot;Mehr..&quot; alt=&quot;Button: Mehr..&quot;&gt;
++        &lt;!-- &lt;img border=&quot;0&quot;atlas id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
++        &lt;!--  &lt;span id=&quot;moreLabel&quot;&gt;&nbsp;Mehr..&lt;/span&gt; --&gt;
++        &lt;div id=&quot;mapSwitcher&quot; style=&quot;position: absolute; visibility: hidden;&quot;&gt;&lt;/div&gt;
+       &lt;/div&gt;
+       &lt;div id=&quot;memu&quot; style=&quot;visibility:hidden;&quot;&gt;&lt;/div&gt;
+       &lt;div id=&quot;navPanel&quot;&gt;&lt;/div&gt;
+@@ -193,14 +211,12 @@
+ 		    &lt;div id=&quot;sideBarCriterias&quot;&gt;&lt;/div&gt;
+ 		    &lt;div id=&quot;sideBarCategories&quot;&gt;&lt;/div&gt;
+         &lt;div id=&quot;progContainer&quot;&gt;&lt;/div&gt;
+-        &lt;div id=&quot;kafooter&quot;&gt;
+-          &lt;a href=&quot;<A HREF="http://www.berlin.de/buergeraktiv/">http://www.berlin.de/buergeraktiv/</A>&quot;&gt;Impressum&lt;/a&gt; und 
+-          &lt;a href=&quot;<A HREF="http://ehrenamt.index.de">http://ehrenamt.index.de</A>&quot;&gt;Haftungshinweise&lt;/a&gt;&lt;br/&gt;&lt;b&gt; powered by
+-          &lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt;
+-        &lt;/div&gt;
+       &lt;/div&gt;
+-      &lt;!-- &lt;a id=&quot;helpFont&quot; alt=&quot;Hilfe anzeigen&quot; text=&quot;Hilfe anzeigen&quot; href=&quot;javascript:help();&quot;&gt;zur Hilfe&lt;/a&gt; --&gt;
+-      &lt;div id=&quot;sideBarControl&quot;&gt;&lt;/div&gt; &lt;!-- onclick=&quot;javascript:handleSideBar();&quot; --&gt;
++      &lt;div id=&quot;kafooter&quot;&gt;
++        &lt;a href=&quot;<A HREF="http://www.berlin.de/buergeraktiv/">http://www.berlin.de/buergeraktiv/</A>&quot;&gt;Impressum&lt;/a&gt; und &lt;a href=&quot;<A HREF="http://ehrenamt.index.de">http://ehrenamt.index.de</A>&quot;&gt;Haftungshinweise&lt;/a&gt;&lt;br/&gt;
++        &lt;b&gt; powered by &lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt;
++      &lt;/div&gt;
++      &lt;div id=&quot;sideBarControl&quot;&gt;&lt;/div&gt; &lt;!-- onclick=&quot;javascript:handleSideBar();&quot; onclick=&quot;javascript:showDialog(false)&quot;  --&gt;
+       &lt;div id=&quot;dialogMessage&quot; style=&quot;visibility: hidden;&quot; title=&quot;Dialog schlie&szlig;en&quot;&gt;
+           &lt;div id=&quot;closeDialog&quot; onclick=&quot;javascript:showDialog(false)&quot;&gt;(Dialog schlie&szlig;en)&lt;/div&gt;
+           &lt;b id=&quot;modalTitle&quot; class=&quot;redTitle&quot;&gt;&lt;/b&gt;
+
+Modified: trunk/pages/be.de/PrintAtlas.html
+===================================================================
+--- trunk/pages/be.de/PrintAtlas.html	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/PrintAtlas.html	2012-08-21 17:23:11 UTC (rev 106)
+@@ -1,11 +1,8 @@
+-&lt;!--
+-To change this template, choose Tools | Templates
+-and open the template in the editor.
+---&gt;
+ &lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;&gt;
+ &lt;html&gt;
+   &lt;head&gt;
+     &lt;title&gt;&lt;/title&gt;
++    &lt;!<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">-- at set</A> var=&quot;std-layout&quot; val=&quot;pixel&quot;--&gt;
+     &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+   &lt;style type=&quot;text/css&quot;&gt;
+     @import url('<A HREF="http://www.kiezatlas.de/pages/be.de/maps-print.css">http://www.kiezatlas.de/pages/be.de/maps-print.css</A>');
+
+Added: trunk/pages/be.de/img/Fullscreen.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/pages/be.de/img/Fullscreen.png
+___________________________________________________________________
+Added: svn:executable
+   + *
+Added: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/pages/be.de/img/berlin.delogo.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/pages/be.de/img/berlin.delogo.png
+___________________________________________________________________
+Added: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/kiezatlas.js	2012-08-21 17:23:11 UTC (rev 106)
+@@ -12,6 +12,8 @@
+    * TODO: code cleanup, improving some wording on method signatures, some error handling
+    * TODO: relies on some icons and scripts at <A HREF="http://www.kiezatlas.de/maps/embed/">http://www.kiezatlas.de/maps/embed/</A> ### if (onBerlinDe)
+    * INFO: getters/checkers return &quot;null&quot; as a negative result/ error
++   *
++   * NOTES: 
+    */
+ 
+ 
+@@ -36,12 +38,11 @@
+   var lastStreetName = &quot;&quot;;
+   var debugUI = false;
+   // deployment default settings
+-  var onBerlinDe = false;
++  var onBerlinDe = false; // ### fix for berlinde
+   var fullWindow = false;
+   var headerGap = 0;
+-  // var oldKey = &quot;ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&quot;;
+-  var kiezKey = &quot;ABQIAAAAfPcn9RYcEecc-d1iHvHCIRTIIy1nlKSG8dPHOYwqi5UhuTLB2hT534VlXBVGCIqcQXQ-a4z45J0w6A&quot;;
+-  var berlinKey = &quot;ABQIAAAADev2ctFkze28KEcta5b4WBSQDgFJvORzMhuwLQZ9zEDMQLdVUhTWXHB2vS0W0TdlEbDiH_qzhBEZ5A&quot;;
++  var kiezKey = &quot;AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&quot;;
++  var berlinKey = &quot;AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&quot;;
+   var propFooterMessage = &quot;&quot;;
+   var helpLink = &quot;&quot;;
+   var baseUrl = SERVER_URL + &quot;/map/&quot;;
+@@ -129,7 +130,6 @@
+       var history_entry = {state: state, url: link};
+       // push history entry
+       window.history.pushState(history_entry.state, null, history_entry.url);
+-      // alert(&quot;Pushing historyEntry : &quot; + JSON.stringify(history_entry));
+     }
+ 
+     this.getCategory = function(categoryId) {
+@@ -174,29 +174,65 @@
+         }
+       });
+     }
++    if (onBerlinDe) {
++      // SERVER_URL = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
++      SERVER_URL = &quot;<A HREF="http://212.87.44.116:8080">http://212.87.44.116:8080</A>&quot;;
++      baseUrl = SERVER_URL + &quot;/atlas/&quot;;
++      SERVICE_URL = baseUrl + &quot;rpc/&quot;;
++    }
+     // General Map Options
++    // OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
+     var options = {
+       projection: new OpenLayers.Projection(&quot;EPSG:900913&quot;),
+       displayProjection: new OpenLayers.Projection(&quot;EPSG:4326&quot;), units: &quot;m&quot;,
+-      maxResolution: 156543.0339, numZoomLevels: 25 // to initialize map without controls controls: []
++      maxResolution: 156543.0339, numZoomLevels: 18 // to initialize map without controls controls: []
+       // maxExtent: openBounds // an internal error occurs when using OpenStreetMap BaseLayer togegher with maxExtent
+     };
+     map = new OpenLayers.Map('map', options);
++    // ### Note that TMS-Layers have different projections
++    // var mapnik = new OpenLayers.Layer.TMS(&quot;OpenStreetMap&quot;, &quot;<A HREF="http://tah.openstreetmap.org/Tiles/tile/">http://tah.openstreetmap.org/Tiles/tile/</A>&quot;, {
+     // BaseLayer
++    var mapnik = new OpenLayers.Layer.OSM(&quot;OpenStreetMap&quot;, &quot;<A HREF="http://b.tile.openstreetmap.de/tiles/osmde/">http://b.tile.openstreetmap.de/tiles/osmde/</A>&quot;, {
++      type: 'png', getURL: osm_getTileURL, displayOutsideMaxExtent: false,
++      attribution: 'Tile server sponsored by STRATO / &lt;b&gt;Europe only&lt;/b&gt; / &lt;a href=&quot;<A HREF="http://www.openstreetmap.de/germanstyle.html">http://www.openstreetmap.de/germanstyle.html</A>&quot;&gt;About style&lt;/a&gt;',
++      maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
++    });
++    // &lt;iframe width='500' height='300' frameBorder='0' src='<A HREF="http://a.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f.html#3/0/0">http://a.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f.html#3/0/0</A>'&gt;&lt;/iframe&gt;
++    var mapbox = new OpenLayers.Layer.XYZ(&quot;MapBox Streets&quot;,
++        [
++            &quot;<A HREF="http://a.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z">http://a.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z</A>}/${x}/${y}.png&quot;,
++            &quot;<A HREF="http://b.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z">http://b.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z</A>}/${x}/${y}.png&quot;,
++            &quot;<A HREF="http://c.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z">http://c.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z</A>}/${x}/${y}.png&quot;,
++            &quot;<A HREF="http://d.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z">http://d.tiles.mapbox.com/v3/kiezatlas.map-feifsq6f/${z</A>}/${x}/${y}.png&quot;
++        ], {
++            attribution: &quot;Tiles &copy; &lt;a href='<A HREF="http://mapbox.com/">http://mapbox.com/</A>'&gt;MapBox&lt;/a&gt; | &quot; +
++                &quot;Data &copy; &lt;a href='<A HREF="http://www.openstreetmap.org/">http://www.openstreetmap.org/</A>'&gt;OpenStreetMap&lt;/a&gt; &quot; +
++                &quot;and contributors, CC-BY-SA&quot;,
++            sphericalMercator: true,
++            wrapDateLine: true,
++            transitionEffect: &quot;resize&quot;,
++            buffer: 1,
++            numZoomLevels: 17
++        }
++    );
++    /** Backup of old MapServer Configuration..
+     var mapnik = new OpenLayers.Layer.TMS(&quot;OpenStreetMap&quot;, &quot;<A HREF="http://tile.openstreetmap.org/">http://tile.openstreetmap.org/</A>&quot;, {
+       type: 'png', getURL: osm_getTileURL, displayOutsideMaxExtent: false,
+       attribution: '&lt;a href=&quot;<A HREF="http://www.openstreetmap.org/">http://www.openstreetmap.org/</A>&quot;&gt;OpenStreetMap&lt;/a&gt;',
+       maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34)
+       // note: maxExtent error, this bounds cannot be smaller than the whole world, otherwise projection error occurs ??
+-    });
+-    var googleBaseLayer = new OpenLayers.Layer.Google(&quot;Google Streets&quot;, {numZoomLevels: 25, animationEnabled: true,
+-      // sphericalMercator:true, &lt;&lt; obsolete  maxExtent: openBounds, &lt;&lt; cannot be set..
+-      termsOfUse: jQuery(&quot;#kafooter&quot;).get(0), poweredBy: jQuery(&quot;#kafooter&quot;).get(0)
+-    });
++    }); **/
++
+     if (baseLayer == &quot;osm&quot;) {
+-      map.addLayers([ mapnik, googleBaseLayer ]);
++      map.addLayers([ mapnik ]); // googleBaseLayer
+     } else {
+-      map.addLayers([ googleBaseLayer, mapnik ]);
++      //
++      /* var googleBaseLayer = new OpenLayers.Layer.Google(&quot;Google Streets&quot;, { numZoomLevels: 25, animationEnabled: true,
++        // sphericalMercator:true, &lt;&lt; obsolete  maxExtent: openBounds, &lt;&lt; cannot be set..
++        termsOfUse: jQuery(&quot;#kafooter&quot;).get(0), poweredBy: jQuery(&quot;#kafooter&quot;).get(0)
++        googleBaseLayer,
++      }); **/
++      map.addLayers([ mapnik, mapbox ]);
+     }
+     // event binding for the new hover controlMenu ### ToDo: find a better place for this
+     jQuery(&quot;#mapControl&quot;).bind(&quot;mouseover&quot;, overMapControl);
+@@ -213,13 +249,19 @@
+       // a parental control must be added to the map
+       // map.addControl(nav);
+       //
+-      panel = new OpenLayers.Control.Panel( {div: document.getElementById(&quot;navPanel&quot;)});
++      // panel = new OpenLayers.Control.Panel( {div: document.getElementById(&quot;navPanel&quot;), zoomWorldIcon: false });
++      // panel = new OpenLayers.Control.PanPanel( { &quot;zoomWorldIcon&quot;: false, &quot;zoomStopHeight&quot;: 4, &quot;panIcons&quot;: true});
+       myLayerSwitcher = new OpenLayers.Control.LayerSwitcher({
+         'div':OpenLayers.Util.getElement('mapSwitcher'), activeColor: &quot;white&quot;
+       });
++      zoomBox = new OpenLayers.Control.ZoomBox();
++      // but here, we remove the default panzoom control again
++      var controls = map.getControlsByClass(&quot;OpenLayers.Control.PanZoom&quot;);
++      map.removeControl(controls[0]);
+       // 
+       map.addControl(myLayerSwitcher);
+-      map.addControl(panel);
++      map.addControl(zoomBox);
++      // map.addControl(panel);
+       reSetMarkers();
+     }
+   }
+@@ -229,24 +271,26 @@
+    * notes: does handle our basic html-layout-wireframe in 3 variations, plus all for internet explorer
+    **/
+   function setLayout(fullH, fullW) {
+-    // onBerlinDe: fixed Width, downed under from Top, adjusted sideBarHeight, 
++    // onBerlinDe: fixed Width, downed under from Top, adjusted sideBarHeight,
+     var sideW = 320;
+     if (onBerlinDe &amp;&amp; jQuery.browser.msie &amp;&amp; !fullWindow) {
+       // start with windows fix
+-      jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;, &quot;40px&quot;);
++      // jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;, &quot;40px&quot;);
+       jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, 153);
+       // jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 2);
+-      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 166);
++      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 182);
+       jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, 182);
+       jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;, sideW + 2);
+       jQuery(&quot;#bo_header #main_navigation&quot;).css(&quot;width&quot;, 1036);
+     } else if (jQuery.browser.msie &amp;&amp; !onBerlinDe) { // maps-labs on ie
+-      jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;, &quot;40px&quot;);
++      // jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;, &quot;40px&quot;);
+       jQuery(&quot;#focusInput&quot;).css(&quot;top&quot;, 9);
+       // jQuery(&quot;#focusInput input textarea&quot;).css(&quot;padding-top&quot;, 2);
+       jQuery(&quot;#searchInput&quot;).css(&quot;top&quot;, 9);
+       jQuery(&quot;#OpenLayers.Control.LayerSwitcher_44_layersDiv&quot;).css(&quot;left&quot;, -137);
+       // jQuery(&quot;#searchInput input textarea&quot;).css(&quot;padding-top&quot;, 2);
++    } else if (onBerlinDe) {
++      jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, 143);
+     }
+     //
+     // var topHeight = jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;);
+@@ -260,10 +304,15 @@
+       fullW = 1037 - 1; // else fullW = fullW - 7;
+       jQuery(&quot;#kiezatlas&quot;).css(&quot;width&quot;, fullW);
+       jQuery(&quot;#kiezatlas&quot;).css(&quot;height&quot;, mapH + 153);
++      // jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, 153);
+     } else if (onBerlinDe &amp;&amp; fullWindow) {
+       fullW = fullW - 1;
+-      mapH = mapH - 5;
++      fullH = fullH - 1;
++      // mapH = mapH - 15;
+       jQuery(&quot;#kiezatlas&quot;).css(&quot;width&quot;, fullW);
++      jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, 0);
++      // jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 182);
++      // jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, 182);
+     }
+     // kiezatlas alternative labs specific
+     var mapW = mapW = fullW - sideW - 6; // border fullW - sideW - 7;
+@@ -274,57 +323,92 @@
+     jQuery(&quot;#map&quot;).css(&quot;width&quot;, mapW);
+     jQuery(&quot;#map&quot;).css(&quot;height&quot;, mapH);
+     //
+-    jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 378);
+     jQuery(&quot;#mapControl&quot;).css(&quot;top&quot;, startHeight + topHeight);
+     // more berlin.de specific
+     if (onBerlinDe &amp;&amp; !fullWindow) {
+-      jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 240);
+-      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 166);
+-      jQuery(&quot;#focusAlternatives&quot;).css(&quot;left&quot;, 310);
+-      jQuery(&quot;#permaLink&quot;).css(&quot;left&quot;, 275);
+-      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 46);
++      // jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 240);
++      // jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, 166);
++      // jQuery(&quot;#focusAlternatives&quot;).css(&quot;left&quot;, 310);
++      // jQuery(&quot;#permaLink&quot;).css(&quot;left&quot;, 275);
++      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 56);
++      jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 377);
++      jQuery(&quot;#sideBar&quot;).css(&quot;top&quot;, topHeight + startHeight + 1);
++      jQuery(&quot;#sideBarControl&quot;).css(&quot;top&quot;, topHeight + startHeight + 1);
++      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, topHeight + startHeight);
++      jQuery(&quot;#focusInput&quot;).css(&quot;top&quot;, 5);
++      jQuery(&quot;#searchInput&quot;).css(&quot;top&quot;, 5);
+     } else if (onBerlinDe &amp;&amp; fullWindow) {
+-      //
+-      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 46);
+-      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, topHeight);
+-      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, topHeight + 8);
+-      jQuery(&quot;#permaLink&quot;).css(&quot;left&quot;, window);
++      // align at top without startHeight
++      mapH = fullH - topHeight;
++      jQuery(&quot;#map&quot;).css(&quot;height&quot;, mapH);
++      jQuery(&quot;#map&quot;).css(&quot;top&quot;, topHeight + 1);
++      jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 56);
++      jQuery(&quot;#focusAlternatives&quot;).css(&quot;top&quot;, topHeight + 1);
++      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, topHeight);
++      jQuery(&quot;#mapControl&quot;).css(&quot;top&quot;, topHeight);
++      jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 377  );
++      jQuery(&quot;#focusInput&quot;).css(&quot;top&quot;, 4);
++      jQuery(&quot;#searchInput&quot;).css(&quot;top&quot;, 4);
++      jQuery(&quot;#sideBar&quot;).css(&quot;top&quot;, topHeight + 1)
++      jQuery(&quot;#sideBarControl&quot;).css(&quot;top&quot;, topHeight + 1);
+     } else {
+       jQuery(&quot;#focusInput&quot;).css(&quot;left&quot;, 45);
+       jQuery(&quot;#focusAlternatives&quot;).css(&quot;left&quot;, 144);
+       jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 30);
++      jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, mapW - 378);
++      jQuery(&quot;#sideBar&quot;).css(&quot;top&quot;, topHeight + startHeight + 1);
++      jQuery(&quot;#sideBarControl&quot;).css(&quot;top&quot;, topHeight + startHeight + 1);
+     }
+     //
++    if (onBerlinDe &amp;&amp; jQuery.browser.msie) {
++      jQuery(&quot;#map&quot;).css(&quot;top&quot;, jQuery(&quot;#map&quot;).position().top - 5);
++      // jQuery(&quot;#headerButtons&quot;).css(&quot;left&quot;, fullW - 56);
++      jQuery(&quot;#mapControl&quot;).css(&quot;top&quot;, jQuery(&quot;#map&quot;).position().top - 1);
++      jQuery(&quot;#mapControl&quot;).css(&quot;left&quot;, jQuery(&quot;#mapControl&quot;).position().left  + 10);
++      jQuery(&quot;#sideBar&quot;).css(&quot;top&quot;, jQuery(&quot;#map&quot;).position().top);
++      jQuery(&quot;#sideBarControl&quot;).css(&quot;top&quot;, jQuery(&quot;#map&quot;).position().top);
++      jQuery(&quot;#permaLink&quot;).css(&quot;top&quot;, jQuery(&quot;#map&quot;).position().top - 1);
++      jQuery(&quot;#focusInput&quot;).css(&quot;top&quot;, 5);
++      jQuery(&quot;#searchInput&quot;).css(&quot;top&quot;, 5);
++      jQuery(&quot;#focusInput input&quot;).css(&quot;padding&quot;, 2);
++      jQuery(&quot;#searchInput input&quot;).css(&quot;padding&quot;, 2);
++      jQuery(&quot;#permaLink input&quot;).css(&quot;padding&quot;, 2);
++      jQuery(&quot;.layersDiv&quot;).css(&quot;left&quot;, -2);
++      jQuery(&quot;#mapSwitcher&quot;).css(&quot;top&quot;, jQuery(&quot;#mapSwitcher&quot;).position().top - 3);
++      // jQuery(&quot;#mapSwitcher&quot;).css(&quot;left&quot;, jQuery(&quot;#mapSwitcher&quot;).position().top -4);
++    }
++    //
+     jQuery(&quot;#searchInput&quot;).css(&quot;left&quot;, fullW - sideW + 30);
++    jQuery(&quot;#sideBar&quot;).css(&quot;height&quot;, mapH - 1);
+     // sidebarControl is 5px fat
+     jQuery(&quot;#sideBarControl&quot;).css(&quot;left&quot;, mapW);
+     jQuery(&quot;#sideBarControl&quot;).css(&quot;height&quot;, mapH);
+-    jQuery(&quot;#sideBarControl&quot;).css(&quot;top&quot;, topHeight + startHeight + 1);
+     jQuery(&quot;#sideBarControl&quot;).css(&quot;width&quot;, 5);
++
+     //
+-    jQuery(&quot;#sideBar&quot;).css(&quot;top&quot;, topHeight + startHeight + 1);
+-    jQuery(&quot;#sideBar&quot;).css(&quot;height&quot;, mapH - 1);
+     jQuery(&quot;#sideBar&quot;).css(&quot;left&quot;, mapW + 4);
+     // set width and perform a jquery show('fast')
+     setSideBarWidth(sideW);
+     jQuery(&quot;#sideBarCriterias&quot;).css(&quot;width&quot;, sideW - 5);
+-    jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, jQuery(&quot;#kaheader&quot;).height()-4);
+-    jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, jQuery(&quot;#kaheader&quot;).height()-4);
++    if (!onBerlinDe) {
++      jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, jQuery(&quot;#kaheader&quot;).height()-4);
++      jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, jQuery(&quot;#kaheader&quot;).height()-4);
++    }
+     //
+     var critHeight = jQuery(&quot;#sideBarCriterias&quot;).height();
+     if (critHeight == 0 || isNaN(critHeight)) {
+-      critHeight = 110;
++      critHeight = 110; // minimum height of logo and name in sidebar
+     } else {
+-      critHeight = critHeight + 5;
++      critHeight = critHeight + 5; // approximating height of logo-/header-area within sidebar
+     }
+     var footerHeight = 35; // ### FIXME: to be removed
+     var sideBarHeight = mapH - critHeight - footerHeight;
+     if (workspaceCriterias.length == 3) {
+       sideBarHeight = sideBarHeight + 20;
+     } else if (workspaceCriterias.length &gt; 4) {
+-      sideBarHeight = sideBarHeight - 20;
+-    } else { // workspaceCriterias is not available at that early stage
+-      sideBarHeight = sideBarHeight - 20;
++      sideBarHeight = sideBarHeight - 28;
++    } else { // workspaceCriterias is not yet available
++      sideBarHeight = sideBarHeight - 28;
+     }
+     jQuery(&quot;#sideBarCategories&quot;).css(&quot;height&quot;, sideBarHeight);
+     jQuery(&quot;#sideBarCategories&quot;).css(&quot;width&quot;, sideW - 7);
+@@ -332,11 +416,15 @@
+     var fWidth = sideW - 6;
+     var fOrientation = mapW - 3;
+     jQuery(&quot;#kafooter&quot;).css(&quot;width&quot;, fWidth - 15);
+-    if (!onBerlinDe) {
+-      jQuery(&quot;#kafooter&quot;).css(&quot;left&quot;, fOrientation + 10);
+-    } else {
+-      jQuery(&quot;#kafooter&quot;).css(&quot;left&quot;, 5);
++    if (onBerlinDe &amp;&amp; !fullWindow) {
++      jQuery(&quot;#kafooter&quot;).css(&quot;top&quot;, mapH + startHeight);
++    } else if (onBerlinDe &amp;&amp; fullWindow) {
++      jQuery(&quot;#kafooter&quot;).css(&quot;top&quot;, mapH);
+     }
++    if (onBerlinDe &amp;&amp; jQuery.browser.msie) {
++      jQuery(&quot;#kafooter&quot;).css(&quot;top&quot;, jQuery(&quot;#kafooter&quot;).position().top - 12);
++    }
++    jQuery(&quot;#kafooter&quot;).css(&quot;left&quot;, fOrientation + 25);
+     jQuery(&quot;#layersDiv&quot;).css(&quot;left&quot;, -19);
+     if (!sideBarToggle &amp;&amp; onBerlinDe) {
+       // if sidebar is toggled away and user wants to get into fullscreen mode
+@@ -390,11 +478,16 @@
+       jQuery(&quot;#helpFont&quot;).hide(&quot;fast&quot;);
+       // jQuery(&quot;#kafooter&quot;).css(&quot;opacity&quot;, &quot;0.4&quot;);
+       jQuery(&quot;#kafooter&quot;).css(&quot;background&quot;, &quot;transparent&quot;);
+-      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 30);
++      jQuery(&quot;#kafooter&quot;).css(&quot;top&quot;, jQuery(&quot;#kafooter&quot;).position().top - 20);
+       // jQuery(&quot;#kafooter&quot;).show();
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;src&quot;, &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/go-first.png">http://www.kiezatlas.de/maps/embed/img/go-first.png</A>&quot;);
+-      jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
+-      jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
++      if (!onBerlinDe) {
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
++      } else {
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, 20);
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, 20);
++      }
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;title&quot;, &quot;Seitenleiste einblenden&quot;);
+       sideBarToggle = false;
+     } else {
+@@ -404,11 +497,17 @@
+       sideBarToggle = true;
+   	  jQuery(&quot;#helpFont&quot;).show(&quot;fast&quot;);
+       jQuery(&quot;#kafooter&quot;).css(&quot;background&quot;, &quot;white&quot;);
+-      jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 3);
++      // jQuery(&quot;#kafooter&quot;).css(&quot;bottom&quot;, 3);
++      jQuery(&quot;#kafooter&quot;).css(&quot;top&quot;, jQuery(&quot;#kafooter&quot;).position().top + 20);
+       // 
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;src&quot;, &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/go-last.png">http://www.kiezatlas.de/maps/embed/img/go-last.png</A>&quot;);
+-      jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
+-      jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
++      if (!onBerlinDe) {
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, parseInt(jQuery(&quot;#kaheader&quot;).css(&quot;height&quot;))-4);
++      } else {
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;height&quot;, 20);
++        jQuery(&quot;#resizeButton&quot;).attr(&quot;width&quot;, 20);
++      }
+       jQuery(&quot;#resizeButton&quot;).attr(&quot;title&quot;, &quot;Seitenleiste ausblenden&quot;);
+   	  // 
+       handleResize(breitSeite);
+@@ -429,6 +528,7 @@
+       handleResize(); // substract the top-height from overall height..
+     } else {
+       jQuery(&quot;#kiezatlas&quot;).css(&quot;z-index&quot;, &quot;1&quot;);
++      jQuery(&quot;#kiezatlas&quot;).css(&quot;top&quot;, &quot;0px&quot;);
+       jQuery(&quot;#kaheader&quot;).css(&quot;top&quot;, &quot;0px&quot;);
+       fullWindow = true;
+       handleResize(windowWidth());
+@@ -476,6 +576,7 @@
+       newLink = newLink.replace(&quot;/layer/osm&quot;, &quot;&quot;);
+       newLink = newLink.replace(&quot;/layer/osm&quot;, &quot;&quot;);
+     }
++    //
+     permaLink = newLink;
+     kiezatlas.push_history(newState, newLink);
+     jQuery(&quot;#permaInputLink&quot;).val(permaLink);
+@@ -641,7 +742,7 @@
+ 
+ 
+   //
+-  // --- Handling of alternatives after a focusRequest() 
++  // --- Handling of geolocated street alternatives as a result of a GET focusRequest() 
+   //
+   
+   /**
+@@ -884,14 +985,17 @@
+     var street = getTopicAddress(givenTopic);
+     var originId = getTopicOriginId(givenTopic);
+     if (cityName == &quot; Berlin&quot; || cityName == &quot;Berlin&quot; || onBerlinDe) { // ### FIXME sloppy
+-      var publicTransportURL = '<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>' + street +
+-        '&amp;search=Suchen&amp;formquery=&amp;address=true';
++      var postalCode = getTopicPostalCode(givenTopic);
++      var target = street + &quot;%20&quot; + postalCode + &quot;%20&quot; + cityName;
++      var publicTransportURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=">http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=</A>&quot; + target + &quot;&amp;REQ0JourneyStopsZA1=2&amp;start=1&quot;;
++      // var publicTransportURL = '<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>' + street +
++        // '&amp;search=Suchen&amp;formquery=&amp;address=true';
+       var imageLink = '&lt;a href=&quot;'+ publicTransportURL + '&quot; target=&quot;_blank&quot;&gt;'
+         + '&lt;img src=\&quot;'+IMAGES_URL+'fahrinfo.gif&quot; border=&quot;0&quot; hspace=&quot;20&quot;/&gt;&lt;/a&gt;';
+       if (onBerlinDe || topicId == &quot;t-331302&quot;) { // ehrenamt map datasets have no city property
+-        resultHandler.append(''+getTopicPostalCode(givenTopic) + ' Berlin&lt;br/&gt;');
++        resultHandler.append(''+ postalCode + ' Berlin&lt;br/&gt;');
+       } else {
+-        resultHandler.append(''+getTopicPostalCode(givenTopic) + ' ' + cityName + '&lt;br/&gt;');
++        resultHandler.append(''+ postalCode + ' ' + cityName + '&lt;br/&gt;');
+       }
+       resultHandler.append('' + street + '&nbsp;' + imageLink + '&lt;p/&gt;');
+     } else {
+@@ -1017,17 +1121,17 @@
+   function initCriteriaList() {
+     jQuery(&quot;#progContainer&quot;).hide();
+     var critListElement = jQuery(&quot;#sideBarCriterias&quot;);
+-    onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
++    onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt&quot;) != -1) ? true : false;
+     onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
+     var tabsHtml = &quot;&quot;;
+     if (onBerlinDe &amp;&amp; onEventMap) {
+       tabsHtml = '&lt;div id=&quot;navigation-helper&quot; '
+-          + 'style=&quot;border-bottom: 1px dashed #e8e8e8; padding-left: 4px; padding-bottom: 3px; padding-top:0px; padding-right: 4px;&quot;&gt;'
++          + 'style=&quot;border-bottom: 1px dashed #e8e8e8; padding-left: 7px; padding-bottom: 8px; padding-top:3px; padding-right: 4px;&quot;&gt;'
+           + '&lt;a href=&quot;'+ baseUrl +'ehrenamt&quot; title=&quot;Zum Einsatzstadtplan wechseln&quot;&gt;Einsatzorte&lt;/a&gt;&nbsp;|&nbsp;'
+           + 'Veranstaltungen Heute&lt;/div&gt;';
+     } else if (onBerlinDe &amp;&amp; onProjectMap) {
+       tabsHtml = '&lt;div id=&quot;navigation-helper&quot; '
+-          + 'style=&quot;border-bottom: 1px dashed #e8e8e8; padding-left: 4px; padding-bottom: 3px; padding-top:0px; padding-right: 4px;&quot;&gt;'
++          + 'style=&quot;border-bottom: 1px dashed #e8e8e8; padding-left: 7px; padding-bottom: 8px; padding-top:3px; padding-right: 4px;&quot;&gt;'
+           + 'Einsatzorte&nbsp;|&nbsp;'
+           + '&lt;a href=&quot;'+ baseUrl +'veranstaltungen-ehrenamt&quot; title=&quot;Zum Veranstaltungsstadtplan wechseln&quot;&gt;Veranstaltungen Heute&lt;/a&gt;&lt;/div&gt;';
+     }
+@@ -1052,10 +1156,10 @@
+         critLinkList += '&lt;tr valign=&quot;top&quot;&gt;';
+       }
+       if (onBerlinDe &amp;&amp; crtCritIndex == i) {
+-        critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; align=&quot;right&quot; class=&quot;critLinkNormal selectedCriteria&quot;&gt;'
+-          + critName + '&lt;/td&gt;';
++        critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; class=&quot;critLinkNormal selectedCriteria&quot;&gt;'
++          + '&lt;img src=&quot;<A HREF="http://www.berlin.de/_bde/css/list_bullet.png">http://www.berlin.de/_bde/css/list_bullet.png</A>&quot;/&gt;&nbsp;' + critName + '&lt;/td&gt;';
+       } else {
+-        critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; align=&quot;right&quot; class=&quot;critLinkNormal&quot;&gt;'
++        critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; class=&quot;critLinkNormal&quot;&gt;'
+           + critName + '&lt;/td&gt;';
+       }
+       if (!onBerlinDe &amp;&amp; crtCritIndex == i) {
+@@ -1077,6 +1181,11 @@
+     // set the correct images
+     // if (workspaceInfos != null) setCustomWorkspaceInfos(); else setDefaultWorkspaceInfos();
+     setWorkspaceInfos(workspaceHomepage, workspaceLogo, workspaceImprint, mapTitle);
++    if (onEventMap) {
++      // ### FIXME: make use of kiezatlas.mapTopics and thereofre initalize them earlier...
++      var countHtml = '&nbsp;&nbsp;&nbsp;Insgesamt &lt;b&gt;' + mapTopics.result.topics.length + '&lt;/b&gt; Veranstaltungen Heute&lt;p&gt;&lt;/p&gt;';
++      jQuery(&quot;#sideBarCriterias&quot;).append(countHtml);
++    }
+   }
+ 
+   /**
+@@ -1188,7 +1297,8 @@
+         // looping over all cats of a crit
+         var catIcon = [workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catIcon];
+         var catName = [workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catName];
+-        var catId = new String([workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catId]);
++        // var catId = new String([workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catId]);
++        var catId = workspaceCriterias.result['' + crtCritIndex + ''].categories[i].catId;
+         var catCSS = &quot;catRowDeselected&quot;;
+         if (isCategoryVisible(catId)) {
+           catCSS = &quot;catRowSelected&quot;;
+@@ -1205,45 +1315,30 @@
+         jQuery(&quot;#toggleHref-&quot;+catId).attr('href', 'javascript:toggleMarkerGroups(&quot;' + catId + '&quot;);');
+         jQuery(&quot;#catHref-&quot;+catId).attr('href', 'javascript:showCatInSideBar(&quot;' + catId + '&quot;, &quot;'+catName+'&quot;);');
+         // registering ui effects
+-        // jQuery(&quot;#toggleHref-&quot;+catId).attr('mouseenter', 'hoverCatButton(&quot;' + catId + '&quot;)');
+-        // jQuery(&quot;#toggleHref-&quot;+catId).attr('onmouseclick', 'toggleMarkerGroups(&quot;' + catId + '&quot;)');
+-        // jQuery(&quot;#toggleHref-&quot;+catId).attr('mouseleave', 'outCatButton(&quot;' + catId + '&quot;)');
+-        // jQuery(&quot;#toggleHref-&quot;+catId).mouseenter(hoverCatButton('&quot;' + catId + '&quot;'));
+-        // jQuery(&quot;#toggleHref-&quot;+catId).click(toggleMarkerGroups('&quot;' + catId + '&quot;'));
+-        // jQuery(&quot;#toggleHref-&quot;+catId).mouseleave(outCatButton('&quot;' + catId + '&quot;'));
+-        // jQuery(&quot;#toggleHref-&quot;+catId).hover(hoverCatButton('&quot;' + catId + '&quot;'), outCatButton('&quot;' + catId + '&quot;'));
++        jQuery(&quot;#toggleHref-&quot;+catId).hover(inCatButton, outCatButton);
+       }
+     }
+   }
+ 
+ 
+-  function hoverCatButton(catRow) {
+-    jQuery('#catRow-'+catRow).attr(&quot;class&quot;, &quot;catRowSelected&quot;);
+-    //
+-    jQuery(&quot;#toggleHref-&quot;+catRow).attr('href', 'javascript:toggleMarkerGroups(&quot;' + catRow + '&quot;);');
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).click('onmouseclick', 'toggleMarkerGroups(&quot;' + catRow + '&quot;)');
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).attr('mouseenter', 'hoverCatButton(&quot;' + catRow + '&quot;)');
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).click(toggleMarkerGroups('&quot;' + catRow + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).attr('mouseleave', 'outCatButton(&quot;' + catRow + '&quot;)');
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).hover(hoverCatButton('&quot;' + catRow + '&quot;'), outCatButton('&quot;' + catRow + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catId).mouseenter(hoverCatButton('&quot;' + catId + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catId).click(toggleMarkerGroups('&quot;' + catId + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catId).mouseleave(outCatButton('&quot;' + catId + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).mouseover(hoverCatButton('&quot;' + catRow + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).click(toggleMarkerGroups('&quot;' + catRow + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).mouseout(outCatButton('&quot;' + catRow + '&quot;'));
++  function inCatButton(event) {
++    var catId = event.target.id.replace(&quot;catIconRow-&quot;,&quot;&quot;);
++    var categoryVisible = isCategoryVisible(catId);
++    if (!categoryVisible) {
++      var row = jQuery(&quot;#&quot; + event.target.id).closest(&quot;tr&quot;);
++      row.removeClass(&quot;catRowDeselected&quot;);
++      row.addClass(&quot;catRowSelected&quot;);
++    } // if cat is visible, do nothing
+   }
+ 
+-  function outCatButton(catRow) {
+-    jQuery('#catRow-'+catRow).attr(&quot;class&quot;, &quot;catRowDeselected&quot;);
+-    //
+-    jQuery(&quot;#toggleHref-&quot;+catRow).attr('href', 'javascript:toggleMarkerGroups(&quot;' + catRow + '&quot;);');
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).attr('mouseenter', 'hoverCatButton(&quot;' + catRow + '&quot;)');
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).click(toggleMarkerGroups('&quot;' + catRow + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).attr('mouseleave', 'outCatButton(&quot;' + catRow + '&quot;)');
+-    // jQuery(&quot;#toggleHref-&quot;+catId).mouseenter(hoverCatButton('&quot;' + catId + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catId).click(toggleMarkerGroups('&quot;' + catId + '&quot;'));
+-    // jQuery(&quot;#toggleHref-&quot;+catRow).hover(hoverCatButton('&quot;' + catRow + '&quot;'), outCatButton('&quot;' + catRow + '&quot;'));
++  function outCatButton(event) {
++    var catId = event.target.id.replace(&quot;catIconRow-&quot;,&quot;&quot;);
++    var categoryVisible = isCategoryVisible(catId);
++    if (!categoryVisible) {
++      var row = jQuery(&quot;#&quot; + event.target.id).closest(&quot;tr&quot;);
++      row.removeClass(&quot;catRowSelected&quot;);
++      row.addClass(&quot;catRowDeselected&quot;);
++    } // else do nothing..
+   }
+ 
+   /** sets imprint, homepage and logo link associated with the current workspaceInfos */
+@@ -1256,8 +1351,12 @@
+       footerMessage = '&lt;b&gt;&lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt; '
+ 	      + 'is powered by &lt;a href=&quot;<A HREF="http://www.deepamehta.de">http://www.deepamehta.de</A>&quot;&gt;DeepaMehta&lt;/a&gt;';
+     }
+-    var footer = '&lt;span id=&quot;footerPrint&quot;&gt;&lt;a href=&quot;javascript:openThisPrintView()&quot;&gt;' 
+-      + '&lt;img src=&quot;'+ICONS_URL+'printer.png&quot;&gt;' + '&nbsp;Druckansicht&lt;/a&gt;&lt;/span&gt;';
++    // var footer = '';
++    // if (!onBerlinDe) {
++    var footer = '&lt;span id=&quot;footerPrint&quot;&gt;&lt;a href=&quot;javascript:openThisPrintView()&quot;&gt;'
++        + '&lt;img src=&quot;'+ICONS_URL+'printer.png&quot; alt=&quot;Druckansicht&quot; title=&quot;Druckansicht&quot;&gt;&lt;/a&gt;&lt;/span&gt;'; // Druckansicht
++    // }
++    // 
+     footer += '&lt;span id=&quot;footerImprint&quot;&gt;&lt;a href=&quot;'+workspaceImprint+'&quot;&gt;Impressum / Haftungshinweise&lt;/a&gt;&lt;/span&gt;';
+     footer += '&lt;span id=&quot;footerPoweredBy&quot;&gt;'+footerMessage+'&lt;/span&gt;';
+     jQuery(&quot;#kafooter&quot;).html(footer);
+@@ -1277,9 +1376,11 @@
+ 
+   function openThisPrintView() {
+     // i got all my objects represengint the apps current-state right here so..
+-    var printingWindow = window.open(basePath + &quot;/pages/be.de/PrintAtlas.html&quot;);
+-    // w.myVariable = thisIsAnObject;
+-
++    if (onBerlinDe) {
++      window.open(baseUrl + &quot;pages/PrintAtlas.html&quot;);
++    } else {
++      window.open(&quot;<A HREF="http://www.kiezatlas.de/pages/be.de/PrintAtlas.html">http://www.kiezatlas.de/pages/be.de/PrintAtlas.html</A>&quot;); 
++    }
+   }
+ 
+   function isCategoryVisible(myCatId) {
+@@ -1449,7 +1550,8 @@
+           + ' &lt;a href=&quot;<A HREF="http://www.berlin.de/buergeraktiv/ehrenamtsnetz/angebote/">http://www.berlin.de/buergeraktiv/ehrenamtsnetz/angebote/</A>'
+           + 'index.cfm?dateiname=ea_projekt_beschreibung.cfm&amp;cfide=0.304475484697&amp;&amp;anwender_id=5&amp;id=0&amp;ehrenamt_id=0&amp;projekt_id='
+           + originId +'&amp;seite=1&amp;organisation_id=0&quot;&gt;vorherigen Seite.&lt;/a&gt;&lt;br/&gt;';
+-          helpHtmlOne += '&lt;br/&gt; Sie k&ouml;nnen nat&uuml;rlich auch in dieser Ansicht weiter nach &lt;a href=&quot;javascript:updateCategoryList(1);&quot;&gt;Einsatzm&ouml;glichkeiten&lt;/a&gt; in ihrer Umgebung navigieren.';
++        helpHtmlOne += '&lt;br/&gt; Sie k&ouml;nnen nat&uuml;rlich auch in dieser Ansicht weiter nach '
++          + '&lt;a href=&quot;javascript:updateCategoryList(1);&quot;&gt;Einsatzm&ouml;glichkeiten&lt;/a&gt; in ihrer Umgebung navigieren.';
+         jQuery(&quot;#sideBarCategories&quot;).html(helpHtmlOne);
+     } else {
+       // log(&quot;linking in and showing &quot; + feature.data.topicName);
+@@ -1476,6 +1578,8 @@
+     var handler = jQuery(&quot;#sideBarCategories&quot;);
+     handler.empty();
+     jQuery(&quot;#progContainer&quot;).show(&quot;fast&quot;);
++    // do ajax topicbean GET and render results into the given container
++    // Topic ID, jQuery (DOM) Element, Browser History
+     getGeoObjectInfo(topicId, handler, dontUpdateHistoryState);
+     //
+     /** var topicFeature = checkDrawnFeaturesForTopicId(topicId);
+@@ -1505,10 +1609,9 @@
+ 
+   function toggleMarkerGroups(category, skipHistoryUpdate) {
+     showDialog(false);
+-    //var catId = &quot;t-&quot;+category;
+-    var catSelected = jQuery(&quot;#catRow-&quot;+category).attr(&quot;class&quot;);
+-    // log('toggleMarkerGroup ' +category+ ' is ' + catSelected);
+-    if (catSelected == &quot;catRowDeselected&quot;) {
++    var catSelected = isCategoryVisible(category);
++    // 
++    if (!catSelected) {
+       // catId was not selected, but is now
+       // add catId to our little helper list
+       markerGroupIds.push(category);
+@@ -1591,9 +1694,9 @@
+       }
+       // check for the case, where all are deselected..
+       if (markerGroupIds.length &gt; 0) {
+-        updatePermaLink(baseUrl+mapAlias+baseString+categoryString, {name: &quot;hideCategoryGroup&quot;, parameter: categoryString});
++        updatePermaLink(baseUrl+mapAlias+&quot;/criteria/&quot;+(parseInt(crtCritIndex)+1)+baseString+categoryString, {name: &quot;hideCategoryGroup&quot;, parameter: categoryString});
+       } else {
+-        updatePermaLink(baseUrl+mapAlias, {name: &quot;&quot;, parameter: &quot;&quot;});
++        updatePermaLink(baseUrl+mapAlias+&quot;/criteria/&quot;+(parseInt(crtCritIndex)+1), {name: &quot;&quot;, parameter: &quot;&quot;});
+       }
+     }
+   }
+@@ -1647,9 +1750,9 @@
+               // clusterFeature.attributes.renderer = &quot;circle&quot;;
+               // clusterFeature.attributes.renderer = &quot;icon&quot;;
+               clusterFeature.attributes.marker = &quot;hotspot&quot;;
+-              clusterFeature.attributes.size = &quot;20&quot;;
++              clusterFeature.attributes.size = &quot;23&quot;;
+               if (onBerlinDe) {
+-                clusterFeature.attributes.label = &quot;mehrere Einsatzm&#195;&#182;glichkeiten&quot;;
++                clusterFeature.attributes.label = &quot;mehrere Einsatzm\u00F6glichkeiten&quot;;
+               } else {
+                 clusterFeature.attributes.label = &quot;Hotspot&quot;;
+               }
+@@ -1658,22 +1761,22 @@
+             } else {
+               clusterFeature.attributes.marker = &quot;hotspot&quot;;
+               // clusterFeature.attributes.renderer = &quot;icon&quot;;
+-              clusterFeature.attributes.size = &quot;20&quot;;
++              clusterFeature.attributes.size = &quot;23&quot;;
+               clusterFeature.attributes.iconUrl = ICONS_URL+catIconURL;
+               clusterFeature.renderIntent = &quot;default&quot;;
+             }
+             // boundingFeatures.push(clusterFeature);
+           } else {
+-            // normal show
++            // normal show, default style of icon
+             featureToShow = checkFeatureById(id);
+             //featureToShow.attributes.renderer = &quot;icon&quot;;
+             if ( catIconURL == &quot;&quot; || catIconURL == &quot;blackdot.gif&quot; ) { // <A HREF="http://www.kiezatlas.de/client/icons/">http://www.kiezatlas.de/client/icons/</A>
+-              featureToShow.attributes.size = &quot;15&quot;;
++              featureToShow.attributes.size = &quot;20&quot;;
+               featureToShow.attributes.iconUrl = ICONS_URL+&quot;locationPointer.png&quot;;
+               featureToShow.renderIntent = &quot;default&quot;;
+             } else {
+               featureToShow.attributes.renderer = &quot;icon&quot;;
+-              featureToShow.attributes.size = &quot;15&quot;;
++              featureToShow.attributes.size = &quot;20&quot;;
+               featureToShow.attributes.iconUrl = ICONS_URL+catIconURL;
+               featureToShow.renderIntent = &quot;default&quot;;
+             }
+@@ -1691,7 +1794,7 @@
+       for (var mi = 0; mi &lt; markerGroupIds.length; mi++ ) {
+         categoryString += markerGroupIds[mi] + &quot;%2C&quot;;
+       }
+-      updatePermaLink(baseUrl+mapAlias+baseString+categoryString, {name: &quot;showCategoryGroup&quot;, parameter: categoryString}); 
++      updatePermaLink(baseUrl+mapAlias+&quot;/criteria/&quot;+(parseInt(crtCritIndex)+1)+baseString+categoryString, {name: &quot;showCategoryGroup&quot;, parameter: categoryString});
+     }
+   }
+ 
+@@ -1806,7 +1909,7 @@
+         label : &quot;${name}&quot;, fontSize: &quot;12px&quot;, fontStyle: &quot;bold&quot;,
+         fontFamily: &quot;Arial,Helvetica,sans-serif&quot;, fontColor: &quot;#B60033&quot;}
+     });
+-    var pathToFile = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/img/districts.kml">http://www.kiezatlas.de/maps/embed/img/districts.kml</A>&quot;;
++    var pathToFile = &quot;pages/be.de/img/districts.kml&quot;;
+     if (baseUrl != undefined) {
+       pathToFile = baseUrl + &quot;/districts.kml&quot;;
+     }
+@@ -1849,8 +1952,8 @@
+     var symbolizer = OpenLayers.Util.applyDefaults( myStyle, OpenLayers.Feature.Vector.style[&quot;default&quot;]);
+     var myStyleMap = new OpenLayers.StyleMap({
+       &quot;default&quot;: symbolizer, &quot;enumeration&quot;: textStyle, // cursor: &quot;pointer&quot;,
+-      &quot;select&quot;: {strokeColor:&quot;red&quot;, fillOpacity: &quot;1&quot;, fillColor:&quot;white&quot;, strokeWidth: 2 , graphicWidth: 21},
+-      &quot;temporary&quot;: {strokeColor:&quot;white&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;blue&quot;, strokeWidth: 2, graphicWidth: 23}
++      &quot;select&quot;: {strokeColor:&quot;red&quot;, fillOpacity: &quot;1&quot;, fillColor:&quot;white&quot;, strokeWidth: 2 , graphicWidth: 23},
++      &quot;temporary&quot;: {strokeColor:&quot;white&quot;, fillOpacity: &quot;1&quot;, fillColor: &quot;blue&quot;, strokeWidth: 2, graphicWidth: 25}
+     });
+     //&quot;hotspot&quot;: {pointRadius: 8}});
+     var lookup = {
+@@ -1901,7 +2004,7 @@
+           // no menu just label
+           var marker = e.feature.attributes.marker;
+           if (marker == &quot;hotspot&quot;) {
+-            e.feature.attributes.label = &quot;mehrere Einsatzmoeglichkeiten&quot;;
++            e.feature.attributes.label = &quot;mehrere Einsatzm\u00F6glichkeiten&quot;;
+           }
+         },
+         // ### ToDo: mostly unused and to be removed
+@@ -1956,7 +2059,7 @@
+       allFeatures[i].cluster = null;
+       allFeatures[i].attributes.iconUrl = &quot;&quot;; // not to show feature after initializing
+       // allFeatures[i].attributes.renderer = &quot;circle&quot;; // = &quot;blackdot.gif&quot;; // not to show feature after initializing
+-      allFeatures[i].attributes.size = &quot;15&quot;;
++      allFeatures[i].attributes.size = &quot;15&quot;; // item-style when geoobject is directly called from outside www
+       allFeatures[i].attributes.label = points[i].topicName;
+       allFeatures[i].renderIntent = &quot;default&quot;; // not to show feature after initializing
+       // add new feature
+@@ -2370,7 +2473,7 @@
+     if (crtHeightFromTop &gt; 0) { // leaving fullWindow onBerlinDe-Hack
+       fHeight = fHeight - crtHeightFromTop;
+     }
+-    if ( width != null) {
++    if (width != null) {
+       fWidth = width;
+     }
+     setLayout(fHeight, fWidth - 1);
+@@ -2571,11 +2674,6 @@
+   }
+   
+   function overMapControl() {
+-    if (onBerlinDe) {
+-      jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 105);
+-    } else {
+-      // jQuery(&quot;#mapControl&quot;).css(&quot;height&quot;, 145);
+-    }
+     toggleMapControl();
+   }
+   
+@@ -2675,9 +2773,17 @@
+   }
+ 
+   function setCityMapNameWs(title, workspaceId) {
+-    jQuery(&quot;#mapName&quot;).html('Stadtplan &lt;span class=&quot;mapTitle&quot;&gt;&lt;a id=\&quot;cityMapLink\&quot; href=\&quot;\&quot;&gt;' + title
+-      + '&nbsp;&lt;img src=&quot;'+IMAGES_URL+'dropdown-btn.png&quot;&gt;&lt;/a&gt;&lt;/span&gt;');
+-    jQuery(&quot;#cityMapLink&quot;).attr(&quot;href&quot;, 'javascript:getPublishedCityMaps(&quot;'+workspaceId+'&quot;)');
++    // jQuery(&quot;#mapName&quot;).html('Stadtplan &lt;span class=&quot;mapTitle&quot;&gt;&lt;a id=\&quot;cityMapLink\&quot; href=\&quot;\&quot;&gt;' + title
++      // + '&nbsp;&lt;img src=&quot;'+IMAGES_URL+'dropdown-btn.png&quot;&gt;&lt;/a&gt;&lt;/span&gt;');
++    onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt&quot;) != -1) ? true : false;
++    onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
++    if (!onProjectMap &amp;&amp; !onEventMap) {
++      jQuery(&quot;#mapName&quot;).html('Stadtplan &lt;span class=&quot;mapTitle&quot;&gt;&lt;a id=\&quot;cityMapLink\&quot; href=\&quot;\&quot;&gt;' + title
++        + '&nbsp;&lt;img src=&quot;'+IMAGES_URL+'dropdown-btn.png&quot;&gt;&lt;/a&gt;&lt;/span&gt;');
++      jQuery(&quot;#cityMapLink&quot;).attr(&quot;href&quot;, 'javascript:getPublishedCityMaps(&quot;'+workspaceId+'&quot;)');
++    } else {
++      jQuery(&quot;#mapName&quot;).html('Stadtplan &lt;span class=&quot;mapTitle&quot;&gt;' + title + '&lt;/span&gt;');
++    }
+     // jQuery(&quot;#topicRow-&quot;+resultBaseTopic.id).attr('onclick', 'javascript:showTopicInMap(&quot;' + resultBaseTopic.id + '&quot;);');
+     // jQuery(&quot;#topicRowHref-&quot;+resultBaseTopic.id).attr('href', 'javascript:showTopicInMap(&quot;' + resultBaseTopic.id + '&quot;);');
+   }
+
+Modified: trunk/pages/be.de/landmaps-ie.css
+===================================================================
+--- trunk/pages/be.de/landmaps-ie.css	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/landmaps-ie.css	2012-08-21 17:23:11 UTC (rev 106)
+@@ -13,3 +13,5 @@
+    margin-left: 0px;
+    padding-right: 0.5em;
+ }
++
++#kiezatlas .layersDiv { left: 35px; }
+
+Modified: trunk/pages/be.de/landmaps.css
+===================================================================
+--- trunk/pages/be.de/landmaps.css	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/landmaps.css	2012-08-21 17:23:11 UTC (rev 106)
+@@ -1,7 +1,7 @@
+ /* 
+  * Kiezatlas Alternative CityMaps Interface - berlin.de/atlas Stylesheet
+  * 
+- * @author Malte Rei&szlig;ig - <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A> (4th of May 2011)
++ * @author Malte Rei&szlig;ig - <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A> (29th of January 2012)
+  */
+ 
+ /** cutout 
+@@ -15,51 +15,79 @@
+ ; background-color: #6C6C6C; background-image: <A HREF="http://www.berlin.de/.img/bde/menubar-grey-bg.gif;">http://www.berlin.de/.img/bde/menubar-grey-bg.gif;</A> border-right-color: white; border-right-style: groove; border-right-width: 2px; border-left-style: groove; border-left-width: 2px; 
+ */
+ #kiezatlas { position: absolute; top: 0px; left:0px; font: 100% Arial, Helvetica, sans-serif; }
+-#kaheader { position: absolute; left:0px; top:143px; background: #e6edff; height: 21px; border: 0px solid #4170D4; border-right: 1px solid #4170D4; border-bottom: 1px solid #4170D4; font: Arial, Helvetica, sans-serif; }
+-#kiezatlas #focusInput { position: absolute; top: 5px; color: #4170D4; font-size: 10px; }
+-#kiezatlas #focusInput input, #kiezatlas #focusInput textarea {  height: 15px; border: 1px solid #4170D4; padding-left: 4px; font-size:10px; background-color:#fff; color: #000; width:180px;}
+-#kiezatlas #focusAlternatives { position: absolute; top: 166px; width: 167px; background-color: #ffffff; opacity: 0.75; border: 1px solid #4170D4; border-top: 0px; font-size: 10px; padding: 5px; color: #000000; visibility: hidden; }
+-#kiezatlas #searchInput { position: absolute; top: 5px; color: #4170D4; font-size: 10px; }
+-#kiezatlas #searchInput input, #kiezatlas #searchInput textarea { height: 15px; border: 1px solid #4170D4; padding-left: 4px; font-size: 10px; background-color:#fff; color: #000; width:140px;}
+-#kiezatlas #mapName { font: 10px Arial, Helvetica, sans-serif; position: absolute; left:3px; top: 6px; color: #4170D4; }
+-#kiezatlas #headerButtons { position: absolute; top: 3px; }
+-#kiezatlas #mapControl { position: absolute; vertical-align: top; width:120px; height:20px; color:#4170D4; font: 10px Arial, Helvetica, sans-serif; font-weight: bold; background-color: #fff; border: 1px solid #4170D4; opacity: 0.8; }
+-#kiezatlas #mapControl a { color:#4170D4; font-size: 10px; }
+-#kiezatlas #moreLabel { position: relative; left: 4px; top: -1px; }
+-#kiezatlas #mapFunctions { position: relative; top: 1px; }
+-#kiezatlas #toggleMarkerHref { position: relative; left: 0px; top: 1px; }
+-#kiezatlas #resetMarkerHref { position: relative; left: 2px; top: 1px; }
+-#kiezatlas #permaLinkHref { position: relative; top: 1px; }
+-#kiezatlas #permaLink { position: absolute; left: 275px; top: 172px; } /** width: 300px; height: 20px; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; color: #009; background-color: #fff; opacity: 0.8; */
+-#kiezatlas #permaLinkLabel { cursor: pointer; border: 1px solid #4170D4; position: absolute; right: 760px; top: 35px; width: 100px; height: 20px; font-weight:bold; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; color: #009; background-color: #fff; opacity: 0.8; }
+-#kiezatlas #permaLink input,#kiezatlas #permaLink textarea { border: 1px solid #4170D4; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; padding-right:4px; padding-bottom: 0px; padding-top: 2px; padding-left: 4px; height: 18px; background-color:#fff; color: #009; width: 290px; opacity: 0.8; }
+-#kiezatlas #dialogMessage { position: absolute; top: 250px; left: 200px; width: 300px; height: 160px; background-color: #fff; border: 1px solid #3f5da6; }
++#kaheader { position: absolute; left:0px; height: 35px; border-right: 1px solid #2D509A; background: #fff; border-bottom: 5px solid #2D509A; }
++#kiezatlas #mapName { position: relative; left: 7px; margin-top: 0px; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; color:#2D509A; width: 400px; }
++#kiezatlas #mapName a { text-decoration: none; padding: 10px; color: #2D509A; }
++#kiezatlas #mapName a:hover { text-decoration: none; background-color: #2D509A; color: #fff; }
++/** #mapName:hover { background-color: #3f5da6; color: #fff; height: 20px; }**/
++#kiezatlas .mapTitle { font-weight: bold; }
++/** .mapTitle:hover { background-color: #3f5da6; color: #fff; padding-top: 10px; padding-bottom: 5px; padding-right: 10px; } **/
++#kiezatlas #cityMapDialog { z-index: 1003; background-color: #fff; position:absolute; top:39px; left: 415px; border: 1px solid #4170d4; }
++#kiezatlas #cityMapDialog a { cursor: pointer; text-decoration: none; }
++#kiezatlas #cityMapDialog img { border: 0px solid #fff; }
++#kiezatlas #cityMapNav { list-style: none; padding: 0px; }
++#kiezatlas #cityMapNav ul { padding: 0px; -webkit-padding-start: 0px; -webkit-margin-before: 0px; -webkit-margin-after: 0px; }
++#kiezatlas #cityMapNav li { padding: 8px; font-weight: bold; font-size: 13px; font-family: &quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; color: #2D509A; }
++#kiezatlas #cityMapNav li:hover { background-color: #2D509A; color: #fff; cursor: pointer; }
++#kiezatlas #cityMapNav li:hover a { background-color: #2D509A; color: #fff !important; cursor: pointer; }
++#kiezatlas #cityMapNav li a:link { color: #2D509A; }
++#kiezatlas #cityMapNav li a:hover { text-decoration: none; color: #fff; }
++
++/** most stuff positioned in the kiezatlas.js script **/
++#kiezatlas #focusInput { position: absolute; height: 30px; left: 10px; top:5px; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; color: #2D509A; }
++/**  #focusInput label { color: #40B0E2; } **/
++#kiezatlas #focusInput input, #focusInput textarea { border: 1px solid #4170d4; font-weight: bold; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; padding: 4px; background-color:#fff; color: #3f5da6; width:180px; }
++
++#kiezatlas #focusAlternatives { padding-left: 6px; background-color:#FFFFFF; line-height: 21px; font-size:13px; padding:5px; position:absolute; top:173px; left: 123px; visibility:hidden; width:350px; border-top: 0px solid #2D509A; border-bottom: 1px solid #2D509A; border-right: 1px solid #2D509A; left: 1px solid #2D509A; z-index: 1010; /** #3f5da6;**/ }
++#kiezatlas #focusAlternatives a { padding: 3px; margin: 3px; height: 20px; font-weight: bold; }
++#kiezatlas #focusAlternatives img { cursor: pointer; }
++#kiezatlas #focusAlternatives i { margin-left: 6px; }
++
++#kiezatlas #searchInput { position: absolute; height: 30px; top:5px; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; color: #2D509A; }
++/** #searchInput label { color: #40B0E2; } **/
++#kiezatlas #searchInput input, #searchInput textarea { border: 1px solid #4170d4; font-weight: bold; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; padding: 4px; background-color:#fff; color: #3f5da6; width:140px; }
++
++#kiezatlas #headerButtons { position: absolute; top:1px; }
++
++#kiezatlas #mapControl { position: absolute; vertical-align: top; height: 25px; padding-right: 10px; padding-top: 5px; color:#3f5da6; background-color: #fff; font: 12px; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-weight: bold; background-color: #fff; border: 1px solid #2D509A; z-index: 0; }
++#kiezatlas #mapControl a { color: #3f5da6; font-size: 12px; padding: 5px; text-decoration: none; }
++#kiezatlas #mapControl a:hover { text-decoration: underline; }
++#kiezatlas #mapControl img { cursor: pointer; }
++
++#kiezatlas #dialogMessage { position: absolute; top: 250px; left: 200px; width: 300px; height: 160px; background-color: #fff; border: 2px solid #2D509A; }
+ #kiezatlas #modalTitle { position: relative; top: 10px; padding: 10px; margin-right: auto; margin-left: auto; }
+ #kiezatlas #modalMessage { padding: 10px; }
+ #kiezatlas #closeDialog { position: relative; top: 145px; left: 160px; }
+ #kiezatlas #divider { position: relative; left: 2px; top: 0px; }
+-#kiezatlas #mapSwitcher { font: 10px Arial, Helvetica, sans-serif; font-weight: bold; color: #4170d4 !important; text-align: right;  }
++#kiezatlas #mapSwitcher { width: 150px; position: relative; top: 30px; left: 220px; z-index: 2;
++  font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size: 12px; font-weight: bold; color: #2D509A; !important; text-align: right;
++  background-color: #fff; border-top: 0px solid #2D509A; border-bottom: 1px solid #2D509A; border-right: 1px solid #2D509A; border-left: 1px solid #2D509A; padding-right: 5px; }
+ #kiezatlas #mapMarkerButtons { font-family: sans-serif; font-size: smaller; color: #4170d4; font-weight:bold; !important; opacity: 0.75; text-decoration: none;}
+-#kiezatlas #memu { position: absolute; background-color: #fff; width:325px; opacity:0.8; padding: 5px; padding-left: 10px; color:#3f5da6; }
+-#kiezatlas #memu a .hover { color:#4170D4; }
+-#kiezatlas #map { position: absolute; left:0px; }
++#kiezatlas #memu { position: absolute; background-color: #fff; width:325px; opacity:0.8; padding: 5px; padding-left: 10px; color: #4170d4; }
++#kiezatlas #memu a .hover { color :#3f5da6; text-decoration: none; }
++#kiezatlas #map { position: absolute; left:0px; z-index: 0; }
+ #kiezatlas #navPanel{ position: absolute; left: 5px; bottom: 50px;}
+-#kiezatlas #sideBar { position: absolute; border-top: 0px solid #4170d4; border-bottom: 1px solid #4170d4; border-right: 1px solid #4170D4; border-left: 1px solid #4170D4; background:#fff; }
++#kiezatlas #sideBar { position: absolute; border-top: 0px solid #2D509A; border-bottom: 1px solid #2D509A; border-right: 1px solid #2D509A; border-left: 1px solid #2D509A; background:#fff; }
+ #kiezatlas #sideBarCriterias { position:relative; left:5px; top:3px; cursor:pointer; }
+ #kiezatlas #sideBarCategories { position:relative; left:5px; top: 5px; overflow:auto; }
+ #kiezatlas #sideBarCategories a { text-decoration: none; }
+ #kiezatlas #sideBarCategories a:hover { text-decoration: underline; }
+-#kiezatlas #sideBarControl { position: absolute; width:5px; top:29px; background: #4170D4; }
++#kiezatlas #sideBarControl { position: absolute; width:5px; top:29px; background: #2D509A; }
+ #kiezatlas #progContainer { position:absolute; top:45%; left:35%; width:50%; height:50%; opacity: 0.6; }
+-#kiezatlas #kafooter { background: #fff; height:35px; position:absolute; bottom: 3px; }
++#kiezatlas #kafooter { background: #fff; height:35px; position:absolute; }
+ #kiezatlas #footerImprint { position:absolute; right:8px; bottom: 18px; }
+ #kiezatlas #footerImprint a { color: #b60033; text-decoration: none; font-weight: bold; }
+ #kiezatlas #footerPoweredBy { position:absolute; right:8px; bottom: 3px; }
+ #kiezatlas #footerPoweredBy a {  color: #b60033; text-decoration: none; font-weight: bold;}
++#kiezatlas #footerPrint { position: relative; left: 2px; top: 6px; }
+ #kiezatlas #helpFont { position: absolute; bottom: 5px; font-size: 12px; font-weight: bold; color: #4170d4; text-decoration: none;}
+ #kiezatlas #helpPageOne { position: relative; left: 0px; top: 0px; }
+-#kiezatlas #resizeButton { cursor:pointer; position: relative; left: 2px; top: -2px; }
+-#kiezatlas #fullWindowButton { cursor:pointer; position: relative; top: -1px; }
++#kiezatlas #resizeButton { cursor:pointer; position: relative; left: 2px; top: 5px; padding-right: 5px; }
++#kiezatlas #fullWindowButton { cursor:pointer; position: relative; top: 5px; }
++
++#kiezatlas #permaLink { position: absolute; top: 37px; right: 695px; z-index: 1100; }
++#kiezatlas #permaLinkLabel { cursor: pointer; border: 1px solid #3f5da6; position: absolute; right: 760px; top: 35px; width: 100px; font-weight:bold; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; font-size: 10px; color: #009; background-color: #fff; }
++#kiezatlas #permaLink input, #kiezatlas #permaLink textarea { width: 400px; border: 1px solid #3f5da6;  font-size: 13px; font-family: &quot;Arial&quot;, &quot;Sans-Serif&quot;; padding-top: 7px; padding-bottom: 7px; padding-left: 7px; background-color:#fff; color: #009; }
+ /** overwriting new bde css */
+ #kiezatlas tr, td, th { vertical-align: middle !important; }
+ #kiezatlas table { border-collapse: separate; border-spacing: 0px; font-size: 100%; }
+@@ -68,21 +96,22 @@
+ #navigation-helper a:hover { text-decoration: underline; color: #e50033; opacity: 1.0; }
+ #navigation-helper a { text-decoration: none; color: #3660b8; opacity: 0.7; }
+ #navigation-helper { color: #e50033; }
+-#kiezatlas .critLinkNormal { text-decoration: none; color: #3660b8; padding: 1px; color: #3660b8; opacity:0.7; }
++#kiezatlas .critLinkNormal { text-decoration: none; color: #3660b8; padding: 1px; color: #3660b8; opacity:0.7; width: 120px; }
+ #kiezatlas .critLinkNormal:hover { text-decoration: underline; color: #e50033; opacity: 1.0; }
+ #kiezatlas .selectedCriteria, #kiezatlas .selectedCriteria a:hover { color: #e50033; opacity: 1.0; text-decoration: none !important; }
+ #kiezatlas .berlinMapName { position: relative; left: 3em; top: 0px; width: 145px; height: 30px; background: url(&quot;/.img/bde/menubar-grey-bg.gif&quot;) repeat-x scroll 0 0 #6C6C6C; border-top: 0px solid #fff; border-left: 1px solid #fff; border-right: 1px solid #fff; border-bottom: 0px solid #fff; }
+ /** #kiezatlas .critLinkNormal { text-decoration: underline; } */
+ #kiezatlas .catRowDeselected { background: #fff; }
+ #kiezatlas .catRowSelected { background: #E6EDFF; }
+-#kiezatlas .iconCell { text-align: center; padding-top:4px; }
++#kiezatlas .iconCell { text-align: center; padding: 2px; }
+ #kiezatlas .propertyLabel { position:relative; left: 1px; font-weight: bold; }
+ #kiezatlas .propertyField { position:relative; left: 1px; }
+ #kiezatlas .topicRowDeselected { background: #fff; }
+ #kiezatlas .topicRowSelected { background: #e6edff; }
+-#kiezatlas .layersDiv { position:relative; left: 5px; max-width: 110px; text-align: right; }
++#kiezatlas .layersDiv { position:relative; left: 5px; max-width: 210px; text-align: right; padding-right: 10px; padding-left: 10px; padding-bottom: 10px; }
+ #kiezatlas .dataLbl { color: #4170D4; }
+ #kiezatlas .baseLbl { color: #4170D4; }
++#kiezatlas .labelSpan:hover { text-decoration: underline; }
+ #kiezatlas .dataLayersDiv { border: 1px solid #e6edff; padding: 2px; text-align: right;  }
+ #kiezatlas .baseLayersDiv { border: 1px solid #e6edff; padding: 2px; text-align: right; }
+ #kiezatlas .additionalInfo { width: 270px; background: #E8E8E8; margin-left: auto; margin-right: auto; padding-top: 5px; padding-bottom: 5px; padding-left:5px; padding-right:5px; border: 1px dashed #000;}
+@@ -92,3 +121,12 @@
+ #kiezatlas .olControlLayerSwitcher { background-color: #4170D4; position: absolute; top: 352px !important; }
+ #kiezatlas .olControlAttribution { position:absolute; bottom: 3px !important; }
+ 
+<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">+ at -moz-document</A> url-prefix() {
++  #kiezatlas .layersDiv { }
++  #kiezatlas #mapSwitcher { }
++  #kiezatlas #mapControl { z-index: 0; }
++  #kiezatlas #permaLink input, #kiezatlas #permaLink textarea { padding-bottom: 8px; }
++  /** #kiezatlas #fullWindowButton { z-index: 2; } **/
++  /** #mapName { position: relative; left: 365px; padding:10px; padding-bottom: 5px; } **/
++}
++
+
+Modified: trunk/pages/be.de/maps.css
+===================================================================
+--- trunk/pages/be.de/maps.css	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/be.de/maps.css	2012-08-21 17:23:11 UTC (rev 106)
+@@ -16,6 +16,7 @@
+ /** .mapTitle:hover { background-color: #3f5da6; color: #fff; padding-top: 10px; padding-bottom: 5px; padding-right: 10px; } **/
+ #cityMapDialog { z-index: 1003; background-color: #fff; position:absolute; top:39px; left: 435px; border: 1px solid #3F5DA6; }
+ #cityMapDialog a { cursor: pointer; }
++#cityMapDialog img { border: 0px solid #fff; }
+ #cityMapNav { list-style: none; padding: 0px; }
+ #cityMapNav ul { padding: 0px; -webkit-padding-start: 0px; -webkit-margin-before: 0px; -webkit-margin-after: 0px; }
+ #cityMapNav li { padding: 8px; font-weight: bold; font-size: 13px; font-family: &quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; color: #3f5da6; }
+@@ -103,6 +104,8 @@
+   .layersDiv { position:relative; left: 2281px; }
+   #focusInput { position: absolute; height: 30px; top:4px; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; color: #3f5da6; }
+   #searchInput { position: absolute; height: 30px; top:4px; font-family:&quot;Verdana&quot;, &quot;Tahoma&quot;, &quot;sans-serif&quot;; font-size:13px; color: #3f5da6; }
++  #mapSwitcher { left: -2054px; }
++  #mapControl { width: 367px; }
+   /** #mapName { position: relative; left: 365px; padding:10px; padding-bottom: 5px; } **/
+ }
+ 
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/pages/kiezatlas.css	2012-08-21 17:23:11 UTC (rev 106)
+@@ -84,6 +84,11 @@
+ .info-container {
+ }
+ 
++/* DeepaMehta form generator: the help text placed in a line above label and input field */
++.form-helptext {
++  font-size: small; color: #999;
++}
++
+ /* DeepaMehta info generator: a label/content pair */
+ .info {
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2012-08-21 17:23:11 UTC (rev 106)
+@@ -70,19 +70,35 @@
+ 				if (pathInfo == null || pathInfo.length() == 1) {
+ 					throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
+ 				}
++        String[] elements = pathInfo.split(&quot;/&quot;);
++        Hashtable requested = parseRequestedPath(elements);
++        if (requested != null) {
++          session.setAttribute(&quot;originId&quot;, requested.get(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
++          session.setAttribute(&quot;topicId&quot;, requested.get(&quot;geo&quot;));
++          session.setAttribute(&quot;categories&quot;, requested.get(&quot;categories&quot;));
++          session.setAttribute(&quot;baseLayer&quot;, requested.get(&quot;layer&quot;));
++          session.setAttribute(&quot;critIndex&quot;, requested.get(&quot;criteria&quot;));
++          session.setAttribute(&quot;searchTerm&quot;, requested.get(&quot;search&quot;));
++        }
++        // overrides pathinfo url settings just parsed.. for backwards compatibility reasons
+         // application states represented in URL - just passing params to javascript
+         Integer critIndex = 0;
+-        if (params.getParameter(&quot;critId&quot;) != null) critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
+-        session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;));
+-        session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
+-        session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
+-        session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
+-        session.setAttribute(&quot;critIndex&quot;, critIndex);
+-        session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
+-				//
++        if (params.getParameter(&quot;critId&quot;) != null) {
++          critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
++        } // [0]
++        if (params.getParameter(&quot;linkTo&quot;) != null) session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
++        if (params.getParameter(&quot;topicId&quot;) != null) session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
++        if (params.getParameter(&quot;catIds&quot;) != null) session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
++        if (params.getParameter(&quot;baseLayer&quot;) != null) session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
++        if (params.getParameter(&quot;search&quot;) != null) session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
++        if (session.getAttribute(&quot;critIndex&quot;) == null) session.setAttribute(&quot;critIndex&quot;, critIndex);
++        //
+ 				String alias = pathInfo.substring(1);
+         if (pathInfo.indexOf(&quot;&amp;&quot;) != -1) {
+           alias = pathInfo.substring(1, pathInfo.indexOf(&quot;&amp;&quot;));
++        } else if (pathInfo.indexOf(&quot;/&quot;, 1) != -1) {
++          // if / behind mapname... slice map-alias out
++          alias = elements[1];
+         }
+         session.setAttribute(&quot;mapAlias&quot;, alias);
+ 				BaseTopic mapTopic = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
+@@ -94,8 +110,6 @@
+         } else {
+           return PAGE_MAP_LOGIN;
+         }
+-        // session.setAttribute(&quot;workspaceInfos&quot;, workspaceInfos);
+-        //
+ 			} catch (DeepaMehtaException e) {
+ 				System.out.println(&quot;*** BrowseServlet.performAction(): &quot; + e);
+ 				session.setAttribute(&quot;error&quot;, e.getMessage());
+@@ -794,7 +808,39 @@
+ 		return getCurrentCriteria(session).selectedCategoryIDs;
+ 	}
+ 
+-    private void initSelectedCatAttribute(Session session) {
+-        session.setAttribute(&quot;selectedCatId&quot;, null); // necessary for the new cityMap
++  private void initSelectedCatAttribute(Session session) {
++      session.setAttribute(&quot;selectedCatId&quot;, null); // necessary for the new cityMap
++  }
++
++  // ---
++
++  private Hashtable parseRequestedPath(String[] elements) {
++    Hashtable result = new Hashtable();
++    for (int i = 0; i &lt; elements.length; i++) {
++      String key = elements[i];
++      try { // ### if one nomen has no attributes, the whole request fails
++        if (key.equals(&quot;layer&quot;)) {
++          result.put(&quot;layer&quot;, elements[i+1]);
++        } else if (key.equals(&quot;p&quot;)) {
++          result.put(&quot;geo&quot;, elements[i+1]);
++        } else if (key.equals(&quot;linkTo&quot;)) {
++          result.put(&quot;linkTo&quot;, elements[i+1]);
++        } else if (key.equals(&quot;categories&quot;)) {
++          result.put(&quot;categories&quot;, elements[i+1]);
++        } else if (key.equals(&quot;criteria&quot;)) {
++          result.put(&quot;criteria&quot;, Integer.parseInt(elements[i+1])-1);
++        } else if (key.equals(&quot;search&quot;)) {
++          result.put(&quot;search&quot;, elements[i+1]);
++        } else {
++          // skip this..
++        }
++      } catch (ArrayIndexOutOfBoundsException ex) {
++        return null;
++      }
+     }
++    // System.out.println(&quot;DEBUG: pathInfo.layer: \&quot;&quot; + result.get(&quot;layer&quot;) + &quot;\&quot; geoObject: \&quot;&quot; + result.get(&quot;geo&quot;) +&quot;\&quot; category: \&quot;&quot; +
++       //  result.get(&quot;category&quot;) + &quot;\&quot; criteria: \&quot;&quot; + result.get(&quot;criteria&quot;) + &quot;\&quot; search: \&quot;&quot; + result.get(&quot;search&quot;) + &quot;\&quot;&quot;);
++    return result;
++  }
++  
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2012-08-21 17:23:11 UTC (rev 106)
+@@ -24,12 +24,12 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6&lt;br&gt;
++ * Kiezatlas 1.6.8.3&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 8.7.2008&lt;br&gt;
+- * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
++ * Last change: 02.08.2009&lt;br&gt;
++ * J&ouml;rg Richter&lt;br&gt; / Malte Rei&szlig;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A> / <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+ public class EditServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/WorkspaceServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/WorkspaceServlet.java	2011-12-14 13:33:04 UTC (rev 105)
++++ trunk/src/de/kiezatlas/deepamehta/WorkspaceServlet.java	2012-08-21 17:23:11 UTC (rev 106)
+@@ -1,9 +1,12 @@
+ package de.kiezatlas.deepamehta;
+ 
++import de.deepamehta.AmbiguousSemanticException;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ //
+ import de.deepamehta.BaseTopic;
+ import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.OrderedItem;
++import de.deepamehta.PropertyDefinition;
+ import de.deepamehta.service.ApplicationService;
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.Session;
+@@ -26,7 +29,7 @@
+  * Kiezatlas 1.6.8.3&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 23.11.2011&lt;br&gt;
++ * Last change: 02.01.2012&lt;br&gt;
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -82,6 +85,15 @@
+       BaseTopic user = null;
+       try {
+         user = as.getTopic(TOPICTYPE_USER, userProperty, null, directives);
++        if (!user.getName().equals(username)) {
++          System.out.println(&quot;*** ERROR: usernames do not match/ no username given for ..&quot; + user.getName());
++          session.setAttribute(&quot;error&quot;, &quot;Login incorrect&quot;);
++          return PAGE_WORKSPACE_ERROR;
++        } else if (!as.getTopicProperty(user, PROPERTY_PASSWORD).equals(password)) {
++          System.out.println(&quot;*** ERROR: passwords do not match/ no passsword given for ..&quot; + user.getName());
++          session.setAttribute(&quot;error&quot;, &quot;Login incorrect&quot;);
++          return PAGE_WORKSPACE_ERROR;
++        }
+       } catch(DeepaMehtaException ex) {
+         System.out.println(&quot;User is NOT available or credentials are not correct.. &quot;);
+         session.setAttribute(&quot;error&quot;, &quot;Login incorrect&quot;);
+@@ -89,7 +101,7 @@
+       }
+       // ### and is user related to this workpsace in the role of submitter
+       if (user != null) {
+-        System.out.println(&quot;User is available and credentials are correct.. &quot;);
++        session.setAttribute(&quot;user&quot;, user);
+         // ### generate form for the GeoObject-Topictype of this workspace..
+         // GeoObjectTopic topic = as.createTopic(, &quot;&quot;);
+         // load current workspace..
+@@ -141,13 +153,15 @@
+       String geoObjectId = &quot;&quot;;
+       try {
+         geoObjectId = createTopic(geoType.getID(), params, session, directives); // skip citymap
++        // equip our new object with a random webalias...
++        as.setTopicProperty(geoObjectId, 1, PROPERTY_WEB_ALIAS, UUID.randomUUID().toString());
+       } catch (DeepaMehtaException ex) {
+         System.out.println(&quot;*** Error catched along... should redirect to form with UDPATE_GEO..&quot;);
+       }
+       // 
+       for (int i=0; i&lt;cityMaps.length; i++) {
+         String cityMapId = cityMaps[i];
+-        System.out.println(&quot;cityMaps to publish this object to.. &quot; + cityMapId);
++        System.out.println(&quot;DEBUG: cityMaps to publish this object to.. &quot; + cityMapId);
+         // --- place in city map ---
+         // Note: the geo object is placed in city map before it is actually created.
+         // This way YADE-based autopositioning can perform through geo object's propertiesChanged() hook.
+@@ -159,13 +173,30 @@
+ 			setGPSCoordinates(geo, directives); //{ // loads gps coordinates
+       // --- store image ---
+ 			// EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+-      sendNotificationEmail(&quot;<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at newthinking.de</A>&quot;, geoObjectId, ws);
++      //
++      BaseTopic user = (BaseTopic) session.getAttribute(&quot;user&quot;);
++      String userMailbox = &quot;&quot;;
++      if (user != null &amp;&amp; as.getMailboxURL(user.getID()) != null) {
++        userMailbox = as.getMailboxURL(user.getID());
++      }
++      // double check..
++      if (userMailbox.equals(&quot;&quot;)) { // cannot be null anymore..
++        BaseTopic emailTopic = null;
++        try {
++          emailTopic = (BaseTopic) as.getRelatedTopic(user.getID(), ASSOCTYPE_ASSOCIATION, 2, true);
++        } catch (AmbiguousSemanticException aex) {
++          //
++          emailTopic = aex.getDefaultTopic();
++        }
++        if (emailTopic != null) {
++          userMailbox = emailTopic.getName();
++        }
++      }
++      sendNotificationEmail(userMailbox, geoObjectId, ws);
+       return PAGE_WORKSPACE_OBJECT_ADDED;
+ 		} else if (action.equals(ACTION_UPDATE_GEO)) {
+ 			GeoObjectTopic geo = getGeoObject(session);
+ 			// --- update geo object ---
+-      // TODO: write notification mail with dataset...
+-      // TODo: Abkuerzungen f&#195;&#188;r PropName finden... ?
+ 			updateTopic(geo.getType(), params, session, directives);
+ 			// --- store image ---
+ 			writeFiles(params.getUploads(), geo.getImage(), as);
+@@ -198,6 +229,8 @@
+ 	private void sendNotificationEmail(String mailbox, String topicId, BaseTopic workspace) {
+ 		try {
+ 			GeoObjectTopic inst = (GeoObjectTopic) as.getLiveTopic(topicId, 1);
++      BaseTopic geoType = getWorkspaceGeoType(workspace.getID());
++      TypeTopic topicType = (TypeTopic) as.getLiveTopic(geoType);
+ 			// &quot;from&quot;
+ 			String from = as.getEmailAddress(&quot;t-rootuser&quot;);		// ###
+ 			if (from == null || from.equals(&quot;&quot;)) {
+@@ -205,20 +238,52 @@
+ 			}
+ 			// &quot;to&quot;
+ 			BaseTopic email = inst.getEmail();
++      String to = &quot;&quot;;
+ 			if (email == null || email.getName().equals(&quot;&quot;)) {
+-				throw new DeepaMehtaException(&quot;email address of \&quot;&quot; + inst.getName() + &quot;\&quot; is unknown&quot;);
++        // use given mailbox
++        System.out.println(&quot;User MAILBOX : &quot; + mailbox);
++        to = mailbox;
++        // throw new DeepaMehtaException(&quot;email address of \&quot;&quot; + inst.getName() + &quot;\&quot; is unknown&quot;);
+ 			} else {
+-        System.out.println(&quot;EMAil of Author is.... &quot; + email.getName());
++        // use institution mailbox..
++        to = email.getName();
+       }
+-			String to = email.getName();
+ 			// &quot;subject&quot;
+-			String subject = &quot;Kiezatlas: Neuer Datensatz \&quot;&quot; + inst.getName() + &quot;\&quot;&quot;;
++			String subject = &quot;Kiezatlas: Neuer Datensatz&quot;;
+ 			// &quot;body&quot;
++      // Hashtable props = formType.getProperties();
++      StringBuffer topicBody = new StringBuffer(&quot;&quot;);
++      try {
++        Vector hiddenProps = as.triggerHiddenProperties(topicType);		// may return null
++        Enumeration items = topicType.getDefinition().elements();
++        while (items.hasMoreElements()) {
++          OrderedItem item = (OrderedItem) items.nextElement();
++          if (item instanceof PropertyDefinition) {
++            PropertyDefinition propDef = (PropertyDefinition) item;
++            String propName = propDef.getPropertyName();
++            String propLabel = as.triggerPropertyLabel(propDef, topicType, topicType.getID());
++            String propValue = topicId != null ? as.getTopicProperty(topicId, 1, propName) : &quot;&quot;;
++            // Note: the hook returns _parameter names_ and the page delivers _field labels_
++            // if (hiddenProps == null || !hiddenProps.contains(propName)) {
++            // }
++            if (propLabel.equals(&quot;LONG&quot;) || propLabel.equals(&quot;LAT&quot;) || propLabel.equals(&quot;Password&quot;) || propLabel.equals(&quot;Name&quot;) ||
++                propLabel.equals(&quot;Owner ID&quot;) || propLabel.equals(&quot;Locked Geometry&quot;) || propLabel.equals(&quot;YADE x&quot;) || propLabel.equals(&quot;YADE y&quot;)
++                || propLabel.equals(&quot;Stichworte&quot;) || propLabel.equals(&quot;Description&quot;) || propLabel.equals(&quot;Icon&quot;)) {
++
++            } else {
++              topicBody.append(&quot;&quot;+propLabel+&quot;:&quot; + propValue +&quot;\r&quot;);
++            }
++          }
++        }
++      } catch (NullPointerException ex) {
++        System.out.println(&quot;ERROR: sendNotificationMail.. &quot; + topicBody.toString() + &quot; message: \r-------&quot; +
++                &quot;\r&quot; + ex.getMessage());
++      }
+ 			Hashtable topic = cm.getTopicData(topicId, 1);
+ 			String body = &quot;Dies ist eine automatische Benachrichtigung von www.kiezatlas.de\r\r&quot; +
+ 				&quot;Im Workspace \&quot;&quot; + workspace.getName() + &quot;\&quot; wurde in ihrem Namen der folgende Datensatz neu eingetragen:\r\r&quot;+
+ 				&quot;------------------------------\r&quot; +
+-				topic.get(PROPERTY_NAME) + &quot;\r\r&quot; +
++				topic.get(&quot;Tr&#195;&#164;gerident&quot;) + &quot;\r\r&quot; + topicBody.toString() +
+ 				// &quot;Autor: &quot; + topic.get(PROPERTY_) + &quot;\r&quot; +
+ 				// &quot;Email: &quot; + topic.get(PROPERTY_) + &quot;\r&quot; +
+ 				// &quot;Datum: &quot; + topic.get(PROPERTY_) + &quot;\r&quot; +
+@@ -226,7 +291,7 @@
+ 				&quot;------------------------------\r\r&quot; +
+ 				&quot;Im Falle des Mi&#195;&#159;brauchs: Kontakieren Sie bitte den Kiez-Administrator vom &quot; +
+         workspace.getName() + &quot; Workspace.\r&quot; +
+-				&quot;Die Kontakt-Email ist <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">support at kiezatlas.de</A> \r&quot; +
++				&quot;Die Kontakt-Email ist <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">Thomas.Moser at ba-ts.berlin.de</A> \r&quot; +
+ 				&quot;\r\r&quot; +
+ 				&quot;Mit freundlichen Gr&#195;&#188;&#195;&#159;en\r&quot; +
+ 				&quot;ihr Kiezatlas-Team&quot;;
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#91">[ date ]</a>
+              <a href="thread.html#91">[ thread ]</a>
+              <a href="subject.html#91">[ subject ]</a>
+              <a href="author.html#91">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

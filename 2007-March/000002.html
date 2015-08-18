@@ -1,0 +1,522 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r10 - in trunk: . docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r10%20-%20in%20trunk%3A%20.%20docs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200703170423.l2H4NL3I013251%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000001.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r10 - in trunk: . docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r10%20-%20in%20trunk%3A%20.%20docs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200703170423.l2H4NL3I013251%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r10 - in trunk: . docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Sat Mar 17 05:23:21 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000001.html">[Kiezatlas-svn] r9 - tags
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2">[ date ]</a>
+              <a href="thread.html#2">[ thread ]</a>
+              <a href="subject.html#2">[ subject ]</a>
+              <a href="author.html#2">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2007-03-17 05:23:08 +0100 (Sat, 17 Mar 2007)
+New Revision: 10
+
+Modified:
+   trunk/build.xml
+   trunk/docs/session.txt
+   trunk/pages/List.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/Institution.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+Log:
+New feature in ListServlet: the list view includes the institution categories, alongside their icons. Bug fix in EditServlet: uploaded image files doesn't overwrite existing files with same name.
+
+Modified: trunk/build.xml
+===================================================================
+--- trunk/build.xml	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/build.xml	2007-03-17 04:23:08 UTC (rev 10)
+@@ -31,12 +31,14 @@
+    	    &lt;jar jarfile=&quot;${jar}&quot; basedir=&quot;${build}&quot;&gt;
+ 			&lt;include name=&quot;de/kiezatlas/deepamehta/KiezAtlas.class&quot; /&gt;
+ 			&lt;include name=&quot;de/kiezatlas/deepamehta/Comment.class&quot; /&gt;
++			&lt;include name=&quot;de/kiezatlas/deepamehta/SearchCriteria.class&quot; /&gt;
+ 			&lt;include name=&quot;de/kiezatlas/deepamehta/topics/*.class&quot; /&gt;
+ 		&lt;/jar&gt;
+    	    &lt;war warfile=&quot;${war}&quot; webxml=&quot;config/default/web.xml&quot;&gt;
+ 		    &lt;classes dir=&quot;${build}&quot;&gt;
+ 				&lt;include name=&quot;de/kiezatlas/deepamehta/*.class&quot; /&gt;
+ 				&lt;exclude name=&quot;de/kiezatlas/deepamehta/Comment.class&quot; /&gt;
++				&lt;exclude name=&quot;de/kiezatlas/deepamehta/SearchCriteria.class&quot; /&gt;
+             &lt;/classes&gt;
+          	&lt;fileset dir=&quot;.&quot;&gt;
+             	&lt;include name=&quot;images/*&quot;/&gt;
+@@ -47,6 +49,7 @@
+ 		    &lt;classes dir=&quot;${build}&quot;&gt;
+ 				&lt;include name=&quot;de/kiezatlas/deepamehta/*.class&quot; /&gt;
+ 				&lt;exclude name=&quot;de/kiezatlas/deepamehta/Comment.class&quot; /&gt;
++				&lt;exclude name=&quot;de/kiezatlas/deepamehta/SearchCriteria.class&quot; /&gt;
+             &lt;/classes&gt;
+          	&lt;fileset dir=&quot;.&quot;&gt;
+             	&lt;include name=&quot;images/*&quot;/&gt;
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/docs/session.txt	2007-03-17 04:23:08 UTC (rev 10)
+@@ -1,9 +1,9 @@
+-Kiez-Atlas 1.3.4 Documentation
++Kiez-Atlas 1.4.1 Documentation
+ 
+ Web Session Attributes
+ 
+ J&#154;rg Richter
+-26.8.2006
++17.3.2007
+ 
+ 
+ 
+@@ -91,3 +91,29 @@
+ 
+ activition			String (SWITCH_ON, SWITCH_OFF)
+ comments			Vector of Comment (only initialized if &quot;activition&quot;=SWITCH_ON)
++
++
++
++ListServlet
++===========
++
++Global
++------
++
++user				BaseTopic (logged in user)
++
++
++ListHome
++--------
++
++workspaces			Vector of BaseTopic (Kiezatlas workspaces the logged in user is a member of)
++cityMaps			Hashtable
++						key: workspace ID
++						value: Vector of BaseTopic (city maps of respective workspace)
++
++List
++----
++
++mapName				String
++critName			String (name of first search criteria)
++insts				Vector of Institution
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/pages/List.jsp	2007-03-17 04:23:08 UTC (rev 10)
+@@ -2,7 +2,9 @@
+ 
+ &lt;% begin(session, out); %&gt;
+ &lt;%
++	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	String mapName = (String) session.getAttribute(&quot;mapName&quot;);
++	String critName = (String) session.getAttribute(&quot;critName&quot;);
+ 	Vector insts = (Vector) session.getAttribute(&quot;insts&quot;);
+ 	// --- list of institutions ---
+ 	out.println(&quot;&lt;h2&gt;&quot; + mapName + &quot;&lt;/h2&gt;&quot;);
+@@ -10,13 +12,12 @@
+ 	out.println(&quot;&lt;table cellpadding=\&quot;4\&quot; cellspacing=\&quot;0\&quot;&gt;&quot;);
+ 	out.println(&quot;&lt;tr&gt;&quot; +
+ 		&quot;&lt;td class=\&quot;small\&quot;&gt;&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Stra&szlig;e&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;PLZ&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Ort&lt;/td&gt;&quot; +
+-		&quot;&lt;td class=\&quot;small\&quot;&gt;Website&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Ansprechpartner/in&lt;/td&gt;&quot; +
+-		&quot;&lt;td class=\&quot;small\&quot;&gt;Tel&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Fax&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Email&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Alias&lt;/td&gt;&quot; +
+-		&quot;&lt;td class=\&quot;small\&quot;&gt;YADE x&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;YADE y&lt;/td&gt;&lt;/tr&gt;&quot;);
+-	Enumeration e = insts.elements();
+-	while (e.hasMoreElements()) {
+-		Institution inst = (Institution) e.nextElement();
+-		out.println(&quot;&lt;tr valign=\&quot;top\&quot;&gt;&quot;);
++		&quot;&lt;td class=\&quot;small\&quot;&gt;Website&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Ansprechpartner/in&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Tel&lt;/td&gt;&quot; +
++		&quot;&lt;td class=\&quot;small\&quot;&gt;Fax&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;Email&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;&quot; + critName + &quot;&lt;/td&gt;&quot; +
++		&quot;&lt;td class=\&quot;small\&quot;&gt;Alias&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;YADE x&lt;/td&gt;&lt;td class=\&quot;small\&quot;&gt;YADE y&lt;/td&gt;&lt;/tr&gt;&quot;);
++	for (int i = 0; i &lt; insts.size(); i++) {
++		Institution inst = (Institution) insts.elementAt(i);
++		out.println(&quot;&lt;tr class=\&quot;&quot; + (i % 2 == 0 ? &quot;evenrow&quot; : &quot;oddrow&quot;) + &quot;\&quot; valign=\&quot;top\&quot;&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&lt;b&gt;&quot; + inst.name + &quot;&lt;/b&gt;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.street + &quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.postalCode + &quot;&lt;/td&gt;&quot;);
+@@ -26,6 +27,16 @@
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.phone + &quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.fax + &quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.email + &quot;&lt;/td&gt;&quot;);
++		//
++		// list categories of first search criteria
++		out.println(&quot;&lt;td&gt;&quot;);
++		Enumeration e = inst.categories[0].elements();
++		while (e.hasMoreElements()) {
++			BaseTopic topic = (BaseTopic) e.nextElement();
++			out.println(html.imageTag(topic) + &quot;&nbsp;&quot; + topic.getName() + &quot;&lt;br&gt;&quot;);
++		}
++		out.println(&quot;&lt;/td&gt;&quot;);
++		//
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.webAlias + &quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.yadeX + &quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;td&gt;&quot; + inst.yadeY + &quot;&lt;/td&gt;&quot;);
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/pages/kiezatlas.css	2007-03-17 04:23:08 UTC (rev 10)
+@@ -16,3 +16,11 @@
+ 	color: #666666;
+ 	font-size: 10px;
+ }
++
++.evenrow {
++	background-color: #F0F0FF;
++}
++
++.oddrow {
++	background-color: #FFFFFF;
++}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-03-17 04:23:08 UTC (rev 10)
+@@ -28,10 +28,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.4&lt;br&gt;
++ * Kiez-Atlas 1.4.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 4.3.2007&lt;br&gt;
++ * Last change: 16.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -49,7 +49,7 @@
+ 				String alias = pathInfo.substring(1);
+ 				setCityMap(CityMapTopic.lookupCityMap(alias, true, as), session);	// throwIfNotFound=true
+ 				initInstitutaionType(session);	// relies on city map
+-				initSearchCriterias(session);	// relies on institutaion type
++				initSearchCriterias(session);	// relies on city map
+ 				initShapeTypes(session);		// relies on city map
+ 				updateShapes(session);			// relies on shape types;
+ 				return PAGE_FRAMESET;
+@@ -323,17 +323,7 @@
+ 	}
+ 
+ 	private void initSearchCriterias(Session session) {
+-		BaseTopic instType = getInstitutionType(session);
+-		// search criterias
+-		Vector typeIDs = as.type(TOPICTYPE_CRITERIA, 1).getSubtypeIDs();
+-		Vector crits = cm.getRelatedTopics(instType.getID(), SEMANTIC_RELATION_DEFINITION, TOPICTYPE_TOPICTYPE, 2, typeIDs, true);
+-		SearchCriteria[] criterias = new SearchCriteria[crits.size()];
+-		System.out.println(&quot;&gt;&gt;&gt; there are &quot; + crits.size() + &quot; search criterias:&quot;);
+-		for (int i = 0; i &lt; crits.size(); i++) {
+-			TypeTopic crit = (TypeTopic) as.getLiveTopic((BaseTopic) crits.elementAt(i));
+-			criterias[i] = new SearchCriteria(crit, new Vector());
+-			System.out.println(&quot;  &gt; &quot; + crit);
+-		}
++		SearchCriteria[] criterias = ((CityMapTopic) as.getLiveTopic(getCityMap(session))).getSearchCriterias();	// ### ugly
+ 		session.setAttribute(&quot;criterias&quot;, criterias);
+ 	}
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2007-03-17 04:23:08 UTC (rev 10)
+@@ -19,10 +19,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.1.&lt;br&gt;
+- * Requires DeepaMehta 2.0b6.
++ * Kiez-Atlas 1.4.1.&lt;br&gt;
++ * Requires DeepaMehta 2.0b7-post1.
+  * &lt;p&gt;
+- * Last functional change: 17.4.2006&lt;br&gt;
++ * Last functional change: 17.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -63,8 +63,12 @@
+ 			return PAGE_INSTITUTION_FORM;
+ 			//
+ 		} else if (action.equals(ACTION_UPDATE_INSTITUTION)) {
+-			updateTopic(getInstitution(session).getType(), params, session);
+-			writeImage(params.getUploads());
++			InstitutionTopic inst = getInstitution(session);
++			updateTopic(inst.getType(), params, session);
++			String newFilename = writeImage(params.getUploads());
++			if (newFilename != null) {
++				as.setTopicProperty(inst.getImage(), PROPERTY_FILE, newFilename);
++			}
+ 			return PAGE_INSTITUTION_HOME;
+ 			//
+ 		} else if (action.equals(ACTION_SHOW_FORUM_ADMINISTRATION)) {
+@@ -127,20 +131,38 @@
+ 
+ 
+ 
+-	private void writeImage(Vector fileItems) {
+-		System.out.println(&quot;&gt;&gt;&gt; EditServlet.writeImage(): &quot; + fileItems.size() + &quot; files uploaded&quot;);
++	private String writeImage(Vector fileItems) {
+ 		try {
+-			Enumeration e = fileItems.elements();
+-			while (e.hasMoreElements()) {
+-				FileItem item = (FileItem) e.nextElement();
+-				String filename = getFilename(item.getName());	// ### explorer sends path
+-				System.out.println(&quot;  &gt; EditServlet.writeImage(): \&quot;&quot; + filename + &quot;\&quot;&quot;);
+-				item.write(new File(&quot;/home/jrichter/deepamehta/install/client/images/&quot; + filename));	// ###
++			System.out.println(&quot;&gt;&gt;&gt; EditServlet.writeImage(): &quot; + fileItems.size() + &quot; files uploaded&quot;);
++			if (fileItems.size() &gt; 0) {
++				String path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ###
++				// ### String path = &quot;/Users/jri/Projects/DeepaMehta/trunk/install/client/images/&quot;;
++				FileItem item = (FileItem) fileItems.firstElement();
++				String filename = getFilename(item.getName());	// ### explorer includes entire path
++				System.out.println(&quot;  &gt; filename=\&quot;&quot; + filename + &quot;\&quot;&quot;);
++				File fileToWrite = new File(path + filename);
++				// find new filename if already exists
++				int copyCount = 0;
++				String newFilename = null;
++				int pos = filename.lastIndexOf('.');
++				while (fileToWrite.exists()) {
++					copyCount++;
++					newFilename = filename.substring(0, pos) + &quot;-&quot; + copyCount + filename.substring(pos);
++					fileToWrite = new File(path + newFilename);
++					System.out.println(&quot;  &gt; file already exists, try \&quot;&quot; + newFilename + &quot;\&quot;&quot;);
++				}
++				//
++				item.write(fileToWrite);
+ 				// ### item.write(new File(as.getCorporateWebBaseURL().substring(5) + &quot;images/&quot; + filename));
++				System.out.println(&quot;  &gt; file \&quot;&quot; + fileToWrite + &quot;\&quot; written successfully&quot;);
++				if (copyCount &gt; 0) {
++					return newFilename;
++				}
+ 			}
+ 		} catch (Exception e) {
+ 			System.out.println(&quot;*** EditServlet.writeImage(): &quot; + e);
+ 		}
++		return null;
+ 	}
+ 
+ 	// ###
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Institution.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Institution.java	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/src/de/kiezatlas/deepamehta/Institution.java	2007-03-17 04:23:08 UTC (rev 10)
+@@ -15,10 +15,10 @@
+  * A bean-like data container for passing data from the front-controler (servlet)
+  * to the presentation layer (JSP engine).
+  * &lt;p&gt;
+- * Kiez-Atlas 1.4&lt;br&gt;
++ * Kiez-Atlas 1.4.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 1.3.2007&lt;br&gt;
++ * Last change: 17.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -31,12 +31,8 @@
+ 	public String open, misc, adminInfo;
+ 	public String imageURL;
+ 	public String yadeX, yadeY;
+-	public Vector[] categories;		// may be null
++	public Vector[] categories;
+ 
+-	Institution(String instID, ApplicationService as) {
+-		this(instID, null, as);
+-	}
+-
+ 	/**
+ 	 * @param	criterias	may be null
+ 	 *
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2007-03-17 04:23:08 UTC (rev 10)
+@@ -14,10 +14,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.2.5.&lt;br&gt;
+- * Requires DeepaMehta 2.0b6.
++ * Kiez-Atlas 1.4.1.&lt;br&gt;
++ * Requires DeepaMehta 2.0b7-post1.
+  * &lt;p&gt;
+- * Last functional change: 30.10.2005&lt;br&gt;
++ * Last functional change: 17.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -53,8 +53,10 @@
+ 			CityMapTopic cityMap = (CityMapTopic) as.getLiveTopic(cityMapID, 1);
+ 			String instTypeID = cityMap.getInstitutionType().getID();
+ 			Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
++			SearchCriteria[] criterias = cityMap.getSearchCriterias();
+ 			session.setAttribute(&quot;mapName&quot;, cityMap.getName());
+-			session.setAttribute(&quot;insts&quot;, createInstitutionBeans(insts));
++			session.setAttribute(&quot;critName&quot;, criterias[0].criteria.getPluralName());
++			session.setAttribute(&quot;insts&quot;, createInstitutionBeans(insts, criterias));
+ 		}
+ 	}
+ 
+@@ -107,13 +109,13 @@
+ 		return cityMaps;
+ 	}
+ 
+-	private Vector createInstitutionBeans(Vector instIDs) {
++	private Vector createInstitutionBeans(Vector instIDs, SearchCriteria[] criterias) {
+ 		Vector insts = new Vector();
+ 		//
+ 		Enumeration e = instIDs.elements();
+ 		while (e.hasMoreElements()) {
+ 			String instID = (String) e.nextElement();
+-			insts.addElement(new Institution(instID, as));
++			insts.addElement(new Institution(instID, criterias, as));
+ 		}
+ 		//
+ 		return insts;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/src/de/kiezatlas/deepamehta/SearchCriteria.java	2007-03-17 04:23:08 UTC (rev 10)
+@@ -8,19 +8,19 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.2.3.&lt;br&gt;
+- * Requires DeepaMehta 2.0b4.
++ * Kiez-Atlas 1.4.1.&lt;br&gt;
++ * Requires DeepaMehta 2.0b7-post1.
+  * &lt;p&gt;
+- * Last functional change: 6.4.2005&lt;br&gt;
++ * Last functional change: 16.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+ public class SearchCriteria implements Serializable {
+ 	
+ 	public TypeTopic criteria;
+-	Vector selectedCategoryIDs;
++	public Vector selectedCategoryIDs;
+ 
+-	SearchCriteria(TypeTopic criteria, Vector selectedCategoryIDs) {
++	public SearchCriteria(TypeTopic criteria, Vector selectedCategoryIDs) {
+ 		this.criteria = criteria;
+ 		this.selectedCategoryIDs = selectedCategoryIDs;
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-03-15 20:35:12 UTC (rev 9)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-03-17 04:23:08 UTC (rev 10)
+@@ -1,6 +1,7 @@
+ package de.kiezatlas.deepamehta.topics;
+ 
+ import de.kiezatlas.deepamehta.KiezAtlas;
++import de.kiezatlas.deepamehta.SearchCriteria;
+ //
+ import de.deepamehta.BaseTopic;
+ import de.deepamehta.PresentableTopic;
+@@ -11,6 +12,7 @@
+ import de.deepamehta.service.CorporateCommands;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.topics.TopicMapTopic;
++import de.deepamehta.topics.TypeTopic;
+ //
+ import java.awt.Point;
+ import java.awt.geom.Point2D;
+@@ -19,10 +21,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.4&lt;br&gt;
++ * Kiez-Atlas 1.4.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 1.3.2007&lt;br&gt;
++ * Last change: 16.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -30,7 +32,7 @@
+ 
+ 
+ 
+-	static final String VERSION = &quot;1.4&quot;;
++	static final String VERSION = &quot;1.4.1&quot;;
+ 	static {
+ 		System.out.println(&quot;&gt;&gt;&gt; Kiez-Atlas &quot; + VERSION);
+ 	}
+@@ -200,6 +202,21 @@
+ 		return (BaseTopic) instTypes.firstElement();
+ 	}
+ 
++	public SearchCriteria[] getSearchCriterias() {
++		BaseTopic instType = getInstitutionType();
++		// search criterias
++		Vector typeIDs = as.type(TOPICTYPE_CRITERIA, 1).getSubtypeIDs();
++		Vector crits = cm.getRelatedTopics(instType.getID(), SEMANTIC_RELATION_DEFINITION, TOPICTYPE_TOPICTYPE, 2, typeIDs, true);
++		SearchCriteria[] criterias = new SearchCriteria[crits.size()];
++		System.out.println(&quot;&gt;&gt;&gt; there are &quot; + crits.size() + &quot; search criterias:&quot;);
++		for (int i = 0; i &lt; crits.size(); i++) {
++			TypeTopic crit = (TypeTopic) as.getLiveTopic((BaseTopic) crits.elementAt(i));
++			criterias[i] = new SearchCriteria(crit, new Vector());
++			System.out.println(&quot;  &gt; &quot; + crit);
++		}
++		return criterias;
++	}
++
+ 	/**
+ 	 * Pre-condition: this topic map is the published version.
+ 	 *
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000001.html">[Kiezatlas-svn] r9 - tags
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2">[ date ]</a>
+              <a href="thread.html#2">[ thread ]</a>
+              <a href="subject.html#2">[ subject ]</a>
+              <a href="author.html#2">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

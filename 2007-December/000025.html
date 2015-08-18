@@ -1,0 +1,1022 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r33 - in trunk: . config/default pages src/de	src/de/swers src/de/swers/kiezatlas src/de/swers/kiezatlas/tools
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r33%20-%20in%20trunk%3A%20.%20config/default%20pages%20src/de%0A%09src/de/swers%20src/de/swers/kiezatlas%20src/de/swers/kiezatlas/tools&In-Reply-To=%3C200712061316.lB6DGJEF001024%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000026.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r33 - in trunk: . config/default pages src/de	src/de/swers src/de/swers/kiezatlas src/de/swers/kiezatlas/tools</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r33%20-%20in%20trunk%3A%20.%20config/default%20pages%20src/de%0A%09src/de/swers%20src/de/swers/kiezatlas%20src/de/swers/kiezatlas/tools&In-Reply-To=%3C200712061316.lB6DGJEF001024%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r33 - in trunk: . config/default pages src/de	src/de/swers src/de/swers/kiezatlas src/de/swers/kiezatlas/tools">maltito at mail.berlios.de
+       </A><BR>
+    <I>Thu Dec  6 14:16:19 CET 2007</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000026.html">[Kiezatlas-svn] r34 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#25">[ date ]</a>
+              <a href="thread.html#25">[ thread ]</a>
+              <a href="subject.html#25">[ subject ]</a>
+              <a href="author.html#25">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-12-06 14:16:04 +0100 (Thu, 06 Dec 2007)
+New Revision: 33
+
+Added:
+   trunk/pages/UploadDataDone.jsp
+   trunk/pages/UploadDataHome.jsp
+   trunk/pages/UploadDataLogin.jsp
+   trunk/pages/UploadDataLoginTryAgain.jsp
+   trunk/src/de/swers/
+   trunk/src/de/swers/kiezatlas/
+   trunk/src/de/swers/kiezatlas/tools/
+   trunk/src/de/swers/kiezatlas/tools/StadtinfoData.java
+   trunk/src/de/swers/kiezatlas/tools/UploadDataServlet.java
+   trunk/src/de/swers/kiezatlas/tools/XMLAddressFileReader.java
+   trunk/src/de/swers/kiezatlas/tools/XMLAddressHandler.java
+Modified:
+   trunk/build.xml
+   trunk/config/default/web.xml
+Log:
+1) Added Example: Importer For Berlin Neukoelln Data
+2) Fileupload /upload
+
+
+Modified: trunk/build.xml
+===================================================================
+--- trunk/build.xml	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/build.xml	2007-12-06 13:16:04 UTC (rev 33)
+@@ -18,7 +18,7 @@
+ 	&lt;/target&gt;
+ 
+ 	&lt;target name=&quot;compile&quot; depends=&quot;init&quot;&gt;
+-		&lt;javac srcdir=&quot;src&quot; destdir=&quot;${build}&quot; debug=&quot;on&quot; listfiles=&quot;yes&quot;&gt;
++		&lt;javac srcdir=&quot;src&quot; destdir=&quot;${build}&quot; debug=&quot;on&quot; listfiles=&quot;yes&quot; source=&quot;1.4&quot; target=&quot;1.4&quot;&gt;
+ 			&lt;classpath&gt;
+ 				&lt;pathelement location=&quot;${web.lib.dir}/DeepaMehtaService.jar&quot;/&gt;
+ 				&lt;pathelement location=&quot;${web.lib.dir}/DeepaMehtaTopics.jar&quot;/&gt;
+@@ -37,7 +37,8 @@
+ 		&lt;/jar&gt;
+    	    &lt;war warfile=&quot;${war}&quot; webxml=&quot;config/default/web.xml&quot;&gt;
+ 		    &lt;classes dir=&quot;${build}&quot;&gt;
+-				&lt;include name=&quot;de/kiezatlas/deepamehta/*.class&quot; /&gt;
++		    	&lt;include name=&quot;de/kiezatlas/deepamehta/*.class&quot; /&gt;
++		    	&lt;include name=&quot;de/swers/kiezatlas/tools/*.class&quot; /&gt;
+ 				&lt;exclude name=&quot;de/kiezatlas/deepamehta/Comment.class&quot; /&gt;
+ 				&lt;exclude name=&quot;de/kiezatlas/deepamehta/SearchCriteria.class&quot; /&gt;
+             &lt;/classes&gt;
+@@ -49,6 +50,7 @@
+    	    &lt;war warfile=&quot;${war-test}&quot; webxml=&quot;config/test/web.xml&quot;&gt;
+ 		    &lt;classes dir=&quot;${build}&quot;&gt;
+ 				&lt;include name=&quot;de/kiezatlas/deepamehta/*.class&quot; /&gt;
++		    	&lt;include name=&quot;de/swers/kiezatlas/tools/*.class&quot; /&gt;
+ 				&lt;exclude name=&quot;de/kiezatlas/deepamehta/Comment.class&quot; /&gt;
+ 				&lt;exclude name=&quot;de/kiezatlas/deepamehta/SearchCriteria.class&quot; /&gt;
+             &lt;/classes&gt;
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/config/default/web.xml	2007-12-06 13:16:04 UTC (rev 33)
+@@ -21,7 +21,7 @@
+ 
+     &lt;context-param&gt;
+       &lt;param-name&gt;service&lt;/param-name&gt;
+-      &lt;param-value&gt;mysql5&lt;/param-value&gt;
++      &lt;param-value&gt;katest&lt;/param-value&gt;
+       &lt;description&gt;
+         Selects a DeepaMehta service.
+         If this parameter is not set the &quot;default&quot; service will be used.
+@@ -40,7 +40,7 @@
+ 
+     &lt;context-param&gt;
+       &lt;param-name&gt;stylesheet&lt;/param-name&gt;
+-      &lt;param-value&gt;browser/browser.xsl&lt;/param-value&gt;
++      &lt;param-value&gt;../../client/stylesheets/deepaMehtaWeb.css&lt;/param-value&gt;
+       &lt;description&gt;
+         Sets the stylesheet for the XSL transformation.
+ 		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
+@@ -68,13 +68,26 @@
+       &lt;description&gt;List Servlet Controller&lt;/description&gt;
+       &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
+     &lt;/servlet&gt;
++ 
++    &lt;servlet&gt;
++        &lt;servlet-name&gt;UploadDataServlet&lt;/servlet-name&gt;
++        &lt;description&gt;UploadDataServlet&lt;/description&gt;
++        &lt;servlet-class&gt;de.swers.kiezatlas.tools.UploadDataServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
+ 
++
+     &lt;!-- Define mappings that are used by the servlet container to
+          translate a particular request URI (context-relative) to a
+          particular servlet.
+     --&gt;
+ 
+     &lt;servlet-mapping&gt;
++        &lt;servlet-name&gt;UploadDataServlet&lt;/servlet-name&gt;
++        &lt;url-pattern&gt;/upload/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++    
++
++    &lt;servlet-mapping&gt;
+       &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+       &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
+     &lt;/servlet-mapping&gt;
+
+Added: trunk/pages/UploadDataDone.jsp
+===================================================================
+--- trunk/pages/UploadDataDone.jsp	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/pages/UploadDataDone.jsp	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,5 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(session, out); %&gt;
++&lt;h2&gt;Upload von Neuk&ouml;lln-Stadtinfo-Daten erfolgreich durchgef&uuml;hrt&lt;/h2&gt;
++&lt;% end(out); %&gt;
+
+Added: trunk/pages/UploadDataHome.jsp
+===================================================================
+--- trunk/pages/UploadDataHome.jsp	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/pages/UploadDataHome.jsp	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,32 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(session, out); %&gt;
++&lt;%
++        /*
++	Vector workspaces = (Vector) session.getAttribute(&quot;workspaces&quot;);
++	Hashtable cityMaps = (Hashtable) session.getAttribute(&quot;cityMaps&quot;);
++	//
++	out.println(&quot;&lt;dl&gt;&quot;);
++	//
++	Enumeration e = workspaces.elements();
++	while (e.hasMoreElements()) {
++		BaseTopic workspace = (BaseTopic) e.nextElement();
++		out.println(&quot;&lt;dt&gt;&quot; + workspace.getName() + &quot;&lt;/dt&gt;&quot;);
++		Enumeration e2 = ((Vector) cityMaps.get(workspace.getID())).elements();
++		while (e2.hasMoreElements()) {
++			BaseTopic cityMap = (BaseTopic) e2.nextElement();
++			out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS +
++				&quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot;&gt;&quot; + cityMap.getName() + &quot;&lt;/a&gt;&lt;/dd&gt;&quot;);
++		}
++	}
++	out.println(&quot;&lt;/dl&gt;&quot;);
++        */
++%&gt;
++&lt;h2&gt;Zugang zum Upload von Neuk&ouml;lln-Stadtinfo-Daten&lt;/h2&gt;
++    &lt;form name=&quot;StadtinfoData&quot; method=&quot;POST&quot; enctype=&quot;multipart/form-data&quot;&gt;
++        W&auml;hlen Sie eine Datei aus :&lt;br/&gt;&lt;br/&gt;
++        &lt;input type=&quot;file&quot; name=&quot;File2Upload&quot; value=&quot;&quot; width=&quot;20&quot; /&gt;&lt;br/&gt;&lt;br/&gt;
++        &lt;input type=&quot;submit&quot; value=&quot;UploadDataAction&quot; name=&quot;Upload&quot; /&gt;
++        &lt;input type=&quot;hidden&quot; name=&quot;action&quot; value=&quot;UploadDataAction&quot; /&gt;
++    &lt;/form&gt;
++&lt;% end(out); %&gt;
+
+Added: trunk/pages/UploadDataLogin.jsp
+===================================================================
+--- trunk/pages/UploadDataLogin.jsp	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/pages/UploadDataLogin.jsp	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,21 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(session, out); %&gt;
++&lt;h2&gt;Zugang zum Upload von Neuk&ouml;lln-Stadtinfo-Daten&lt;/h2&gt;
++&lt;form method=&quot;post&quot;&gt;
++	&lt;table&gt;
++		&lt;tr&gt;
++			&lt;td&gt;&lt;small&gt;Passwort&lt;/small&gt;&lt;/td&gt;
++			&lt;td&gt;&lt;input TYPE=&quot;Password&quot; NAME=&quot;password&quot;&gt;&lt;/td&gt;
++		&lt;/tr&gt;
++		&lt;tr&gt;
++			&lt;td&gt;&lt;/td&gt;
++			&lt;td&gt;
++                                &lt;input TYPE=&quot;Hidden&quot; NAME=&quot;username&quot; VALUE=&quot;nk-kiez&quot;&gt;
++				&lt;input TYPE=&quot;Submit&quot; VALUE=&quot;Login&quot;&gt;
++				&lt;input TYPE=&quot;Hidden&quot; NAME=&quot;action&quot; VALUE=&quot;&lt;%= KiezAtlas.ACTION_TRY_LOGIN %&gt;&quot;&gt;
++			&lt;/td&gt;
++		&lt;/tr&gt;
++	&lt;/table&gt;
++&lt;/form&gt;
++&lt;% end(out); %&gt;
+
+Added: trunk/pages/UploadDataLoginTryAgain.jsp
+===================================================================
+--- trunk/pages/UploadDataLoginTryAgain.jsp	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/pages/UploadDataLoginTryAgain.jsp	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,22 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(session, out); %&gt;
++&lt;h2&gt;Zugang zum Upload von Neuk&ouml;lln-Stadtinfo-Daten&lt;/h2&gt;
++&lt;h3&gt;Passwort ist falsch, versuchen Sie es bitte nocheinmal.&lt;/h3&gt;
++&lt;form method=&quot;post&quot;&gt;
++	&lt;table&gt;
++		&lt;tr&gt;
++			&lt;td&gt;&lt;small&gt;Passwort&lt;/small&gt;&lt;/td&gt;
++			&lt;td&gt;&lt;input TYPE=&quot;Password&quot; NAME=&quot;password&quot;&gt;&lt;/td&gt;
++		&lt;/tr&gt;
++		&lt;tr&gt;
++			&lt;td&gt;&lt;/td&gt;
++			&lt;td&gt;
++                                &lt;input TYPE=&quot;Hidden&quot; NAME=&quot;username&quot; VALUE=&quot;nk-kiez&quot;&gt;
++				&lt;input TYPE=&quot;Submit&quot; VALUE=&quot;Login&quot;&gt;
++				&lt;input TYPE=&quot;Hidden&quot; NAME=&quot;action&quot; VALUE=&quot;&lt;%= KiezAtlas.ACTION_TRY_LOGIN %&gt;&quot;&gt;
++			&lt;/td&gt;
++		&lt;/tr&gt;
++	&lt;/table&gt;
++&lt;/form&gt;
++&lt;% end(out); %&gt;
+
+Added: trunk/src/de/swers/kiezatlas/tools/StadtinfoData.java
+===================================================================
+--- trunk/src/de/swers/kiezatlas/tools/StadtinfoData.java	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/src/de/swers/kiezatlas/tools/StadtinfoData.java	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,30 @@
++/*
++ * StadtinfoData.java
++ *
++ * Created on 17. August 2006, 00:57
++ *
++ */
++
++package de.swers.kiezatlas.tools;
++
++/**
++ *
++ * @author Ramazan
++ */
++public class StadtinfoData extends java.util.Hashtable {
++    /** Creates a new instance of StadtinfoData */
++    public StadtinfoData() {
++        super(); // 22 items expected
++    }
++    
++    public void setData(String key, String value) {
++        this.put(key, value);
++    }
++    
++    public String getData(String key) {
++        Object ret = this.get(key);
++        if (ret == null) return &quot;&quot;;
++        return (String) ret;
++    }
++    
++}
+
+Added: trunk/src/de/swers/kiezatlas/tools/UploadDataServlet.java
+===================================================================
+--- trunk/src/de/swers/kiezatlas/tools/UploadDataServlet.java	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/src/de/swers/kiezatlas/tools/UploadDataServlet.java	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,605 @@
++/*
++ * UploadDataServlet.java
++ *
++ * Created on 19. November 2006, 22:14
++ *
++ */
++
++package de.swers.kiezatlas.tools;
++
++import java.io.File;
++import java.io.IOException;
++import java.util.Enumeration;
++import java.util.Hashtable;
++import java.util.StringTokenizer;
++import java.util.Vector;
++
++import javax.servlet.ServletException;
++import javax.servlet.http.HttpServletRequest;
++import javax.servlet.http.HttpServletResponse;
++
++import org.apache.commons.fileupload.FileItem;
++
++import de.deepamehta.BaseAssociation;
++import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.service.Session;
++import de.deepamehta.service.web.DeepaMehtaServlet;
++import de.deepamehta.service.web.RequestParameter;
++import de.deepamehta.topics.LiveTopic;
++import de.kiezatlas.deepamehta.topics.CityMapTopic;
++import de.swers.kiezatlas.tools.StadtinfoData;
++import de.swers.kiezatlas.tools.XMLAddressFileReader;
++
++
++/**
++ *
++ * @author Ramazan Sarikaya
++ */
++public class UploadDataServlet extends DeepaMehtaServlet implements de.kiezatlas.deepamehta.KiezAtlas{
++    
++        static final String PAGE_LOGIN = &quot;UploadDataLogin&quot;;
++        static final String PAGE_HOME = &quot;UploadDataHome&quot;;
++        static final String PAGE_LOGIN_TRY_AGAIN = &quot;UploadDataLoginTryAgain&quot;;
++
++        static final String ACTION_UPLOAD_DATA = &quot;UploadDataAction&quot;;
++        static final String ACTION_UPLOAD_DONE = &quot;UploadDataDone&quot;;
++        
++        static final String PREFIX_NEUKOELLN =  &quot;t-NKLSTI-&quot;;
++        
++        public void doPost(HttpServletRequest request, HttpServletResponse response)
++    														throws IOException, ServletException {
++            super.doPost(request, response);	// ###
++        }
++        
++	protected String performAction(String action, RequestParameter params, Session session) throws ServletException {
++		if (action == null) {
++			System.out.println(&quot;Hello from the external UploadServlet&quot;);
++			return PAGE_LOGIN;
++		} else if (action.equals(ACTION_TRY_LOGIN)) {
++			//String username = params.getValue(&quot;username&quot;);
++                        String username = &quot;nk-kiez&quot;;
++			String password = params.getValue(&quot;password&quot;);
++			if (as.loginCheck(username, password)) {
++				BaseTopic user = null;
++				try {
++					user = cm.getTopic(TOPICTYPE_USER, username, 1);
++				} catch (Throwable e) {
++					System.out.println(&quot;&gt;&gt;&gt;@UserGetTopicAtUploadData&quot; + e);
++				} finally {
++					setUser(user, session);
++				}
++				return PAGE_HOME;
++			} else {
++				return PAGE_LOGIN_TRY_AGAIN;
++			}
++		} else if (action.equals(ACTION_UPLOAD_DATA)) {
++			String filepath= writeData(params.getUploads());
++                        if (filepath!=null) {
++                            doUpdate(filepath, session);
++                        }
++			return ACTION_UPLOAD_DONE;
++			//
++		}
++		//
++		return super.performAction(action, params, session);
++	}
++
++	// **********************
++	// *** Custom Methods ***
++	// **********************
++
++
++       	private String writeData(Vector fileItems) {
++		System.out.println(&quot;&gt;&gt;&gt; UploadDataServlet.writeData(): &quot; + fileItems.size() + &quot; files uploaded&quot;);
++		try {
++			Enumeration e = fileItems.elements();
++			if  (e.hasMoreElements()) {
++				FileItem item = (FileItem) e.nextElement();
++				// item.write(new File(&quot;/home/jrichter/deepamehta/install/client/images/&quot; + filename));	// ###
++				// ### item.write(new File(as.getCorporateWebBaseURL().substring(5) + &quot;images/&quot; + filename));
++                                File f = java.io.File.createTempFile(&quot;stadtinfo&quot;,&quot;.xml&quot;);     // new File(&quot;stadtinfo.xml&quot;);
++                                item.write(f);	// ###                           
++                                return f.getAbsolutePath();
++			}
++		} catch (Exception e) {
++			System.out.println(&quot;*** UploadDataServlet.writeData(): &quot; + e);
++		}
++                
++                return null;
++	}
++        
++        
++        private void removeInstitutions(String cityMapID) {
++		CityMapTopic cityMap = (CityMapTopic) as.getLiveTopic(cityMapID, 1);
++		String instTypeID = cityMap.getInstitutionType().getID();
++		Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true                        
++                
++                Enumeration em = insts.elements();
++                String instID=&quot;&quot;;
++                int n = insts.size();
++                
++                while (em.hasMoreElements()) {
++                    instID = (String) em.nextElement();
++                    Vector assocs = cm.getAssociationIDs(instID, 1); 
++                    Enumeration ae = assocs.elements();
++                    while (ae.hasMoreElements()) {
++                        String aID = (String) ae.nextElement();
++                        BaseAssociation ba = cm.getAssociation(aID,1);
++                        if (ba != null) {
++                            String tID1 = ba.getTopicID1();
++                            if  (tID1.equalsIgnoreCase(instID)) {
++                                String tID2 = ba.getTopicID2();
++                                if (tID2.startsWith(PREFIX_NEUKOELLN)) {
++                                    cm.deleteTopicData(tID2, 1);
++                                    cm.deleteTopic(tID2);
++                                    cm.deleteViewTopic(tID2);
++                                }
++                            }
++                        }
++                        cm.deleteAssociationData(aID,1);
++                        cm.deleteAssociation(aID);
++                        cm.deleteViewAssociation(aID);
++                    }
++                    cm.deleteTopicData(instID, 1);
++                    cm.deleteTopic(instID);
++                    cm.deleteViewTopic(instID);
++                }
++        }
++        
++        
++	private java.awt.Point getPoint(CityMapTopic citymap, String propX,  String propY) throws DeepaMehtaException {
++		// ### copied
++		int x1, y1, x2, y2;
++		float yadeX1, yadeY1, yadeX2, yadeY2;
++		try {
++			de.deepamehta.PresentableTopic[] yp = citymap.getYADEReferencePoints();	// throws DME
++			if (yp == null) {
++				// YADE is &quot;off&quot;
++				return null;
++			}
++			x1 = yp[0].getGeometry().x;
++			y1 = yp[0].getGeometry().y;
++			x2 = yp[1].getGeometry().x;
++			y2 = yp[1].getGeometry().y;
++			yadeX1 = Float.parseFloat(as.getTopicProperty(yp[0], PROPERTY_YADE_X));
++			yadeY1 = Float.parseFloat(as.getTopicProperty(yp[0], PROPERTY_YADE_Y));
++			yadeX2 = Float.parseFloat(as.getTopicProperty(yp[1], PROPERTY_YADE_X));
++			yadeY2 = Float.parseFloat(as.getTopicProperty(yp[1], PROPERTY_YADE_Y));
++		} catch (NumberFormatException e) {
++			//throw new DeepaMehtaException(&quot;Administrator-Fehler: ein YADE Referenzpunkt von &quot; +
++			//	&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#65533;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
++                        return null;
++		}
++		// yade -&gt; pixel
++		try {
++			float yadeX = Float.parseFloat(propX);
++			float yadeY = Float.parseFloat(propY);
++			int x = (int) (x1 + (x2 - x1) * (yadeX - yadeX1) / (yadeX2 - yadeX1));
++			int y = (int) (y2 + (y1 - y2) * (yadeY - yadeY2) / (yadeY1 - yadeY2));
++			return new java.awt.Point(x, y);
++		} catch (NumberFormatException e) {
++			return null;
++		}
++	}
++
++        
++       private int topicIndex = 0;
++       private int associationIndex = 0;            
++
++        
++        private String getTopicID(String baseID) {
++            topicIndex++;
++            return baseID+&quot;-topic-&quot;+topicIndex;
++        }
++        
++        private String getAssociationID(String baseID) {
++            associationIndex++;
++            return baseID+&quot;-assoc-&quot;+associationIndex;
++        }
++        
++        private void storeInstitution(String cityMapID, StadtinfoData stadtinfoData, Session session) {
++		CityMapTopic cityMap = (CityMapTopic) as.getLiveTopic(cityMapID, 1);
++		System.out.println(&quot;instTypeFetchedOverCityMapForImport::: &quot; + cityMap.getInstitutionType().getID());
++		String instTypeID = cityMap.getInstitutionType().getID();
++            
++                String Zeilennr= (stadtinfoData.getData(&quot;Zeilennr&quot;));
++                String Kategorie= (stadtinfoData.getData(&quot;Kategorie&quot;));
++                String KENNZAHL= (stadtinfoData.getData(&quot;KENNZAHL&quot;));
++                String TYP= (stadtinfoData.getData(&quot;TYP&quot;));
++                String NAME= (stadtinfoData.getData(&quot;NAME&quot;));
++                String NAME2= (stadtinfoData.getData(&quot;NAME2&quot;));
++                String STRASSE= (stadtinfoData.getData(&quot;STRASSE&quot;));
++                String HAUSNR= (stadtinfoData.getData(&quot;HAUSNR&quot;));
++                String PLZ= (stadtinfoData.getData(&quot;PLZ&quot;));
++                String TELEFON= (stadtinfoData.getData(&quot;TELEFON&quot;));
++                String TELEFON_2= (stadtinfoData.getData(&quot;TELEFON_2&quot;));
++                String LEITER_x002F_PAR= (stadtinfoData.getData(&quot;LEITER_x002F_PAR&quot;));
++                String TRAEGER= (stadtinfoData.getData(&quot;TRAEGER&quot;));
++                String GEBIET= (stadtinfoData.getData(&quot;GEBIET&quot;));
++                String GEOEFFNET= (stadtinfoData.getData(&quot;GEOEFFNET&quot;));
++                String FAX= (stadtinfoData.getData(&quot;FAX&quot;));
++                String E_Mail= (stadtinfoData.getData(&quot;E_Mail&quot;));
++                String Angebot= (stadtinfoData.getData(&quot;Angebot&quot;));
++                String Zielgruppe= (stadtinfoData.getData(&quot;Zielgruppe&quot;));
++                String Selbstdarstellung= (stadtinfoData.getData(&quot;Selbstdarstellung&quot;));
++                String Homepage= (stadtinfoData.getData(&quot;Homepage&quot;));
++                String xcoordinate= (stadtinfoData.getData(&quot;xcoordinate&quot;));
++                String ycoordinate= (stadtinfoData.getData(&quot;ycoordinate&quot;));
++                String BezReg= (stadtinfoData.getData(&quot;BezReg&quot;));
++                    
++		//System.out.println(&quot;-------------------------------------&quot;);
++                        
++                //
++		// Einrichtung
++		String instName = NAME+&quot;,&quot;+NAME2;
++		//System.out.println(&quot;&gt;&gt;&gt; Name: &quot; + instName);
++		//
++		String instID =  PREFIX_NEUKOELLN+Zeilennr;    // cm. getNewTopicID();
++		LiveTopic inst = as.createLiveTopic(instID, instTypeID, instName, session);
++		as.setTopicProperty(inst, PROPERTY_NAME, instName);
++                as.setTopicProperty(inst, PROPERTY_YADE_X, xcoordinate);
++                as.setTopicProperty(inst, PROPERTY_YADE_Y, ycoordinate);
++                        
++                java.awt.Point p = getPoint(cityMap, xcoordinate, ycoordinate);
++                        
++                if (p != null) {
++                    as.createViewTopic(cityMapID, 1, null, instID, 1, p.x, p.y, false);	// ### version=1
++                }
++		//
++		// Kategorien
++		String categories = Kategorie+&quot;,alle&quot;;
++		//System.out.println(&quot;&gt;&gt;&gt; Kategorie: &quot; + categories);
++		StringTokenizer categoryTokens = new StringTokenizer(categories, &quot;,&quot;);
++		while (categoryTokens.hasMoreTokens()) {
++                    String thisCategory = categoryTokens.nextToken();
++                    String catID = getKategorieID(thisCategory);
++                    if (catID != null) {
++			//as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, catID);
++                        cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, catID, 1);
++                    }
++		}
++		//
++		// Thema
++		String thema = mapKennzahlThema(KENNZAHL)+&quot;,alle&quot;;
++		//System.out.println(&quot;&gt;&gt;&gt; Thema: &quot; + thema);
++		StringTokenizer themaTokens = new StringTokenizer(thema, &quot;,&quot;);
++		while (themaTokens.hasMoreTokens()) {
++                    String thisThema = themaTokens.nextToken();
++                    String themaID = getThemaID(thisThema);
++                    if (themaID != null) {
++			// as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, themaID);
++                        cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, themaID, 1);
++                    }
++		}
++		//
++		// Tr&#65533;ger
++		String traeger = mapKennzahlTraeger(KENNZAHL)+&quot;,alle&quot;;
++		//System.out.println(&quot;&gt;&gt;&gt; Tr&#65533;ger: &quot; + traeger);
++		StringTokenizer traegerTokens = new StringTokenizer(traeger, &quot;,&quot;);
++		while (traegerTokens.hasMoreTokens()) {
++                    String thisTraeger = traegerTokens.nextToken();
++                    String traegerID = getTraegerID(thisTraeger);
++                    if (traegerID != null) {
++			//as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, traegerID);
++                        cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, traegerID, 1);
++                    }
++		}
++		// Adresse
++		Hashtable instAdressProps = new Hashtable();
++		String instStreet = STRASSE;
++		instAdressProps.put(PROPERTY_STREET, instStreet);
++		String instPostalCode = PLZ;
++		instAdressProps.put(PROPERTY_POSTAL_CODE, instPostalCode);
++		String instAdressID = getTopicID(instID);
++		LiveTopic instAdress = as.createLiveTopic(instAdressID, TOPICTYPE_ADDRESS, instStreet, session);
++		as.setTopicProperties(instAdressID, 1, instAdressProps);
++		// as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instAdressID);
++                cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, instAdressID, 1);
++		// Telefon
++		StringTokenizer phoneToken = new StringTokenizer(TELEFON, &quot;;&quot;);
++		while (phoneToken.hasMoreTokens()) {
++                    String phoneNumber = phoneToken.nextToken();
++                    if (phoneNumber.startsWith(&quot; &quot;)) {
++                        phoneNumber = phoneNumber.substring(1);
++                    }
++                    String instFonID = getTopicID(instID);
++                    LiveTopic thisInstFon = as.createLiveTopic(instFonID, TOPICTYPE_PHONE_NUMBER, phoneNumber, session);
++                    as.setTopicProperty(thisInstFon, PROPERTY_NAME, phoneNumber);
++                    //as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instFonID);
++                    cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, instFonID, 1);
++		}
++		// Fax
++		String instFax = FAX;
++		if (instFax.length() &gt; 0) {
++                    String instFaxID = getTopicID(instID);
++                    LiveTopic thisInstFax = as.createLiveTopic(instFaxID, TOPICTYPE_FAX_NUMBER, instFax, session);
++                    as.setTopicProperty(thisInstFax, PROPERTY_NAME, instFax);
++                    //as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instFaxID);
++                    cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, instFaxID, 1);
++		}
++		// Website
++                if (Homepage.length()&gt;0) {
++                    if (!Homepage.startsWith(&quot;<A HREF="http://">http://</A>&quot;)) {
++                        Homepage=&quot;<A HREF="http://">http://</A>&quot;+Homepage;
++                    }
++                }
++		String instWebUrl = Homepage;
++                if (instWebUrl.length() &gt; 0) {
++                    String instWebpageID = getTopicID(instID);
++                    LiveTopic instWebpage = as.createLiveTopic(instWebpageID, TOPICTYPE_WEBPAGE, instWebUrl, session);
++                    as.setTopicProperty(instWebpage, PROPERTY_URL, instWebUrl);
++                    //as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instWebpageID);
++                    cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, instWebpageID, 1);
++		}
++                // Email
++                StringTokenizer ste = new StringTokenizer(E_Mail, &quot;,&quot;);
++                while (ste.hasMoreTokens()) {
++                    String emailAdr = ste.nextToken();
++                    if (emailAdr.startsWith(&quot; &quot;)) {
++                        emailAdr = emailAdr.substring(1);
++                    }
++                    String instMailID = getTopicID(instID);
++                    LiveTopic instMailTopic = as.createLiveTopic(instMailID, TOPICTYPE_EMAIL_ADDRESS, emailAdr, session);
++                    as.setTopicProperty(instMailTopic, PROPERTY_EMAIL_ADDRESS, emailAdr);
++                    //as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instMailID);
++                     cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, instMailID, 1);
++		}
++		// Ansprechpartner
++		importPersons(LEITER_x002F_PAR, instID, session);
++
++                // Tr&#65533;ger
++		String traegerID = getTopicID(instID);
++		//System.out.println(&quot;--&gt; anlegen (&quot; + traegerID + &quot;)&quot;);
++		as.createLiveTopic(traegerID, TOPICTYPE_AGENCY, TRAEGER, session);
++                Hashtable props = new Hashtable();
++		props.put(PROPERTY_NAME, TRAEGER);
++		as.setTopicProperties(traegerID, 1, props);
++		//as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, traegerID);
++                cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, traegerID, 1);
++
++                Hashtable instProps = new Hashtable();
++		// &#65533;ffnungszeiten
++		String instOpeningHours = GEOEFFNET;
++		if (instOpeningHours.length() &gt; 0) {
++			  instProps.put(PROPERTY_OEFFNUNGSZEITEN, instOpeningHours);
++		}
++                        
++		// Sonstiges
++		String instMisc = Selbstdarstellung;
++		if (instMisc.length() &gt; 0) {
++			instProps.put(PROPERTY_SONSTIGES, instMisc);
++		}
++                instProps.put(PROPERTY_CITY, &quot;Berlin&quot;);
++                instProps.put(PROPERTY_WEB_ALIAS, instID);
++                instProps.put(PROPERTY_PASSWORD, &quot;neukoellnatlas&quot;);
++		as.setTopicProperties(instID, 1, instProps);
++        }
++        
++        
++	private void importPersons(String persons, String instID, Session session) {
++		if (persons.length() &gt; 0) {
++			StringTokenizer st = new StringTokenizer(persons, &quot;,&quot;);
++			while (st.hasMoreTokens()) {
++				String person = st.nextToken();
++				if (person.startsWith(&quot; &quot;)) {
++					person = person.substring(1);
++				}
++				//System.out.print(&quot;&gt;&gt;&gt; Ansprechpartner: \&quot;&quot; + person + &quot;\&quot; &quot;);
++				Hashtable props = new Hashtable();
++				// fill name prop
++				String name;
++				int pos = person.indexOf(' ');
++				if (pos == -1) {
++					props.put(PROPERTY_NAME, person);	// last name only
++					name = person;
++				} else {
++					String firstName = person.substring(0, pos);
++					String lastName = person.substring(pos + 1);
++					props.put(PROPERTY_NAME, lastName);
++					props.put(PROPERTY_FIRST_NAME, firstName);
++					name = firstName + &quot; &quot; + lastName;
++				}
++				// add only if not exist already
++				String personID;
++				personID = getTopicID(instID);
++				//System.out.println(&quot;--&gt; anlegen (&quot; + personID + &quot;)&quot;);
++				as.createLiveTopic(personID, TOPICTYPE_PERSON, name, session);
++				as.setTopicProperties(personID, 1, props);
++				//
++				//as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, personID);
++                                cm.createAssociation(getAssociationID(instID), 1, ASSOCTYPE_ASSOCIATION, 1, instID, 1, personID, 1);
++			}
++		}
++	}
++        
++        
++        private String getCityMapID(String BezReg) {
++            if (BezReg.equalsIgnoreCase(&quot;01&quot;)) return &quot;t-181771&quot;;       // Schillerpromenade
++            if (BezReg.equalsIgnoreCase(&quot;02&quot;))  return &quot;t-181770&quot;;      // Neuk&#65533;llner-Mitte
++            if (BezReg.equalsIgnoreCase(&quot;03&quot;))  return &quot;t-181724&quot;;      // Reuter-kiez
++            if (BezReg.equalsIgnoreCase(&quot;04&quot;))  return &quot;t-181769&quot;;      // Rixdorf
++            if (BezReg.equalsIgnoreCase(&quot;05&quot;))  return &quot;t-181767&quot;;      // K&#65533;llnische Heide
++            if (BezReg.equalsIgnoreCase(&quot;06&quot;))  return &quot;t-181766&quot;;      // Britz
++            if (BezReg.equalsIgnoreCase(&quot;07&quot;))  return &quot;t-181759&quot;;      // Buckow
++            if (BezReg.equalsIgnoreCase(&quot;08&quot;))  return &quot;t-181762&quot;;      // Gropiusstadt
++            if (BezReg.equalsIgnoreCase(&quot;09&quot;))  return &quot;t-181765&quot;;      // Buckow-Nord
++            if (BezReg.equalsIgnoreCase(&quot;10&quot;))  return &quot;t-181772&quot;;      // Rudow
++
++            return null;
++        }
++        
++        
++        private String getKategorieID(String kategorie) {
++            if (kategorie.equalsIgnoreCase(&quot;alle&quot;)) return &quot;t-181739&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Freizeit&quot;))  return &quot;t-181731&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Koord./Gesch&#228;ftsst.&quot;))  return &quot;t-181734&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Hilfen&quot;))  return &quot;t-181732&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Kieztreff&quot;))  return &quot;t-181733&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Politik&quot;))  return &quot;t-181735&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Schule&quot;))  return &quot;t-181736&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Sonstiges&quot;))  return &quot;t-181738&quot;;
++            if (kategorie.equalsIgnoreCase(&quot;Tagesbetreuung&quot;))  return &quot;t-181737&quot;;
++
++            return null;
++        }
++        
++        
++        private String mapKennzahlThema(String kennzahl) {
++            try {
++                int l = kennzahl.length();
++                if (l&gt;0) {
++                    int k = (new Integer(kennzahl.substring(0,1))).intValue();
++                
++                    switch (k) {
++                        case 1: return &quot;Kinder&quot;;
++                        case 2: return &quot;Jugendliche&quot;;
++                        case 3: return &quot;Familie&quot;; 
++                        case 4: return &quot;Sport&quot;;
++                        case 5: return &quot;Gemeinwesen&quot;;
++                        case 6: return &quot;Schule&quot;;
++                        case 7: return &quot;Verwaltung&quot;;
++                    }
++                }
++            }
++            catch (java.lang.NumberFormatException nfe) {
++                return &quot;&quot;;
++            }
++            return &quot;&quot;;
++        }
++
++        
++        private String getThemaID(String thema) {
++            if (thema.equalsIgnoreCase(&quot;alle&quot;)) return &quot;t-181748&quot;;
++            if (thema.equalsIgnoreCase(&quot;Familie&quot;))  return &quot;t-181743&quot;;
++            if (thema.equalsIgnoreCase(&quot;Gemeinwesen&quot;))  return &quot;t-181745&quot;;
++            if (thema.equalsIgnoreCase(&quot;Jugendliche&quot;))  return &quot;t-181742&quot;;
++            if (thema.equalsIgnoreCase(&quot;Kinder&quot;))  return &quot;t-181741&quot;;
++            if (thema.equalsIgnoreCase(&quot;Schule&quot;))  return &quot;t-181746&quot;;
++            if (thema.equalsIgnoreCase(&quot;Sport&quot;))  return &quot;t-181744&quot;;
++            if (thema.equalsIgnoreCase(&quot;Verwaltung&quot;))  return &quot;t-181747&quot;;
++
++            return null;
++        }
++        
++        
++        private String mapKennzahlTraeger(String kennzahl) {
++            int k;
++            
++            try {
++                k = (new Integer(kennzahl)).intValue();
++            
++                switch (k) {
++                    case 710:
++                    case 720:
++                    case 780: 
++                        return &quot;st&#228;dtische&quot;;
++                    case 730:
++                    case 740:
++                    case 750:
++                    case 770:
++                    case 790:
++                        return &quot;diverse&quot;;
++                    case 760:
++                        return &quot;sonstige&quot;;
++                }
++            
++                int l = kennzahl.length();
++                if (l&gt;0) {
++                    k = (new Integer(kennzahl.substring(l-1))).intValue();
++                
++                    switch (k) {
++                        case 1: return &quot;st&#228;dtische&quot;;
++                        case 2: return &quot;diverse&quot;;
++                        case 3: return &quot;evang.&quot;; 
++                        case 4: return &quot;kath.&quot;;
++                        case 5: return &quot;AWO&quot;;
++                        case 6: return &quot;DRK&quot;;
++                        case 7: return &quot;dpw&quot;;
++                        case 8: 
++                        case 9: return &quot;sonstige&quot;;
++                    }
++                }
++            }
++            catch (java.lang.NumberFormatException nfe) {
++                return &quot;&quot;;
++            }
++            
++            return &quot;&quot;;
++        }
++
++        
++        private String getTraegerID(String traeger) {
++            if (traeger.equalsIgnoreCase(&quot;alle&quot;)) return &quot;t-181758&quot;;
++            if (traeger.equalsIgnoreCase(&quot;AWO&quot;))  return &quot;t-181754&quot;;
++            if (traeger.equalsIgnoreCase(&quot;diverse&quot;))  return &quot;t-181751&quot;;
++            if (traeger.equalsIgnoreCase(&quot;dpw&quot;))  return &quot;t-181756&quot;;
++            if (traeger.equalsIgnoreCase(&quot;DRK&quot;))  return &quot;t-181755&quot;;
++            if (traeger.equalsIgnoreCase(&quot;evang.&quot;))  return &quot;t-181752&quot;;
++            if (traeger.equalsIgnoreCase(&quot;kath.&quot;))  return &quot;t-181753&quot;;
++            if (traeger.equalsIgnoreCase(&quot;sonstige&quot;))  return &quot;t-181757&quot;;
++            if (traeger.equalsIgnoreCase(&quot;st&#228;dtische&quot;))  return &quot;t-181750&quot;;
++
++            return null;
++        }
++
++        
++        private void doUpdate(String filepath, Session session) {
++            if (filepath==null) return;
++            try {
++                de.swers.kiezatlas.tools.XMLAddressFileReader xmlAddressFileReader = new XMLAddressFileReader(filepath);
++                StadtinfoData[] stadtinfoData = xmlAddressFileReader.getXMLAddressHandler().stadtinfoData;
++                int noOfItems = xmlAddressFileReader.getXMLAddressHandler().getNoOfItems();
++                
++                if (noOfItems&gt;0) {
++
++                    removeInstitutions(this.getCityMapID(&quot;01&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;02&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;03&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;04&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;05&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;06&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;07&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;08&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;09&quot;));
++                    removeInstitutions(this.getCityMapID(&quot;10&quot;));
++                
++                    for (int i=0; i&lt;noOfItems; i++){
++                        
++                        String BezReg= (stadtinfoData[i].getData(&quot;BezReg&quot;));
++
++                        String cityMapID = getCityMapID(BezReg);
++                        
++                        if (cityMapID != null) {
++                            storeInstitution(cityMapID, stadtinfoData[i], session);
++                        }                        
++                    }
++                }
++            } catch (Exception ex) {
++                System.out.println(&quot;Exception&quot;);
++                ex.printStackTrace();
++            }
++        }
++
++
++
++
++	// *************************
++	// *** Session Utilities ***
++	// *************************
++
++
++
++	// --- Methods to maintain data in the session
++
++	private void setUser(BaseTopic user, Session session) {
++		session.setAttribute(&quot;user&quot;, user);
++		//System.out.println(&quot;&gt; \&quot;user\&quot; stored in session: &quot; + user);
++	}
++
++	private boolean isSessionActive(Session session) {
++                if (session==null) return false;
++		return true;
++	}
++
++}
+
+Added: trunk/src/de/swers/kiezatlas/tools/XMLAddressFileReader.java
+===================================================================
+--- trunk/src/de/swers/kiezatlas/tools/XMLAddressFileReader.java	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/src/de/swers/kiezatlas/tools/XMLAddressFileReader.java	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,35 @@
++/*
++ * XMLAddressFileReader.java
++ *
++ * Created on 16. August 2006, 23:17
++ *
++ */
++
++package de.swers.kiezatlas.tools;
++
++import org.xml.sax.Parser;
++import org.xml.sax.DocumentHandler;
++import org.xml.sax.helpers.ParserFactory;
++
++/**
++ *
++ * @author Ramazan Sarikaya
++ */
++public class XMLAddressFileReader {
++    
++    private XMLAddressHandler handler = new XMLAddressHandler();
++    
++    /** Creates a new instance of XMLAddressFileReader */
++    public XMLAddressFileReader() {
++    }
++    
++    public XMLAddressHandler getXMLAddressHandler() {
++        return this.handler;
++    }
++
++    public XMLAddressFileReader(String filename) throws Exception {
++        Parser parser = ParserFactory.makeParser(&quot;org.apache.xerces.parsers.SAXParser&quot;);
++        parser.setDocumentHandler(handler);
++        parser.parse(filename);
++    }
++}
+
+Added: trunk/src/de/swers/kiezatlas/tools/XMLAddressHandler.java
+===================================================================
+--- trunk/src/de/swers/kiezatlas/tools/XMLAddressHandler.java	2007-11-28 16:23:36 UTC (rev 32)
++++ trunk/src/de/swers/kiezatlas/tools/XMLAddressHandler.java	2007-12-06 13:16:04 UTC (rev 33)
+@@ -0,0 +1,59 @@
++/*
++ * XMLAddressHandler.java
++ *
++ * Created on 16. August 2006, 21:41
++ *
++ */
++
++package de.swers.kiezatlas.tools;
++
++import org.xml.sax.HandlerBase;
++import org.xml.sax.AttributeList;
++
++/**
++ *
++ * @author Ramazan
++ */
++public class XMLAddressHandler extends HandlerBase{
++    
++    private String currentTag=&quot;&quot;; 
++    private int currentIndex=0;
++    private int noOfItems=0;
++    public StadtinfoData stadtinfoData[] = new StadtinfoData[2000];
++    
++    /** Creates a new instance of XMLAddressHandler */
++    public XMLAddressHandler() {
++    }
++    
++    public void startElement(String name, AttributeList atts) {
++        // System.out.println(&quot;Start : &quot; + name);
++        this.currentTag=name;
++        if (name.equalsIgnoreCase(&quot;Stadtinfo&quot;)) {
++            stadtinfoData[currentIndex] = new StadtinfoData();
++        }
++    }
++    
++    public void characters (char ch[], int start, int length) {
++        String content = new String(ch, start, length);
++        // System.out.println(&quot;     &gt;&quot;+content+&quot;&lt;&quot;);
++        if (currentTag.compareToIgnoreCase(&quot;dataroot&quot;)!=0 &amp;&amp; currentTag.compareToIgnoreCase(&quot;stadtinfo&quot;)!=0 &amp;&amp; ch[start]!='\n') {
++            if (content.length()&gt;1) {
++                if (content.charAt(0)=='\&quot;') {content = content.substring(1);}
++                if (content.charAt(content.length()-1)=='\&quot;') {content = content.substring(0,content.length()-1);}
++            }
++            stadtinfoData[currentIndex].setData(currentTag, content);
++        }
++    }
++
++    public void endElement(String name) {
++        // System.out.println(&quot;Ende : &quot; + name);
++        if (name.equalsIgnoreCase(&quot;Stadtinfo&quot;)) {
++            this.noOfItems++;
++            this.currentIndex++;
++        }
++    }
++    
++    public int getNoOfItems() {
++        return this.noOfItems;
++    }
++}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000026.html">[Kiezatlas-svn] r34 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#25">[ date ]</a>
+              <a href="thread.html#25">[ thread ]</a>
+              <a href="subject.html#25">[ subject ]</a>
+              <a href="author.html#25">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

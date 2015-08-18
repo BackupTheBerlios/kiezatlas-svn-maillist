@@ -1,0 +1,534 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r81 - in trunk: pages src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r81%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200911130025.nAD0PADY018870%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000071.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r81 - in trunk: pages src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r81%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200911130025.nAD0PADY018870%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r81 - in trunk: pages src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Fri Nov 13 01:25:10 CET 2009</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000071.html">[Kiezatlas-svn] r82 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70">[ date ]</a>
+              <a href="thread.html#70">[ thread ]</a>
+              <a href="subject.html#70">[ subject ]</a>
+              <a href="author.html#70">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-11-13 01:25:06 +0100 (Fri, 13 Nov 2009)
+New Revision: 81
+
+Added:
+   trunk/pages/Download.jsp
+   trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+Modified:
+   trunk/pages/ListHome.jsp
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+Kiezatlas List update for a better Spreadsheet exchange
+
+* Export of a CityMap as a public dataset (updated not ofter than once a day)
+* Download of a CityMap as a public dataset
+
+Added: trunk/pages/Download.jsp
+===================================================================
+--- trunk/pages/Download.jsp	2009-09-21 10:20:40 UTC (rev 80)
++++ trunk/pages/Download.jsp	2009-11-13 00:25:06 UTC (rev 81)
+@@ -0,0 +1,12 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;iso-8859-1&quot;%&gt;
++&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
++   &quot;<A HREF="http://www.w3.org/TR/html4/loose.dtd">http://www.w3.org/TR/html4/loose.dtd</A>&quot;&gt;
++
++&lt;%  String link = (String) session.getAttribute(&quot;link&quot;);
++    String title = (String) session.getAttribute(&quot;title&quot;);
++    out.println(&quot;&lt;h3&gt;&quot;+title+&quot;&lt;/h3&gt;&quot;);
++    out.println(&quot;&lt;p&gt;Bitte klicken Sie mit der rechten Maustaste auf den untenstehenden Link und w&#228;hlen Sie \&quot;Ziel Speichern unter\&quot;&lt;/p&gt;&quot;);
++    out.println(&quot;&lt;a href=\&quot;&quot; + link + &quot;\&quot;&gt;Stadtplandaten herunterladen&lt;/a&gt;&quot;);
++%&gt;
+
+Modified: trunk/pages/ListHome.jsp
+===================================================================
+--- trunk/pages/ListHome.jsp	2009-09-21 10:20:40 UTC (rev 80)
++++ trunk/pages/ListHome.jsp	2009-11-13 00:25:06 UTC (rev 81)
+@@ -5,9 +5,10 @@
+ 	Vector workspaces = (Vector) session.getAttribute(&quot;workspaces&quot;);
+ 	Hashtable cityMaps = (Hashtable) session.getAttribute(&quot;cityMaps&quot;);
+ 	Hashtable mapCounts = (Hashtable) session.getAttribute(&quot;mapCounts&quot;);
++	Hashtable mapTimes = (Hashtable) session.getAttribute(&quot;mapTimes&quot;);
+ 	String membership = (String) session.getAttribute(&quot;membership&quot;);
+ 	//
+-	out.println(&quot;&lt;dl&gt;&quot;);
++	out.println(&quot;&lt;dl style=\&quot;width: 700px;\&quot;&gt;&quot;);
+ 	//
+ 	Enumeration e = workspaces.elements();
+ 	while (e.hasMoreElements()) {
+@@ -17,11 +18,29 @@
+ 		while (e2.hasMoreElements()) {
+ 			BaseTopic cityMap = (BaseTopic) e2.nextElement();
+ 					out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS + &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot;&gt;&quot; +
+-                            &quot;&quot;+cityMap.getName()+&quot;&lt;/a&gt;&nbsp;&lt;span class=\&quot;small\&quot;&gt;(&quot;+ mapCounts.get(cityMap.getID()) +&quot;)&lt;/span&gt;&nbsp;&amp;nbsp&quot;);
++                            &quot;&quot;+cityMap.getName()+&quot;&lt;/a&gt;&nbsp;&lt;span class=\&quot;small\&quot;&gt;(&quot;+ mapCounts.get(cityMap.getID()) +&quot;)&lt;/span&gt;&nbsp;&nbsp;&quot;);
+                 if (!membership.equals(&quot;Affiliated&quot;)) {
+                     out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS_SLIM +
+-                    &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt; zur schlanken Liste &lt;/a&gt;&lt;/dd&gt;&quot;);
++                    &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/slimList.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur schlanken Liste\&quot; alt=\&quot;zur schlanken Liste\&quot;&gt;&lt;/a&gt;&quot;);
+                 }
++                // !membership.equals(&quot;Affiliated&quot;)
++                if (mapTimes.get(cityMap.getID()).equals(&quot;&quot;)) {
++                    // out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_EXPORT_CITYMAP +
++                       // &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;erstelle Downloaddatei&lt;/a&gt;&lt;/dd&gt;&quot;);
++                    out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_EXPORT_CITYMAP +
++                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/export.png\&quot; border=\&quot;0\&quot; height=\&quot;17px\&quot; width=\&quot;17px\&quot; title=\&quot;Erzeuge Downloaddatei\&quot; alt=\&quot;Erzeuge Downloaddatei\&quot;&gt;&lt;/a&gt;&lt;/dd&gt;&quot;);
++                } else {
++                    if (!mapTimes.get(cityMap.getID()).equals(&quot;isUpToDate&quot;)) {
++                        out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_DOWNLOAD_CITYMAP +
++                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/document-save.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur Downloaddatei vom &quot;+mapTimes.get(cityMap.getID()) + &quot;\&quot; alt=\&quot;zur Downloaddatei vom &quot;+mapTimes.get(cityMap.getID()) + &quot;\&quot;&gt;&lt;/a&gt;&quot;);
++                        out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_EXPORT_CITYMAP +
++                            &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/reload.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;Downloaddatei aktualisieren\&quot; alt=\&quot;Downloaddatei aktualisieren\&quot;&gt;&lt;/a&gt;&quot;);
++                    } else {
++                        out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_DOWNLOAD_CITYMAP +
++                        &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt;&lt;img src=\&quot;../images/document-save.png\&quot; border=\&quot;0\&quot; height=\&quot;15px\&quot; width=\&quot;15px\&quot; title=\&quot;zur aktuellen Downloaddatei\&quot; alt=\&quot;zur aktuellen Downloaddatei\&quot;&gt;&lt;/a&gt;&quot;);
++                    }
++                }
++                out.println(&quot;&lt;/dd&gt;&quot;);
+ 		}
+ 	}
+ 	out.println(&quot;&lt;/dl&gt;&quot;);
+
+Added: trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2009-09-21 10:20:40 UTC (rev 80)
++++ trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2009-11-13 00:25:06 UTC (rev 81)
+@@ -0,0 +1,158 @@
++/*
++ * To change this template, choose Tools | Templates
++ * and open the template in the editor.
++ */
++
++package de.kiezatlas.deepamehta;
++
++import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaConstants;
++import de.deepamehta.service.ApplicationService;
++import de.deepamehta.service.CorporateMemory;
++import de.deepamehta.service.TopicBean;
++import de.deepamehta.service.TopicBeanField;
++import de.kiezatlas.deepamehta.topics.CityMapTopic;
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.FileOutputStream;
++import java.io.FileReader;
++import java.io.OutputStreamWriter;
++import java.util.Enumeration;
++import java.util.Vector;
++
++public class DownloadWorker extends Thread implements Runnable {
++
++    private ApplicationService as = null;
++    private CorporateMemory cm = null;
++    private BaseTopic map = null;
++    private String mapAlias = &quot;&quot;;
++
++
++    public DownloadWorker(ApplicationService as, CorporateMemory cm, BaseTopic map, String mapAlias) {
++
++        this.cm = cm;
++        this.as = as;
++        this.map = map;
++        this.mapAlias = mapAlias;
++
++    }
++
++    public void run() {
++        System.out.println(&quot;    &gt;&gt; DownloadWorker was initalized to run for &quot;+map.getName());
++        String filePath = mapAlias; // DeepaMehtaConstants.FILESERVER_DOCUMENTS_PATH + 
++        String content = getFileContent(map);
++        exportFile(filePath, content);
++        // now copy tmp file and replace the original file
++        try {
++            FileReader fis = new FileReader(filePath+&quot;.tmp&quot;);
++            // File fileToWrite = new File(filePath);
++            FileOutputStream fout = new FileOutputStream(filePath, true);
++            OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
++            while(fis.ready()) {
++                out.write(fis.read());
++            }
++            out.close();
++            File f = new File(filePath+&quot;.tmp&quot;);
++            f.delete(); // cleanup tmp file
++            System.out.println(&quot;    &gt;&gt; DownloadWorker sucessfully replaced CityMapData in &quot; + mapAlias + &quot; and cleaned up afterwards&quot;);
++        } catch (Exception p) {
++            System.out.println(&quot;*** ListServlet.DownloadWorker.run() :&quot; + p.getMessage());
++        }
++        // throw new UnsupportedOperationException(&quot;Not supported yet.&quot;);
++    }
++
++    /**
++     * should never get a map without topics as a parameter
++     * @param map
++     * @return
++     */
++    String getFileContent(BaseTopic map) {
++        StringBuffer result = new StringBuffer();
++        CityMapTopic mapTopic = (CityMapTopic) as.getLiveTopic(map);
++        Vector allElements = cm.getViewTopics(map.getID(), 1, mapTopic.getInstitutionType().getID());
++        System.out.println(&quot;&gt;&gt;&gt;&gt; collectMapTopics counted &quot;+allElements.size()+&quot; objects of type &quot; + mapTopic.getInstitutionType().getID());
++        // create header of csv file
++        TopicBean headBean = as.createTopicBean(((BaseTopic)allElements.get(0)).getID(), 1);
++        StringBuffer headline = new StringBuffer();
++        // Removing 15 Fields
++        headBean.removeField(DeepaMehtaConstants.PROPERTY_PASSWORD);
++        headBean.removeField(DeepaMehtaConstants.PROPERTY_WEB_ALIAS);
++        headBean.removeFieldsContaining(DeepaMehtaConstants.PROPERTY_OWNER_ID);
++        headBean.removeFieldsContaining(DeepaMehtaConstants.PROPERTY_LOCKED_GEOMETRY);
++        headBean.removeFieldsContaining(&quot;Image&quot;);
++        headBean.removeFieldsContaining(&quot;Forum&quot;);
++        headBean.removeField(KiezAtlas.PROPERTY_YADE_X);
++        headBean.removeField(KiezAtlas.PROPERTY_YADE_Y);
++        headBean.removeField(KiezAtlas.PROPERTY_GPS_LAT);
++        headBean.removeField(KiezAtlas.PROPERTY_GPS_LONG);
++        for (int i = 0; i &lt; headBean.fields.size(); i++) {
++            TopicBeanField field = (TopicBeanField) headBean.fields.get(i);
++            headline.append(field.label);
++            headline.append(createTab());
++            // System.out.println(&quot;    &gt; Field: &quot; + field.label + &quot; (&quot; + field.type + &quot;) &quot;);
++        }
++        System.out.println(&quot;&gt; Headline is &quot; + headline.toString());
++        result.append(headline);
++        // String header = &quot;Name&quot; + createTab() + &quot;Email&quot; + createTab() + &quot;Ansprechpartner/in&quot; + createTab() + &quot;Stra&#195;&#159;e / Hnr.&quot; +
++//			&quot;&quot; + createTab() + &quot;PLZ&quot; + createTab() + &quot;Stadt\n&quot;;
++//		String personName = &quot;&quot;;
++//		String entry = &quot;&quot;;
++//		//
++		Enumeration e = allElements.elements();
++		while (e.hasMoreElements()) {
++            result.append(&quot;\n&quot;);
++            String topicId = ((BaseTopic) e.nextElement() ).getID();
++            TopicBean bean = as.createTopicBean(topicId, 1);
++            // Removing 15 Fields
++            bean.removeField(DeepaMehtaConstants.PROPERTY_PASSWORD);
++            bean.removeField(DeepaMehtaConstants.PROPERTY_WEB_ALIAS);
++            bean.removeFieldsContaining(DeepaMehtaConstants.PROPERTY_OWNER_ID);
++            bean.removeFieldsContaining(DeepaMehtaConstants.PROPERTY_LOCKED_GEOMETRY);
++            bean.removeFieldsContaining(&quot;Image&quot;);
++            bean.removeFieldsContaining(&quot;Forum&quot;);
++            bean.removeField(KiezAtlas.PROPERTY_YADE_X);
++            bean.removeField(KiezAtlas.PROPERTY_YADE_Y);
++            bean.removeField(KiezAtlas.PROPERTY_GPS_LAT);
++            bean.removeField(KiezAtlas.PROPERTY_GPS_LONG);
++            System.out.println(&quot;&gt; &gt; exporting &quot; + bean.fields.size() + &quot; fields of &quot; + bean.name);
++            for (int i = 0; i &lt; headBean.fields.size(); i++) {
++                TopicBeanField field = (TopicBeanField) headBean.fields.get(i);
++                if (field.type == TopicBeanField.TYPE_SINGLE) {
++                    result.append(field.value);
++                } else {
++                    for (int a = 0; a &lt; field.values.size(); a++) {
++                        BaseTopic fieldTopic = (BaseTopic) field.values.get(a);
++                        result.append(fieldTopic.getName());
++                        result.append(&quot; &quot;);
++                    }
++                }
++                result.append(createTab());
++                // System.out.println(&quot;    &gt; Field: &quot; + field.label + &quot; (&quot; + field.type + &quot;) &quot;);
++            }
++        }
++        return result.toString();
++    }
++
++    private String createTab() {
++		return &quot;\t&quot;;
++	}
++
++    void exportFile(String filePath, String content) {
++            try {
++                System.out.println(&quot;&gt;&gt;&gt;&gt; DownloadWorker.exportFile(): &quot; + filePath);
++                File fileToWrite = new File(filePath+&quot;.tmp&quot;);
++                FileOutputStream fout = new FileOutputStream(fileToWrite, true);
++                OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
++                out.write(content);
++                out.close();
++                System.out.println(&quot;  &gt; new file \&quot;&quot; + fileToWrite + &quot;\&quot; written successfully&quot;);
++            } catch (FileNotFoundException e) {
++                System.out.println(&quot;*** ListServlet.DownloadWorker.exportFile(): Trying Again &quot; + e.toString());
++                // FileWriter fw = new FileWriter();
++            } catch (Exception e) {
++                System.out.println(&quot;*** ListServlet.DownloadWorker.exportFile(): &quot; + e);
++            }
++        // return fileTo;
++    }
++    
++}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-09-21 10:20:40 UTC (rev 80)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-11-13 00:25:06 UTC (rev 81)
+@@ -247,6 +247,8 @@
+ 	public static final String ACTION_CLEAR_FILTER =&quot;clearFilter&quot;;
+ 	public static final String ACTION_CREATE_FORM_LETTER =&quot;createFormLetter&quot;;
+ 	public static final String ACTION_DELETE_ENTRY =&quot;deleteEntry&quot;;
++	public static final String ACTION_EXPORT_CITYMAP =&quot;exportCityMap&quot;;
++	public static final String ACTION_DOWNLOAD_CITYMAP =&quot;downloadCityMap&quot;;
+ 	
+ 	
+ 
+@@ -302,6 +304,7 @@
+     static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+     static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
+ 	static final String PAGE_LINK_PAGE = &quot;Print&quot;;
++	static final String PAGE_DOWNLOAD_PAGE = &quot;Download&quot;;
+ 	// error
+     static final String PAGE_ERROR = &quot;error&quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-09-21 10:20:40 UTC (rev 80)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-11-13 00:25:06 UTC (rev 81)
+@@ -14,15 +14,18 @@
+ import de.deepamehta.util.DeepaMehtaUtils;
+ import java.io.File;
+ import java.io.FileOutputStream;
+-import java.io.FileWriter;
+ import java.io.IOException;
+ import java.io.OutputStreamWriter;
++import java.text.SimpleDateFormat;
++import java.util.Calendar;
+ import java.util.Collections;
+ import java.util.Comparator;
++import java.util.Date;
+ import javax.servlet.ServletException;
+ //
+ import java.util.Enumeration;
+ import java.util.Hashtable;
++import java.util.TimeZone;
+ import java.util.Vector;
+ import org.apache.commons.fileupload.FileItem;
+ 
+@@ -32,12 +35,14 @@
+  * Kiezatlas 1.6.2&lt;br&gt;
+  * Requires DeepaMehta rev. 369
+  * &lt;p&gt;
+- * Last change: 05.08.2009&lt;br&gt;
++ * Last change: 10.09.2009&lt;br&gt;
+  * J&ouml;rg Richter / Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A> / <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+ public class ListServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
++    private Thread worker = null;
++
+     /**
+      * With introducing a SlimList this controller gained a state which is maintain in the session
+      * and that hurts to even look at. This is gonig to be nice in the near future, where no
+@@ -237,7 +242,87 @@
+                 setUseCache(Boolean.TRUE, session);
+             }
+ 			return PAGE_LIST;
+-		}
++		} else if (action.equals(ACTION_EXPORT_CITYMAP)) {
++            String cityMap = (String) params.getValue(&quot;cityMapID&quot;);
++            CityMapTopic map = (CityMapTopic) as.getLiveTopic(cityMap, 1); // live/base
++            String mapAlias = map.getProperty(PROPERTY_WEB_ALIAS);
++            BaseTopic instType = as.getLiveTopic(map.getInstitutionType());
++            Vector allTopics = cm.getViewTopics(map.getID(), 1);
++            System.out.println(&quot;&gt;&gt;&gt; ListServlet got request to export \&quot;&quot; + mapAlias + &quot;\&quot; with &quot; + instType.getName() + &quot; (&quot;+ allTopics.size() +&quot;)&quot;);
++            // ToDo render approximate waiting time into the displayed result webpage
++            // String absoluteFileNamePath = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;+map.getProperty(PROPERTY_WEB_ALIAS)+&quot;.csv&quot;; // ### hardcoded
++            String absoluteFileNamePath = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;+mapAlias+&quot;.csv&quot;; // ### hardcoded
++            File fileToWrite = new File(absoluteFileNamePath);
++            // Time
++            Calendar cal = Calendar.getInstance();
++            long now = cal.getTimeInMillis();
++            // Date
++            SimpleDateFormat sfc = new SimpleDateFormat(&quot;E HH:mm dd MMM yy&quot;);
++            Date date = new Date();
++            String timestamp = sfc.format(date);
++            try {
++                if (fileToWrite.exists()) {
++                    long touched = fileToWrite.lastModified();
++                    // timestamp = touched;
++                    // check wether the file is pretty fresh or not
++                    System.out.println(&quot;  &gt; file already exists and\&quot;&quot; + absoluteFileNamePath + &quot;\&quot;&quot;);
++                    System.out.println(&quot;  &gt; and system knows that now it's &quot; + now + &quot; and the file was touched &quot; + fileToWrite.lastModified());
++                    if (now-150000000 &lt; touched) { // timestamp is smaller than now minus 10 000 seconds
++                        System.out.println(&quot;&gt;&gt; File is not going to be written, data is fresher than some hours&quot;);
++                        session.setAttribute(&quot;title&quot;, &quot;Die Daten sind aktueller als 6 Stunden und werden daher nicht aktualisiert.&quot;);
++                    } else {
++                        // go ahead and write the file
++                        worker = new Thread(new DownloadWorker(as, cm, map, absoluteFileNamePath));
++                        // start the worker to export the map to the document-repository
++                        worker.start();
++                        // DownloadWorker dw = new DownloadWorker(as, cm, map, absoluteFileNamePath);
++                        System.out.println(&quot;&gt;&gt; File is going to be written, data is older than 6hrs and the user requested so&quot;);
++                        session.setAttribute(&quot;title&quot;, &quot;In wenigen Minuten stehen die aktuellsten Daten des Stadtplans zum Download bereit&quot;);
++                        // start the worker to export the map to the document-repository
++                        //dw.run();
++                        // timestamp = now;
++                    }
++                } else {
++                    // go ahead and write the file
++                    worker = new Thread(new DownloadWorker(as, cm, map, absoluteFileNamePath));
++                    // start the worker to export the map to the document-repository
++                    worker.start();
++                    session.setAttribute(&quot;title&quot;, &quot;In wenigen Minuten stehen die aktuellsten Daten des Stadtplans zum Download bereit&quot;);
++                    // timestamp = now;
++                }
++            } catch (Exception ex) {
++                System.out.println(&quot;*** ListServlet.exportCityMapError &quot; + ex.getLocalizedMessage());
++            }
++            // display the link with webAlias and DownloadCityMap ??
++            session.setAttribute(&quot;link&quot;, as.getCorporateWebBaseURL()+FILESERVER_DOCUMENTS_PATH+mapAlias+&quot;.csv&quot;);
++            // session.setAttribute(&quot;date&quot;, &quot;&quot;+timestamp); // testTime
++            return PAGE_DOWNLOAD_PAGE;
++        } else if (action.equals(ACTION_DOWNLOAD_CITYMAP)) {
++            // get webAlias
++            String cityMap = (String) params.getValue(&quot;cityMapID&quot;);
++            String mapName = &quot;&quot;;
++            if (cityMap != null) {
++                CityMapTopic map = (CityMapTopic) as.getLiveTopic(cityMap, 1); // live/base
++                mapName = map.getName();
++                String mapAlias = map.getProperty(PROPERTY_WEB_ALIAS);
++                if (!mapAlias.equals(&quot;&quot;)) {
++                    session.setAttribute(&quot;link&quot;, as.getCorporateWebBaseURL()+FILESERVER_DOCUMENTS_PATH+mapAlias+&quot;.csv&quot;);
++                    // get lastModified
++                    String absoluteFileNamePath = &quot;/home/monty/source/deepamehta/install/client/documents/&quot;+mapAlias+&quot;.csv&quot;; // ### hardcoded
++                    // Date
++                    SimpleDateFormat sfc = new SimpleDateFormat(&quot;E hh:mm dd MMM yy&quot;);
++                    Date date = new Date();
++                    String timestamp = sfc.format(date);
++                    // session.setAttribute(&quot;date&quot;, timestamp); // cal.getTime()
++                } else {
++                    session.setAttribute(&quot;link&quot;, &quot;MapHasNoAttribute:MapAlias&quot;);
++                }
++            } else {
++                session.setAttribute(&quot;link&quot;, &quot;GetHome&quot;);
++            }
++            session.setAttribute(&quot;title&quot;, &quot;Download der &ouml;ffentlichen Daten des Stadtplans &quot; + mapName);
++            return PAGE_DOWNLOAD_PAGE;
++        }
+ 		//
+ 		return super.performAction(action, params, session, directives);
+ 	}
+@@ -248,6 +333,8 @@
+ 			Vector workspaces = getWorkspaces(getUserID(session), session);
+ 			Hashtable cityMaps = getCityMaps(workspaces);
+             Hashtable mapCounts = getMapCounts(cityMaps);
++            Hashtable mapTimes = getMapTimes(cityMaps);
++            session.setAttribute(&quot;mapTimes&quot;, mapTimes);
+             session.setAttribute(&quot;mapCounts&quot;, mapCounts);
+ 			session.setAttribute(&quot;workspaces&quot;, workspaces);
+ 			session.setAttribute(&quot;cityMaps&quot;, cityMaps);
+@@ -700,6 +787,48 @@
+     }
+ 
+     /**
++     * If returned result vector contains a mapId as key where the value is equals(&quot;&quot;) - export was never done before
++     *
++     * @param cityMaps
++     * @return
++     */
++    private Hashtable getMapTimes(Hashtable cityMaps) {
++        Hashtable counts = new Hashtable();
++        // System.out.println(&quot;&gt;&gt; TIMER: mapCount was started at : &quot; + DeepaMehtaUtils.getTime(true));
++        Enumeration wsIds = cityMaps.keys();
++        // System.out.println(&quot;&gt;&gt; TIME INFO: Starting Fetchint the MapTimes : &quot; + DeepaMehtaUtils.getTime(true));
++        while (wsIds.hasMoreElements()) {
++            String workspaceId = (String) wsIds.nextElement();
++            Vector maps = (Vector) cityMaps.get(workspaceId);
++            BaseTopic typeTopic = getWorkspaceSubType(workspaceId, KiezAtlas.TOPICTYPE_KIEZ_GEO);
++            for (int i = 0; i &lt; maps.size(); i++) {
++                BaseTopic map = (BaseTopic) maps.get(i);
++                String mapAlias = as.getTopicProperty(map, PROPERTY_WEB_ALIAS);
++                // Vector allTopics = cm.getViewTopics(map.getID(), 1, typeTopic.getID());
++                // String absoluteFileNamePath = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;+mapAlias+&quot;.csv&quot;; // ### hardcoded
++                String absoluteFileNamePath = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;+mapAlias+&quot;.csv&quot;; //
++                File fileToWrite = new File(absoluteFileNamePath);
++                if (fileToWrite.exists()) {
++                    Date d = new Date(fileToWrite.lastModified());
++                    Calendar cal = Calendar.getInstance(TimeZone.getDefault());
++                    long now = cal.getTimeInMillis();
++                    if (now-150000000 &gt; fileToWrite.lastModified()) { // timestamp is smaller than now minus 10 000 seconds
++                        SimpleDateFormat sdf = new SimpleDateFormat(&quot;dd MMM, E HH:mm&quot;);
++                        counts.put(map.getID(), sdf.format(d));
++                    } else {
++                        counts.put(map.getID(), &quot;isUpToDate&quot;);
++                    }
++                } else {
++                    counts.put(map.getID(), &quot;&quot;);
++                }
++                //
++            }
++        }
++        // System.out.println(&quot;&gt;&gt; TIME INFO: mapCount has finished at : &quot; + DeepaMehtaUtils.getTime(true));
++        return counts;
++    }
++
++    /**
+      * returns null if no topictype whihc is assigned to the given workspace,
+      * is a subtype of &quot;GeoObjectTopic&quot;
+      *
+@@ -783,7 +912,6 @@
+ 			}
+ 			FileOutputStream fout = new FileOutputStream(toFile, true);
+ 			OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
+-			FileWriter fw = new FileWriter(toFile, true);
+ 			out.write(letter);
+ 			out.close();
+ 			System.out.println(&quot;&gt;&gt;&gt; writeLetter(): written file successfully from: &quot; + toFile.getAbsolutePath());
+@@ -922,7 +1050,7 @@
+ 		return (String) session.getAttribute(&quot;filterField&quot;);
+ 	}
+ 
+-
++    
+ 	// ********************************
+ 	// *** Inner Comparison Classes ***
+ 	// ********************************
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000071.html">[Kiezatlas-svn] r82 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#70">[ date ]</a>
+              <a href="thread.html#70">[ thread ]</a>
+              <a href="subject.html#70">[ subject ]</a>
+              <a href="author.html#70">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

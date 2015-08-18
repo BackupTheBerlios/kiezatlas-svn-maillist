@@ -1,0 +1,359 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r8 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r8%20-%20in%20trunk%3A%20db/patches%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200703151602.l2FG2ax5011815%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000001.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r8 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r8%20-%20in%20trunk%3A%20db/patches%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200703151602.l2FG2ax5011815%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r8 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Thu Mar 15 17:02:36 CET 2007</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000001.html">[Kiezatlas-svn] r9 - tags
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2007-03-15 17:02:13 +0100 (Thu, 15 Mar 2007)
+New Revision: 8
+
+Added:
+   trunk/db/patches/ka-1.4.sql
+Modified:
+   trunk/pages/CityMap.jsp
+   trunk/pages/InstitutionForm.jsp
+   trunk/pages/InstitutionHome.jsp
+   trunk/pages/InstitutionInfo.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/Comment.java
+   trunk/src/de/kiezatlas/deepamehta/Institution.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/Shape.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+Log:
+2 new features: 1) new field 'Administrator Info'. 2) Shapes may be clickable and are linked to city maps
+
+Added: trunk/db/patches/ka-1.4.sql
+===================================================================
+--- trunk/db/patches/ka-1.4.sql	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/db/patches/ka-1.4.sql	2007-03-15 16:02:13 UTC (rev 8)
+@@ -0,0 +1,19 @@
++----------------------
++--- New Properties ---
++----------------------
++
++--- &quot;Administrator Infos&quot; ---
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-administrator-info', 'Administrator Infos');
++INSERT INTO TopicProp VALUES ('pp-ka-administrator-info', 1, 'Name', 'Administrator Infos');
++INSERT INTO TopicProp VALUES ('pp-ka-administrator-info', 1, 'Visualization', 'Multiline Input Field');
++-- assign property to &quot;Einrichtung&quot;
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-82', '', 'tt-ka-einrichtung', 1, 'pp-ka-administrator-info', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-82', 1, 'Ordinal Number', '255');
++
++--- &quot;Target Web Alias&quot; ---
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-target-webalias', 'Target Web Alias');
++INSERT INTO TopicProp VALUES ('pp-ka-target-webalias', 1, 'Name', 'Target Web Alias');
++INSERT INTO TopicProp VALUES ('pp-ka-target-webalias', 1, 'Visualization', 'Input Field');
++-- assign property to &quot;Fl&#228;che&quot;
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-83', '', 'tt-ka-shape', 1, 'pp-ka-target-webalias', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-83', 1, 'Ordinal Number', '150');
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/pages/CityMap.jsp	2007-03-15 16:02:13 UTC (rev 8)
+@@ -22,9 +22,15 @@
+ 		Enumeration e = shapes.elements();
+ 		while (e.hasMoreElements()) {
+ 			Shape shape = (Shape) e.nextElement();
++			if (isSet(shape.targetWebalias)) {
++				out.println(&quot;&lt;a href=\&quot;&quot; + request.getContextPath() + &quot;/browse/&quot; + shape.targetWebalias + &quot;\&quot; target=\&quot;_top\&quot;&gt;&quot;);
++			}
+ 			out.println(&quot;&lt;img src=\&quot;&quot; + shape.url + &quot;\&quot; class=\&quot;fixpng\&quot; style=\&quot;position:absolute; top:&quot; +
+ 				shape.point.y + &quot;px; left:&quot; + shape.point.x + &quot;px; width:&quot; + shape.size.width + &quot;px; height:&quot; +
+ 				shape.size.height + &quot;px;\&quot;&gt;&quot;);
++			if (isSet(shape.targetWebalias)) {
++				out.println(&quot;&lt;/a&gt;&quot;);
++			}
+ 		}
+ 		// --- institutions ---
+ 		e = hotspots.elements();
+
+Modified: trunk/pages/InstitutionForm.jsp
+===================================================================
+--- trunk/pages/InstitutionForm.jsp	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/pages/InstitutionForm.jsp	2007-03-15 16:02:13 UTC (rev 8)
+@@ -10,6 +10,7 @@
+ 		KiezAtlas.PROPERTY_BIRTHDAY,
+ 		KiezAtlas.PROPERTY_YADE_X,
+ 		KiezAtlas.PROPERTY_YADE_Y,
++		KiezAtlas.PROPERTY_ADMINISTRATION_INFO,
+ 		&quot;City&quot;, &quot;Title&quot;, &quot;Content&quot;,
+ 		&quot;Width&quot;, &quot;Height&quot;};
+ %&gt;
+
+Modified: trunk/pages/InstitutionHome.jsp
+===================================================================
+--- trunk/pages/InstitutionHome.jsp	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/pages/InstitutionHome.jsp	2007-03-15 16:02:13 UTC (rev 8)
+@@ -9,6 +9,7 @@
+ 		KiezAtlas.PROPERTY_WEB_ALIAS,
+ 		KiezAtlas.PROPERTY_YADE_X,
+ 		KiezAtlas.PROPERTY_YADE_Y,
++		KiezAtlas.PROPERTY_ADMINISTRATION_INFO,
+ 		&quot;City&quot;, &quot;Title&quot;, &quot;Content&quot;,
+ 		&quot;Width&quot;, &quot;Height&quot;};
+ %&gt;
+
+Modified: trunk/pages/InstitutionInfo.jsp
+===================================================================
+--- trunk/pages/InstitutionInfo.jsp	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/pages/InstitutionInfo.jsp	2007-03-15 16:02:13 UTC (rev 8)
+@@ -36,6 +36,10 @@
+ 	//
+ 	out.println(&quot;&lt;p&gt;&lt;div class=\&quot;small\&quot;&gt;Weitere Infos:&lt;/div&gt;&quot;);
+ 	out.println(inst.misc);
++	if (isSet(inst.misc) &amp;&amp; isSet(inst.adminInfo)) {
++		out.println(&quot;&lt;p&gt;&quot;);
++	}
++	out.println(inst.adminInfo);
+ 	//
+ 	if (forumActivition.equals(KiezAtlas.SWITCH_ON)) {
+ 		// link to forum page
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-03-15 16:02:13 UTC (rev 8)
+@@ -28,10 +28,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.4&lt;br&gt;
++ * Kiez-Atlas 1.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 30.8.2006&lt;br&gt;
++ * Last change: 4.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -440,8 +440,9 @@
+ 						Dimension size = new Dimension(width, height);
+ 						Point point = shapeTopic.getGeometry();
+ 						point.translate(-width / 2, -height / 2);
++						String targetWebalias = as.getTopicProperty(shapeTopic, PROPERTY_TARGET_WEBALIAS);
+ 						//
+-						shapes.addElement(new Shape(url, point, size));
++						shapes.addElement(new Shape(url, point, size, targetWebalias));
+ 					}
+ 				}
+ 			}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Comment.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Comment.java	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/src/de/kiezatlas/deepamehta/Comment.java	2007-03-15 16:02:13 UTC (rev 8)
+@@ -11,10 +11,10 @@
+  * A bean-like data container for passing data from the front-controler (servlet)
+  * to the presentation layer (JSP engine).
+  * &lt;p&gt;
+- * Kiez-Atlas 1.3.2&lt;br&gt;
+- * Requires DeepaMehta 2.0b6
++ * Kiez-Atlas 1.4&lt;br&gt;
++ * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 18.5.2006&lt;br&gt;
++ * Last change: 1.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -25,7 +25,7 @@
+ 	public Comment(String commentID, ApplicationService as) {
+ 		id = commentID;
+ 		text = as.getTopicProperty(commentID, 1, PROPERTY_TEXT);
+-		text = DeepaMehtaUtils.replace(text, '\r', &quot;&lt;br&gt;&quot;);		// needed for &quot;Multiline Input Field&quot;
++		text = DeepaMehtaUtils.replaceLF(text);		// needed for &quot;Multiline Input Field&quot;
+ 		author = as.getTopicProperty(commentID, 1, PROPERTY_COMMENT_AUTHOR);
+ 		email = as.getTopicProperty(commentID, 1, PROPERTY_EMAIL_ADDRESS);
+ 		date = as.getTopicProperty(commentID, 1, PROPERTY_COMMENT_DATE);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Institution.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Institution.java	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/src/de/kiezatlas/deepamehta/Institution.java	2007-03-15 16:02:13 UTC (rev 8)
+@@ -15,10 +15,10 @@
+  * A bean-like data container for passing data from the front-controler (servlet)
+  * to the presentation layer (JSP engine).
+  * &lt;p&gt;
+- * Kiez-Atlas 1.3&lt;br&gt;
+- * Requires DeepaMehta 2.0b6
++ * Kiez-Atlas 1.4&lt;br&gt;
++ * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 19.2.2006&lt;br&gt;
++ * Last change: 1.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -28,7 +28,7 @@
+ 	public String street, postalCode, city;
+ 	public String webpageURL, person, phone, fax, email;
+ 	public String traeger, traegerArt;
+-	public String open, misc;
++	public String open, misc, adminInfo;
+ 	public String imageURL;
+ 	public String yadeX, yadeY;
+ 	public Vector[] categories;		// may be null
+@@ -80,8 +80,10 @@
+ 		//
+ 		open = as.getTopicProperty(inst, PROPERTY_OEFFNUNGSZEITEN);
+ 		misc = as.getTopicProperty(inst, PROPERTY_SONSTIGES);
+-		open = DeepaMehtaUtils.replace(open, '\r', &quot;&lt;br&gt;&quot;);		// needed for &quot;Multiline Input Field&quot;
+-		misc = DeepaMehtaUtils.replace(misc, '\r', &quot;&lt;br&gt;&quot;);		// needed for &quot;Multiline Input Field&quot;		
++		adminInfo = as.getTopicProperty(inst, PROPERTY_ADMINISTRATION_INFO);
++		open = DeepaMehtaUtils.replaceLF(open);				// needed for &quot;Multiline Input Field&quot;
++		misc = DeepaMehtaUtils.replaceLF(misc);				// needed for &quot;Multiline Input Field&quot;		
++		adminInfo = DeepaMehtaUtils.replaceLF(adminInfo);	// needed for &quot;Multiline Input Field&quot;		
+ 		// image
+ 		BaseTopic image = inst.getImage();
+ 		if (image != null) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2007-03-15 16:02:13 UTC (rev 8)
+@@ -5,10 +5,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.4&lt;br&gt;
++ * Kiez-Atlas 1.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 26.8.2006&lt;br&gt;
++ * Last change: 4.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -104,6 +104,7 @@
+ 	static final String PROPERTY_CITY = &quot;Stadt&quot;;
+ 	static final String PROPERTY_OEFFNUNGSZEITEN = &quot;&#133;ffnungszeiten&quot;;
+ 	static final String PROPERTY_SONSTIGES = &quot;Sonstiges&quot;;
++	static final String PROPERTY_ADMINISTRATION_INFO = &quot;Administrator Infos&quot;;
+ 	static final String PROPERTY_AGENCY_KIND = &quot;Art&quot;;
+ 	static final String PROPERTY_YADE_X = &quot;YADE x&quot;;
+ 	static final String PROPERTY_YADE_Y = &quot;YADE y&quot;;
+@@ -112,6 +113,8 @@
+ 	static final String PROPERTY_COMMENT_AUTHOR = &quot;Autor&quot;;
+ 	static final String PROPERTY_COMMENT_DATE = &quot;Datum&quot;;
+ 	static final String PROPERTY_COMMENT_TIME = &quot;Uhrzeit&quot;;
++	//
++	static final String PROPERTY_TARGET_WEBALIAS = &quot;Target Web Alias&quot;;
+ 
+ 
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Shape.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Shape.java	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/src/de/kiezatlas/deepamehta/Shape.java	2007-03-15 16:02:13 UTC (rev 8)
+@@ -7,10 +7,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.4&lt;br&gt;
++ * Kiez-Atlas 1.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 30.8.2006&lt;br&gt;
++ * Last change: 4.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -19,10 +19,12 @@
+ 	public String url;
+ 	public Point point;
+ 	public Dimension size;
++	public String targetWebalias;
+ 
+-	Shape(String url, Point point, Dimension size) {
++	Shape(String url, Point point, Dimension size, String targetWebalias) {
+ 		this.url = url;
+ 		this.point = point;
+ 		this.size = size;
++		this.targetWebalias = targetWebalias;
+ 	}
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2006-09-16 15:44:27 UTC (rev 7)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-03-15 16:02:13 UTC (rev 8)
+@@ -19,10 +19,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.4&lt;br&gt;
++ * Kiez-Atlas 1.4&lt;br&gt;
+  * Requires DeepaMehta 2.0b7-post1
+  * &lt;p&gt;
+- * Last change: 26.8.2006&lt;br&gt;
++ * Last change: 1.3.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -30,7 +30,7 @@
+ 
+ 
+ 
+-	static final String VERSION = &quot;1.3.4&quot;;
++	static final String VERSION = &quot;1.4&quot;;
+ 	static {
+ 		System.out.println(&quot;&gt;&gt;&gt; Kiez-Atlas &quot; + VERSION);
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000001.html">[Kiezatlas-svn] r9 - tags
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,395 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r103 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2011-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r103%20-%20in%20trunk%3A%20pages/be.de%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C20111113155144.F1D36481417%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r103 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r103%20-%20in%20trunk%3A%20pages/be.de%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C20111113155144.F1D36481417%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r103 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Sun Nov 13 16:51:44 CET 2011</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89">[ date ]</a>
+              <a href="thread.html#89">[ thread ]</a>
+              <a href="subject.html#89">[ subject ]</a>
+              <a href="author.html#89">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2011-11-13 16:51:44 +0100 (Sun, 13 Nov 2011)
+New Revision: 103
+
+Modified:
+   trunk/pages/be.de/AlternativeAtlas.jsp
+   trunk/pages/be.de/BerlinAtlas.jsp
+   trunk/pages/be.de/kiezatlas.js
+   trunk/pages/be.de/landmaps.css
+   trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+   trunk/src/de/kiezatlas/deepamehta/MapServlet.java
+Log:
+Minor Improvements and Fixes for Kiezatlas 1.6.8 (.3)
+
+- fixed permalink feature for nightly imported geo-objects through using identifier from origin
+- introduced tab-style navigation in the sidebar for/between event- and engagement-citymap (/map* /atlas* )
+- extended permalink feature about categoryIds
+- layout improvements in alternative ajax client: no overlapping elements in sidebar anymore and differently highlighted criterias for berlin.de
+
+
+Modified: trunk/pages/be.de/AlternativeAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/AlternativeAtlas.jsp	2011-07-06 08:39:30 UTC (rev 102)
++++ trunk/pages/be.de/AlternativeAtlas.jsp	2011-11-13 15:51:44 UTC (rev 103)
+@@ -11,6 +11,7 @@
+ 	String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
++	String catIds = (String) session.getAttribute(&quot;categories&quot;);
+   String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
+   //
+@@ -37,6 +38,8 @@
+     var workspaceId = '&lt;%= workspace.getID() %&gt;';
+     // options
+     var crtCritIndex = &lt;%= critIndex %&gt;;
++    var cats = '&lt;%= catIds %&gt;';
++    var catIds = cats.split(&quot;,&quot;);
+     var searchTerm = '&lt;%= searchTerm %&gt;';
+     var linkToTopicId = '&lt;%= topicId %&gt;';
+     var linkTo = '&lt;%= originId %&gt;';
+@@ -83,6 +86,8 @@
+       if (onBerlinDe &amp; workspaceCriterias.result.length &gt; 4) districtNames = workspaceCriterias.result[4].categories;
+       setWorkspaceInfos();
+       setCityMapName('&lt;%= map.getName() %&gt;'); // fetch and set CityMapName
++      var onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
++      var onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
+       // check if a special criteria was set through an entry url
+       if (crtCritIndex &gt;= workspaceCriterias.result.length) {
+         crtCritIndex = 0;// workspaceCriterias.result.length;
+@@ -110,6 +115,14 @@
+           selectAndShowInMap(linkTo, false);
+         } else if (linkToTopicId != 'null') {
+           selectAndShowInMap(linkToTopicId, true);
++        } else if (catIds.length &gt; 0) {
++          for (var catIdx = 0; catIdx &lt; catIds.length; catIdx++) {
++            var catId = catIds[catIdx];
++            // catId = catId.replace(&quot;%2C&quot;, &quot;&quot;);
++            // alert(&quot;catIds: &quot; + catIds + &quot; toggle : \&quot;&quot; + catId + &quot;\&quot;&quot;);
++            // pre-select the categories encoded in url
++            toggleMarkerGroups(catId);
++          }
+         }
+         if (searchTerm != 'null') {
+           searchRequest(searchTerm);
+
+Modified: trunk/pages/be.de/BerlinAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/BerlinAtlas.jsp	2011-07-06 08:39:30 UTC (rev 102)
++++ trunk/pages/be.de/BerlinAtlas.jsp	2011-11-13 15:51:44 UTC (rev 103)
+@@ -11,6 +11,7 @@
+   String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
++  String catIds = (String) session.getAttribute(&quot;categories&quot;);
+ 	String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
+   //
+@@ -43,6 +44,8 @@
+     var baseLayer = '&lt;%= baseLayer %&gt;';
+     var workspaceId = '&lt;%= workspace.getID() %&gt;';
+     var crtCritIndex = &lt;%= critIndex %&gt;;
++    var cats = '&lt;%= catIds %&gt;';
++    var catIds = cats.split(&quot;,&quot;);
+     var searchTerm = '&lt;%= searchTerm %&gt;';
+     var linkTo = '&lt;%= originId %&gt;';
+     var linkToTopicId = '&lt;%= topicId %&gt;';
+@@ -87,6 +90,8 @@
+       if (onBerlinDe &amp; workspaceCriterias.result.length &gt; 4) districtNames = workspaceCriterias.result[4].categories;
+       setWorkspaceInfos();
+       setCityMapName(mapTitle);
++      var onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
++      var onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
+       // check if a special criteria was set through an entry url
+       if (crtCritIndex &gt;= workspaceCriterias.result.length) {
+         crtCritIndex = 0;// workspaceCriterias.result.length;
+@@ -109,19 +114,29 @@
+         initLayerAllFeatures(gMarkers, map);
+         // initBerlinDistrictsLayer();
+         reSetMarkers(myNewLayer);
++        if (onEventMap) showAllMarker();
+         // inputFieldBehaviour();
+         // check if a special projectId was given through the entry url
+         if (linkTo != 'null') {
+           selectAndShowInMap(linkTo, false);
+         } else if (linkToTopicId != 'null') {
+           selectAndShowInMap(linkToTopicId, true);
++        } else if (catIds.length &gt; 0) {
++          for (var catIdx = 0; catIdx &lt; catIds.length; catIdx++) {
++            var catId = catIds[catIdx];
++            // catId = catId.replace(&quot;%2C&quot;, &quot;&quot;);
++            // alert(&quot;catIds: &quot; + catIds + &quot; toggle : \&quot;&quot; + catId + &quot;\&quot;&quot;);
++            // pre-select the categories encoded in url
++            toggleMarkerGroups(catId);
++          }
+         }
+         if (searchTerm != 'null') {
+           searchRequest(searchTerm);
+         }
+         map.events.register(&quot;zoomend&quot;, map, redrawAfterZoomOperation);
+         map.raiseLayer(myNewLayer);
+-        if (jQuery.browser.msie) handleResize();
++        // if (jQuery.browser.msie)
++        handleResize();
+       });
+     });
+   &lt;/script&gt;
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2011-07-06 08:39:30 UTC (rev 102)
++++ trunk/pages/be.de/kiezatlas.js	2011-11-13 15:51:44 UTC (rev 103)
+@@ -195,6 +195,13 @@
+     }
+     var footerHeight = 35; // ### FIXME: to be removed
+     var sideBarHeight = mapH - critHeight - footerHeight;
++    if (workspaceCriterias.length == 3) {
++      sideBarHeight = sideBarHeight + 20;
++    } else if (workspaceCriterias.length &gt; 4) {
++      sideBarHeight = sideBarHeight - 20;
++    } else { // workspaceCriterias is not available at that early stage
++      sideBarHeight = sideBarHeight - 20;
++    }
+     jQuery(&quot;#sideBarCategories&quot;).css(&quot;height&quot;, sideBarHeight);
+     jQuery(&quot;#sideBarCategories&quot;).css(&quot;width&quot;, sideW - 7);
+     // get the position for our footer-div, which is placed outside #sideBar at labs-maps and inside at berlin.de
+@@ -416,6 +423,7 @@
+     // address related stuff follows
+     var cityName = getTopicCity(givenTopic);
+     var street = getTopicAddress(givenTopic);
++    var originId = getTopicOriginId(givenTopic);
+     if (cityName == &quot; Berlin&quot; || cityName == &quot;Berlin&quot; || onBerlinDe) { // ### FIXME sloppy
+       var publicTransportURL = '<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>' + street +
+         '&amp;search=Suchen&amp;formquery=&amp;address=true';
+@@ -499,7 +507,12 @@
+     }
+     resultHandler.append(propertyList);
+     //
+-    updatePermaLink(baseUrl+mapAlias+&quot;?topicId=&quot;+givenTopic.id);
++    if (onProjectMap || onEventMap) {
++      // every day changing id's use the originId instead.
++      updatePermaLink(baseUrl+mapAlias+&quot;?linkTo=&quot;+originId);
++    } else {
++      updatePermaLink(baseUrl+mapAlias+&quot;?topicId=&quot;+givenTopic.id);
++    }
+   }
+   
+   /**
+@@ -717,8 +730,8 @@
+   function initCriteriaList() {
+     jQuery(&quot;#progContainer&quot;).hide();
+     var critListElement = jQuery(&quot;#sideBarCriterias&quot;);
+-    var onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
+-    var onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
++    onEventMap = (mapTitle.indexOf(&quot;Veranstaltungen Ehrenamt Berlin&quot;) != -1) ? true : false;
++    onProjectMap = (mapTitle.indexOf(&quot;Ehrenamt Berlin&quot;) != -1) ? true : false;
+     var tabsHtml = &quot;&quot;;
+     if (onBerlinDe &amp;&amp; onEventMap) {
+       tabsHtml = '&lt;div id=&quot;navigation-helper&quot; '
+@@ -751,9 +764,14 @@
+       } else {
+         critLinkList += '&lt;tr valign=&quot;top&quot;&gt;';
+       }
+-      critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; align=&quot;right&quot; class=&quot;critLinkNormal&quot;&gt;'
+-        + critName + '&lt;/td&gt;';
+-      if (crtCritIndex == i) {
++      if (onBerlinDe &amp;&amp; crtCritIndex == i) {
++        critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; align=&quot;right&quot; class=&quot;critLinkNormal selectedCriteria&quot;&gt;'
++          + critName + '&lt;/td&gt;';
++      } else {
++        critLinkList += '&lt;td onclick=&quot;javascript:updateCategoryList(' + i + ');&quot; align=&quot;right&quot; class=&quot;critLinkNormal&quot;&gt;'
++          + critName + '&lt;/td&gt;';
++      }
++      if (!onBerlinDe &amp;&amp; crtCritIndex == i) {
+         critLinkList += '&lt;td align=&quot;left&quot;&gt;&#8226;&lt;/td&gt;&lt;/tr&gt;';
+       } else {
+         critLinkList += '&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;';
+@@ -1154,13 +1172,24 @@
+       }
+     }
+     if (myNewLayer != null) myNewLayer.redraw();
++    // re-use list of all currently selected marker-groups/categories to build a permalink
++    var categoryString = &quot;?catIds=&quot;;
++    for ( var mi = 0; mi &lt; markerGroupIds.length; mi++ ) {
++      categoryString += markerGroupIds[mi] + &quot;%2C&quot;;
++    }
++    // check for the case, where all are deselected..
++    if (markerGroupIds.length &gt; 0) {
++      updatePermaLink(baseUrl+mapAlias+categoryString);
++    } else {
++      updatePermaLink(baseUrl+mapAlias);
++    }
+   }
+ 
+   function showTopicFeatures(topicListToShow, catIdToShow) {
+     // log(&quot;..starting to show &quot;+topicListToShow.length+&quot;Features&quot;);
+     // var boundingFeatures = new Array();
+     var catIconURL = &quot;&quot;;
+-    if(catIdToShow != &quot;&quot;) {
++    if( catIdToShow != &quot;&quot; ) {
+       catIconURL = getCatIconURL(catIdToShow);
+     }
+     if (debug) log(&quot;catIconToShow is &quot;+catIconURL);
+@@ -1180,7 +1209,7 @@
+           if ( clusterFeature != null ) {
+             // on this position there is already a feature drawn, make it a cluster or at least append it
+             // clusterFeature.data.cluster.push(featureToShow.data);
+-            if (featureToShow.data.cluster == null) { // is a new cluster
++            if ( featureToShow.data.cluster == null ) { // is a new cluster
+               var newCluster = new Array();
+               // check if data.cluster is an Array of feature.data objects ???
+               if ( clusterFeature.data.cluster == null ) { // starting new cluster
+@@ -1188,7 +1217,7 @@
+                 newCluster.push(featureToShow.data);
+                 if (debug) log(&quot;&gt; starting a cluster at &quot; + pos + &quot; with &quot; + clusterFeature.data.topicName + &quot; / &quot; + featureToShow.data.topicName);
+               } else {
+-                for(j=0;j&lt;clusterFeature.data.cluster.length;j++) {
++                for( j=0; j &lt; clusterFeature.data.cluster.length; j++ ) {
+                  newCluster.push(clusterFeature.data.cluster[j]);
+                 } // building new cluster through appending
+                 newCluster.push(featureToShow.data);
+@@ -1241,6 +1270,12 @@
+       }
+     }
+     if (myNewLayer != null) myNewLayer.redraw();
++    // re-use list of all currently selected marker-groups/categories to build a permalink
++    var categoryString = &quot;?catIds=&quot;;
++    for (var mi = 0; mi &lt; markerGroupIds.length; mi++ ) {
++      categoryString += markerGroupIds[mi] + &quot;%2C&quot;;
++    }
++    updatePermaLink(baseUrl+mapAlias+categoryString);
+   }
+ 
+   /** operates on the original mapTopics result from the mapservice */
+@@ -1999,6 +2034,15 @@
+     return &quot;&quot;;
+   }
+ 
++  function getTopicOriginId(topic) {
++    for (var i=0; i &lt; topic.properties.length; i++) {
++      if (topic.properties[i].name == &quot;OriginId&quot;) {
++        return topic.properties[i].value; // + ' Berlin&lt;br/&gt;';
++      }
++    }
++    return &quot;&quot;;
++  }
++
+   function getTopicCity(topic) {
+     for (var at=0; at &lt; topic.properties.length; at++) {
+       // resultHandler.append('&lt;tr&gt;&lt;td&gt;'+topic.properties[i].label+'&lt;/td&gt;&lt;td&gt;'+topic.properties[i].value+'&lt;/td&gt;&lt;/tr&gt;');
+@@ -2025,7 +2069,7 @@
+       var skip = false;
+       if (lat == 0.0 || lng == 0.0) {
+         skip = true;
+-      } else if (lng &lt; 0.0 || lng &gt; 360.0) {
++      } else if (lng &lt; -180.0 || lng &gt; 180.0) {
+         skip = true;
+       } else if (lat &lt; -90.0 || lat &gt; 90.0) {
+         skip = true;
+
+Modified: trunk/pages/be.de/landmaps.css
+===================================================================
+--- trunk/pages/be.de/landmaps.css	2011-07-06 08:39:30 UTC (rev 102)
++++ trunk/pages/be.de/landmaps.css	2011-11-13 15:51:44 UTC (rev 103)
+@@ -46,7 +46,9 @@
+ #kiezatlas #navPanel{ position: absolute; left: 5px; bottom: 50px;}
+ #kiezatlas #sideBar { position: absolute; border-top: 0px solid #4170d4; border-bottom: 1px solid #4170d4; border-right: 1px solid #4170D4; border-left: 1px solid #4170D4; background:#fff; }
+ #kiezatlas #sideBarCriterias { position:relative; left:5px; top:3px; cursor:pointer; }
+-#kiezatlas #sideBarCategories { position:relative; left:5px; top:10px; overflow:auto; }
++#kiezatlas #sideBarCategories { position:relative; left:5px; top: 5px; overflow:auto; }
++#kiezatlas #sideBarCategories a { text-decoration: none; }
++#kiezatlas #sideBarCategories a:hover { text-decoration: underline; }
+ #kiezatlas #sideBarControl { position: absolute; width:5px; top:29px; background: #4170D4; }
+ #kiezatlas #progContainer { position:absolute; top:45%; left:35%; width:50%; height:50%; opacity: 0.6; }
+ #kiezatlas #kafooter { background: #fff; height:35px; position:absolute; bottom: 3px; }
+@@ -63,8 +65,14 @@
+ #kiezatlas table { border-collapse: separate; border-spacing: 0px; font-size: 100%; }
+ /** some classy definitions */
+ .redTitle a, .redTitle a:hover, .redTitle a:-webkit-any-link { color: #b60033; }
++#navigation-helper a:hover { text-decoration: underline; color: #e50033; opacity: 1.0; }
++#navigation-helper a { text-decoration: none; color: #3660b8; opacity: 0.7; }
++#navigation-helper { color: #e50033; }
++#kiezatlas .critLinkNormal { text-decoration: none; color: #3660b8; padding: 1px; color: #3660b8; opacity:0.7; }
++#kiezatlas .critLinkNormal:hover { text-decoration: underline; color: #e50033; opacity: 1.0; }
++#kiezatlas .selectedCriteria, #kiezatlas .selectedCriteria a:hover { color: #e50033; opacity: 1.0; text-decoration: none !important; }
+ #kiezatlas .berlinMapName { position: relative; left: 3em; top: 0px; width: 145px; height: 30px; background: url(&quot;/.img/bde/menubar-grey-bg.gif&quot;) repeat-x scroll 0 0 #6C6C6C; border-top: 0px solid #fff; border-left: 1px solid #fff; border-right: 1px solid #fff; border-bottom: 0px solid #fff; }
+-#kiezatlas .critLinkNormal { text-decoration: underline; }
++/** #kiezatlas .critLinkNormal { text-decoration: underline; } */
+ #kiezatlas .catRowDeselected { background: #fff; }
+ #kiezatlas .catRowSelected { background: #E6EDFF; }
+ #kiezatlas .iconCell { text-align: center; padding-top:4px; }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2011-07-06 08:39:30 UTC (rev 102)
++++ trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2011-11-13 15:51:44 UTC (rev 103)
+@@ -75,6 +75,7 @@
+         if (params.getParameter(&quot;critId&quot;) != null) critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
+         session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;));
+         session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
++        session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
+         session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
+         session.setAttribute(&quot;critIndex&quot;, critIndex);
+         session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
+
+Modified: trunk/src/de/kiezatlas/deepamehta/MapServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/MapServlet.java	2011-07-06 08:39:30 UTC (rev 102)
++++ trunk/src/de/kiezatlas/deepamehta/MapServlet.java	2011-11-13 15:51:44 UTC (rev 103)
+@@ -73,6 +73,7 @@
+         if (params.getParameter(&quot;critId&quot;) != null) critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1; // [0]
+         session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
+         session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
++        session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
+         session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
+         session.setAttribute(&quot;critIndex&quot;, critIndex);
+         session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#89">[ date ]</a>
+              <a href="thread.html#89">[ thread ]</a>
+              <a href="subject.html#89">[ subject ]</a>
+              <a href="author.html#89">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

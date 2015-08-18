@@ -1,0 +1,885 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r64 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-December/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r64%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200812042104.mB4L4AKf022192%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000054.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r64 - in trunk: docs pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r64%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200812042104.mB4L4AKf022192%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r64 - in trunk: docs pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Thu Dec  4 22:04:10 CET 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000054.html">[Kiezatlas-svn] r65 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53">[ date ]</a>
+              <a href="thread.html#53">[ thread ]</a>
+              <a href="subject.html#53">[ subject ]</a>
+              <a href="author.html#53">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-12-04 22:04:05 +0100 (Thu, 04 Dec 2008)
+New Revision: 64
+
+Modified:
+   trunk/docs/session.txt
+   trunk/pages/CityMap.jsp
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/List.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+KiezAtlas 1.6.2 revisited
+* Multiple Bug Fixes related to caching of Lists
+* Fixed latest Email Address issue (in GeoObjectInfo.jsp)
+* Fixed missing Address / City in some FormLetters ()
+* Fixed methods for fetching Email Address and Person's Name
+
+New Feature
+* linking into citymap's criterias is possible now, append and '&amp;n' (where n is the number of the criteria, starting with 0)
+
+-- some gui related enhancements
+* (styled list-feature-links)
+* Introduced DOCTYPE for new generation of Browsers
+* internet explorer 7, positioning of cluster-divs after scrolling
+* fixed enchoding in all pages
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/docs/session.txt	2008-12-04 21:04:05 UTC (rev 64)
+@@ -16,6 +16,7 @@
+ map					BaseTopic
+ mapImage			String
+ criterias			array of SearchCriteria
++defaultCriteria		number of selected Criteria. Just set if an additional param e.g. '&amp;1' was appended to the citymap alias
+ instType			TypeTopic
+ shapeTypes			Vector of ShapeType
+ shapes				Vector of Shape
+@@ -138,8 +139,8 @@
+ ----
+ 
+ cityMap				selected city map (BaseTopic)
+-topics				Vector of TopicBeans
+-filteredTopics		Vector of filteredTopics
++topics				Vector of current Beans
++cachedTopics		Vector of cached TopicBeans
+ useCache			Boolean to use listed topics, not populated listedTopics 
+ geo					geo object to highlight (BaseTopic)
+ notifications		error notifications (Vector of Notification)
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/pages/CityMap.jsp	2008-12-04 21:04:05 UTC (rev 64)
+@@ -8,7 +8,7 @@
+ 	GeoObject selectedInst = (GeoObject) session.getAttribute(&quot;selectedGeo&quot;);
+ 	String stylesheet = (String) session.getAttribute(&quot;stylesheet&quot;);
+ %&gt;
+-
++&lt;!DOCTYPE HTML PUBLIC \&quot;-//W3C//DTD HTML 4.01//EN\&quot; \&quot;<A HREF="http://www.w3.org/TR/html4/strict.dtd\">http://www.w3.org/TR/html4/strict.dtd\</A>&quot;&gt;
+ &lt;html&gt;
+ &lt;head&gt;
+ 	&lt;title&gt;Kiezatlas&lt;/title&gt;
+@@ -36,14 +36,15 @@
+ 				originalPosition = id.split(&quot;.&quot;);
+ 				var xPosition = parseInt(originalPosition[0]);
+ 				var yPosition = parseInt(originalPosition[1]);
+-				if (navigator.appName != &quot;Microsoft Internet Explorer&quot;) {
+-					// not ie, recalculate position after scrolling
++				var myregex = /MSIE 6\.0/i;
++				if (navigator.appName == &quot;Microsoft Internet Explorer&quot; &amp;&amp; navigator.appVersion.indexOf(&quot;6.0&quot;) != -1) {
++					// ie 6, no recalculation, handled by included 'fixed.js' script
++					document.getElementById(currentMenu).style.top = yPosition;
++					document.getElementById(currentMenu).style.left = xPosition;
++				} else {
++					// everything but ie 6, recalculate position after scrolling
+ 					document.getElementById(currentMenu).style.top = yPosition - independentY();
+ 					document.getElementById(currentMenu).style.left = xPosition - independentX();
+-				} else {
+-					// ie, no recalculation, handled by included 'fixed.js' script
+-					document.getElementById(currentMenu).style.top = yPosition;
+-					document.getElementById(currentMenu).style.left = xPosition;
+ 				}
+ 				document.getElementById(currentMenu).style.visibility = 'visible';
+ 					currentActiveMenu = id;
+@@ -61,7 +62,8 @@
+ 		// helper called for browser independency
+ 		function independentY() {
+ 			if (navigator.appName == &quot;Microsoft Internet Explorer&quot;) {
+-				return document.body.scrollTop;
++			    if(navigator.appVersion.indexOf(&quot;7.0&quot;) != -1) return document.documentElement.scrollTop;
++			    else return document.body.scrollTop;
+ 			} else {
+ 				return window.pageYOffset;
+ 			}
+@@ -69,9 +71,10 @@
+ 		
+ 		function independentX() {
+ 			if (navigator.appName == &quot;Microsoft Internet Explorer&quot;) {
+-				return document.body.scrollLeft;
++			    if(navigator.appVersion.indexOf(&quot;7.0&quot;) != -1) return document.documentElement.scrollLeft;
++			    else return document.body.scrollLeft;
+ 			} else {
+-				return window.pageXOffset;
++			    return window.pageXOffset;
+ 			}
+ 		}		
+ 
+@@ -105,8 +108,8 @@
+ 				Point p = inst.getGeometry();
+ 				// marker and hotspot can't overlap exactly, cause of the new icons don't fit in the old convention of 20x20px chel
+ 				if (selectedInst != null &amp;&amp; selectedInst.geoID.equals(inst.getID())) {
+-					out.println(&quot;&lt;img src=\&quot;../images/marker.png\&quot; style=\&quot;position:absolute; top:&quot; +
+-						(p.y - 20) + &quot;px; left:&quot; + (p.x - 20) + &quot;px;\&quot;&gt;&quot;);
++					out.println(&quot;&lt;img src=\&quot;../images/marker.png\&quot; class=\&quot;fixpng\&quot; style=\&quot;position:absolute; top:&quot; +
++						(p.y - 20) + &quot;px; left:&quot; + (p.x - 20) + &quot;px; width:40px; height:40px;\&quot;&gt;&quot;);
+ 					break;
+ 				}
+ 			}
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/pages/GeoObjectInfo.jsp	2008-12-04 21:04:05 UTC (rev 64)
+@@ -4,7 +4,7 @@
+ 
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+-	String imagePath = (String) session.getAttribute(&quot;imagePath&quot;);	
++	String imagePath = (String) session.getAttribute(&quot;imagePath&quot;);
+ 	String forumActivition = (String) session.getAttribute(&quot;forumActivition&quot;);
+ 	Integer commentCount = (Integer) session.getAttribute(&quot;commentCount&quot;);
+ 	// hide properties
+@@ -51,8 +51,10 @@
+ 	// --- generic geo object info ---
+ 	// remove fields which are rendered manually
+ 	topicBean.removeFieldsContaining(&quot;Image&quot;);
+-	topicBean.removeFieldsContaining(&quot;Address&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Icon&quot;);
++	topicBean.removeField(&quot;Address / Street&quot;);
++	topicBean.removeField(&quot;Address / Postal Code&quot;);
++	topicBean.removeField(&quot;Address / Name&quot;);
+ 	topicBean.removeField(&quot;Name&quot;);
+ 	topicBean.removeField(&quot;Stadt&quot;);
+ 	// geo object info
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/pages/KiezAtlas.jsp	2008-12-04 21:04:05 UTC (rev 64)
+@@ -40,9 +40,11 @@
+ 			title = title + &quot; - Listenzugang&quot;;
+ 			break;
+ 		}
+-		out.println(&quot;&lt;html&gt;&quot; +
++		out.println(&quot;&lt;!DOCTYPE HTML PUBLIC \&quot;-//W3C//DTD HTML 4.01//EN\&quot; \&quot;<A HREF="http://www.w3.org/TR/html4/strict.dtd\">http://www.w3.org/TR/html4/strict.dtd\</A>&quot;&gt;\r&quot; +
++			&quot;&lt;html&gt;&quot; +
++			&quot;\r&lt;head&gt;&quot; +
+ 			&quot;&lt;meta http-equiv=\&quot;content-type\&quot; content=\&quot;text/html; charset=iso-8859-1\&quot;&gt;&quot; +
+-			&quot;\r&lt;head&gt;\r&lt;title&gt;&quot; + title + &quot;&lt;/title&gt;&quot;);
++			&quot;\r&lt;title&gt;&quot; + title + &quot;&lt;/title&gt;&quot;);
+ 		out.println(&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;&quot;);
+ 		out.println(&quot;&lt;/head&gt;&quot;);
+ 		out.println(&quot;&lt;body&gt;&quot;);
+@@ -63,10 +65,12 @@
+ 		String stylesheet = (String) session.getAttribute(&quot;stylesheet&quot;);
+ 		String siteLogo = (String) session.getAttribute(&quot;siteLogo&quot;);
+ 		String homepageURL = (String) session.getAttribute(&quot;homepageURL&quot;);
+-		out.println(&quot;&lt;html&gt;&quot; +
++		out.println(&quot;&lt;!DOCTYPE HTML PUBLIC \&quot;-//W3C//DTD HTML 4.01//EN\&quot; \&quot;<A HREF="http://www.w3.org/TR/html4/strict.dtd\">http://www.w3.org/TR/html4/strict.dtd\</A>&quot;&gt;\r&quot; +
++			&quot;&lt;html&gt;&quot; +
++			&quot;\r&lt;head&gt;\n&quot; +
+ 			&quot;&lt;meta http-equiv=\&quot;content-type\&quot; content=\&quot;text/html; charset=iso-8859-1\&quot;&gt;&quot; +
+-			&quot;\r&lt;head&gt;\r&lt;title&gt;Kiezatlas&lt;/title&gt;\r&quot; +
+-			&quot;&lt;style type=\&quot;text/css\&quot;&gt;\r&quot; + stylesheet + &quot;\r&lt;/style&gt;\r&quot; +
++			&quot;\r&lt;title&gt;Kiezatlas&lt;/title&gt;&quot; +
++			&quot;\r&lt;style type=\&quot;text/css\&quot;&gt;\r&quot; + stylesheet + &quot;\r&lt;/style&gt;\r&quot; +
+ 			&quot;&lt;/head&gt;\r&quot; +
+ 			&quot;&lt;body&quot; + (refreshMap ? &quot; onLoad=\&quot;top.frames.left.location.href='controller?action=initFrame&amp;frame=&quot; +
+ 				KiezAtlas.FRAME_LEFT + &quot;'\&quot;&quot; : &quot;&quot;) + &quot;&gt;\r\r&quot;);
+@@ -205,23 +209,22 @@
+ 		}
+ 	}
+ 	
+-	String mailListLink(Vector mailboxes) {
++	String mailtoUrl(Vector mailboxes) {
+ 		Enumeration e = mailboxes.elements();
+-		StringBuffer html = new StringBuffer();
+-		html.append(&quot;&lt;a href=\&quot;mailto:&quot;);
++		StringBuffer url = new StringBuffer();
++		url.append(&quot;mailto:&quot;);
+ 		//
+ 		while(e.hasMoreElements()) {
+ 			String mail = (String) e.nextElement();
+ 			if(mail != null &amp;&amp; !mail.equals(&quot;&quot;)) {
+-			    html.append(mail);
++			    url.append(mail);
+ 			}
+ 			if (e.hasMoreElements()) {
+-			    html.append(&quot;,&quot;);
++			    url.append(&quot;,&quot;);
+ 			}
+ 		}
+-		html.append(&quot;\&quot; class=\&quot;small\&quot;&gt; Rundmail verfassen&lt;/a&gt;&quot;);
+ 		//
+-		return html.toString();
++		return url.toString();
+ 	}
+ 	
+ 	// --
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/pages/List.jsp	2008-12-04 21:04:05 UTC (rev 64)
+@@ -5,7 +5,7 @@
+ 	static String[] hiddenProps = {
+ 		&quot;Image&quot;, &quot;Image / Height&quot;, &quot;Image / Width&quot;, 
+ 		&quot;Image / File&quot;,  &quot;Image / Name&quot;, &quot;Width&quot;, &quot;Height&quot;,
+-		&quot;Address / Name&quot;, &quot;Address / City&quot;, &quot;Person / Birthday&quot;};
++		&quot;Address / Name&quot;, &quot;Person / Birthday&quot;}; // &quot;Address / City&quot; can not be removed for the listtopicBean generator, due to round letter feature
+ 	static String[] hiddenPropsContaining= {&quot;YADE&quot;, &quot;Owner&quot;, &quot;Locked Geometry&quot;, KiezAtlas.PROPERTY_DESCRIPTION, KiezAtlas.PROPERTY_ICON, &quot;Person / Address&quot; };
+ %&gt;
+ &lt;%
+@@ -30,7 +30,7 @@
+ 	if(filterField != null) {
+ 	    disabledFormString = &quot;&quot;;
+ 	    selectedFilterField = filterField;
+-	    topics = (Vector) session.getAttribute(&quot;filteredTopics&quot;);
++	    // topics = (Vector) session.getAttribute(&quot;filteredTopics&quot;);
+ 	} else {
+ 	    disabledFormString = &quot; disabled&quot;;
+ 	    selectedFilterField = &quot;&quot;;
+@@ -43,7 +43,7 @@
+ 	if (bean != null) {
+ 	    out.println(&quot;&lt;form id=\&quot;filterForm\&quot; method=\&quot;GET\&quot; action=\&quot;controller\&quot; &gt;\n&lt;select name=\&quot;filterField\&quot;&gt;&quot; + 
+ 			fieldOptions(bean, hiddenProps, hiddenPropsContaining, filterField) + &quot;&lt;/select&gt;\n&quot;);
+-	    // -- had to encode the action into form data cause of '?'
++	    // -- had to encode the action into a hidden form element. cause of '?'
+ 	    out.println(&quot;&lt;input type=\&quot;hidden\&quot; name=\&quot;action\&quot; value=\&quot;&quot;+KiezAtlas.ACTION_FILTER+&quot;\&quot;&gt;\n&quot;);
+ 	    if (filterText != null) {
+ 		out.println(&quot;&lt;input type=\&quot;text\&quot; name=\&quot;filterText\&quot; value=\&quot;&quot;+filterText+&quot;\&quot;&gt;\n&quot;);
+@@ -69,11 +69,13 @@
+ 	}
+ 	//
+ 	out.println(&quot;&lt;p&gt;&quot;);
+-	// check mailboxes
++	// check for displaying mailbox feature
+ 	if (mailboxes != null &amp;&amp; mailboxes.size() &gt; 0) {
+-	    out.println(mailListLink(mailboxes));
++	    out.println(&quot;&lt;b&gt;&lt;a href=\&quot;&quot;+mailtoUrl(mailboxes)+&quot;\&quot;&gt;Rundmail verfassen&lt;/a&gt;&lt;/b&gt;&quot;);
++	    String adressLabel = mailboxes.size() == 1 ? &quot; Adresse&quot; : &quot; Adressen&quot;;
++	    out.println(&quot; (an &quot; + mailboxes.size()  + adressLabel + &quot;)&quot;);
+ 	}
+-	out.println(&quot;&lt;a href=\&quot;?action=createFormLetter\&quot; class=\&quot;small\&quot;&gt;Steuerdatei f&#252;r Serienbrief erstellen&lt;/a&gt;&quot;);
++	out.println(html.link(&quot;Steuerdatei f&#252;r Serienbrief erstellen&quot;, KiezAtlas.ACTION_CREATE_FORM_LETTER));
+ 	out.println(&quot;&lt;/p&gt;&quot;);
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-12-04 21:04:05 UTC (rev 64)
+@@ -46,6 +46,17 @@
+ 		if (action == null) {
+ 			try {
+ 				String pathInfo = params.getPathInfo();
++				int additionParam = pathInfo.indexOf(&quot;&amp;&quot;);
++				if (additionParam != -1) {
++					String selectCriteria = pathInfo.substring(additionParam+1);
++					System.out.println(&quot;Info: the default action comes along with a criteria: &quot; + selectCriteria);
++					session.setAttribute(&quot;defaultCriteria&quot;, selectCriteria);
++					// clear citymap alias from additional params
++					pathInfo = pathInfo.substring(0, additionParam);
++				} else {
++					// no external criteria link in
++					session.setAttribute(&quot;defaultCriteria&quot;, null);
++				}
+ 				// error check
+ 				if (pathInfo == null || pathInfo.length() == 1) {
+ 					throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
+@@ -85,7 +96,12 @@
+ 			} else if (frame.equals(FRAME_RIGHT)) {
+ 				// list categories of 1st search criteria, if there is a criteria at all
+ 				if (getCriterias(session).length &gt; 0) {
+-					setSearchMode(&quot;0&quot;, session);	// ### was SEARCHMODE_BY_CATEGORY
++					String criteria = (String) session.getAttribute(&quot;defaultCriteria&quot;);
++					if (criteria != null) {
++						setSearchMode(criteria, session);
++					} else {
++						setSearchMode(&quot;0&quot;, session);	// ### was SEARCHMODE_BY_CATEGORY
++					}
+ 					return PAGE_CATEGORY_LIST; 
+ 				} else {
+ 					// otherwise list all institutions
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-12-04 21:04:05 UTC (rev 64)
+@@ -157,10 +157,8 @@
+ 				String filename = getFilename(item.getName());	// ### explorer includes entire path
+ 				System.out.println(&quot;  &gt; filename=\&quot;&quot; + filename + &quot;\&quot; extension=\&quot;&quot; + fileext + &quot;\&quot;&quot;);
+ 				String path = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;;	// ### hardcoded
+-				// String path = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;;
+ 				if (fileext.equals(&quot;png&quot;) || fileext.equals(&quot;jpg&quot;) || fileext.equals(&quot;gif&quot;)) {
+ 					path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ### hardcoded
+-					// path = &quot;/home/monty/source/deepaMehta/install/client/images/&quot;;
+ 				}
+ 				File fileToWrite = new File(path + filename);
+ 				// find new filename if already exists
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-11-21 11:33:38 UTC (rev 63)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-12-04 21:04:05 UTC (rev 64)
+@@ -10,6 +10,7 @@
+ import de.deepamehta.service.TopicBeanField;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
++import de.deepamehta.topics.PersonSearchTopic;
+ import java.io.File;
+ import java.io.FileOutputStream;
+ import java.io.FileWriter;
+@@ -81,7 +82,7 @@
+ 			}
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
+-			setUseCache(Boolean.FALSE, session);
++			setUseCache(Boolean.FALSE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
+ 			return PAGE_GEO_EMPTY_FORM;
+@@ -104,7 +105,7 @@
+ 			GeoObjectTopic geo = getGeoObject(session);
+ 			// --- store image ---
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+-			setUseCache(Boolean.FALSE, session);			//
++			setUseCache(Boolean.FALSE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_GO_HOME)) {
+ 			setFilterField(null, session);
+@@ -120,23 +121,24 @@
+ 			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_FILTER)) {
+-			Vector topicBeans = getListedTopics(session);
++			Vector topicBeans = getCachedTopicList(session);
+ 			String filterField = params.getParameter(&quot;filterField&quot;);
+ 			if (filterField != null) {
+ 				String filterText = params.getParameter(&quot;filterText&quot;);
+ 				Vector newBeans = filterBeansByField(topicBeans, filterField, filterText);
+-				setListedFilteredTopics(newBeans, session);
++				setListedTopics(newBeans, session);
+ 				setFilterField(filterField, session);
+ 				setFilterText(filterText, session);
+ 				setUseCache(Boolean.TRUE, session);
+ 				return PAGE_LIST;
+ 			}
+-			// setListedTopics(topicBeans, session);
+ 			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_CLEAR_FILTER)) {
+ 			// -- reset filter and search attributes to &quot;null&quot;
+ 			// session.setAttribute(&quot;filterField&quot;, null);
++			Vector topics = getCachedTopicList(session);
++			setListedTopics(topics, session);
+ 			session.setAttribute(&quot;filterText&quot;, null);
+ 			session.setAttribute(&quot;filterField&quot;, null);
+ 			setUseCache(Boolean.TRUE, session);
+@@ -145,11 +147,13 @@
+ 		} else if (action.equals(ACTION_CREATE_FORM_LETTER)) {
+ 			String letter = &quot;&quot;;
+ 			if(getFilterField(session) != null) {
+-				letter = createFormLetter(getListedFilteredTopics(session));	
++				letter = createFormLetter(getListedTopics(session));
++				// System.out.println(&quot;Take Filtered Topic List: &quot; + letter);
+ 			} else {
+-				letter = createFormLetter(getListedTopics(session));
++				letter = createFormLetter(getCachedTopicList(session));
++				// System.out.println(&quot;Take Cached Topic List: &quot; + letter);
+ 			}
+-			if(letter.equals(&quot;&quot;)) {
++			if(letter != null &amp;&amp; letter.equals(&quot;&quot;)) {
+ 				setUseCache(Boolean.TRUE, session);
+ 				return PAGE_LIST;
+ 			}
+@@ -182,30 +186,41 @@
+ 					TopicBean topic = as.createTopicBean(insts.get(i).toString(), 1);
+ 					topicBeans.add(topic);
+ 				}
+-				// re sort
++				setCachedTopicList(topicBeans, session);
++				// System.out.println(&quot;&gt;&gt;&gt; refreshed beans in cache with serverside data&quot;);
++				// fresh topic data &amp; re sorted
+ 				if (sortBy != null) {
+ 					sortBeans(topicBeans, sortBy);
+-					// ### System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot; + session.getAttribute(&quot;sortField&quot;) );
++					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot; 
++						+ session.getAttribute(&quot;sortField&quot;) );
+ 				} else {
+-					// ### System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server, by default sort&quot;);
++					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server with sortByTopicName&quot;);
+ 				}
++				// fresh topic data &amp; re filtered (just used after create geo)
++				if(getFilterField(session) != null) {
++					String filterText = (String) session.getAttribute(&quot;filterText&quot;);
++					topicBeans = filterBeansByField(topicBeans, getFilterField(session), filterText);
++					// System.out.println(&quot;&gt;&gt;&gt;&gt; re-filtered fresh data in topicList&quot;);
++				}
+ 				setListedTopics(topicBeans, session);
+ 				// notifications
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			} else {
++				// System.out.println(&quot;&gt;&gt;&gt; used cached or filtered topic list&quot;);
+ 				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 			}
++			// prepare the correct mailto link
+ 			if(getFilterField(session) != null) {
+-				Vector beans = getListedFilteredTopics(session);
+-				Vector mailAdresses = getMailAdresses(beans);
++				Vector beans = getListedTopics(session);
++				Vector mailAdresses = getMailAddresses(beans);
+ 				session.setAttribute(&quot;emailList&quot;, mailAdresses);
+-				System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#195;&#164;ge&quot;);
++				// System.out.println(&quot;&gt;&gt;&gt;&gt; filtered emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#195;&#164;ge&quot;);
+ 			} else {
+-				Vector beans = getListedTopics(session);
+-				Vector mailAdresses = getMailAdresses(beans);
++				Vector beans = getCachedTopicList(session);
++				Vector mailAdresses = getMailAddresses(beans);
+ 				session.setAttribute(&quot;emailList&quot;, mailAdresses);
+-				System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#195;&#164;ge&quot;);
+-			}			
++				// System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#195;&#164;ge&quot;);
++			}
+ 		}
+ 	}
+ 
+@@ -214,9 +229,9 @@
+ 	// **********************
+ 	// *** Custom Methods ***
+ 	// **********************
++
+ 	
+-	
+-	
++
+ 	private void sortBeans(Vector topicBeans, String sortBy) {
+ 		// ### System.out.println(&quot;&gt;&gt;&gt; sorting for german strings supported&quot;);
+ 		Collections.sort(topicBeans, new MyStringComparator( sortBy ));
+@@ -232,6 +247,7 @@
+ 		for (int i = 0; i &lt; topicBeans.size(); i++) {
+ 			topicBean = (TopicBean) topicBeans.get(i);
+ 			beanField = (TopicBeanField) topicBean.getField(filterField);
++			// TopicBeanFields of TYPE_MULTI 
+ 			if (beanField.type == TopicBeanField.TYPE_MULTI) {
+ 				multiLoop:
+ 				for (int j = 0; j &lt; beanField.values.size(); j++) {
+@@ -242,10 +258,10 @@
+ 						break multiLoop;
+ 					}
+ 				}
++			// TopicBeanFields of TYPE_SINGLE
+ 			} else {
+ 				prop = (String) beanField.value;
+ 				if (prop.toLowerCase().indexOf(filterText.toLowerCase()) != -1) {
+-					// ### System.out.println(&quot;single field: found &quot; + filterText + &quot;, in &quot; + prop);
+ 					filteredBeans.add(topicBean);
+ 				}
+ 			}
+@@ -261,57 +277,70 @@
+ 	 * @param topics
+ 	 * @return a list of Strings which are all email adresses
+ 	 */
+-	private Vector getMailAdresses(Vector topics) {
++	private Vector getMailAddresses(Vector topics) {
+ 		Vector mailAdresses = new Vector();
+ 		//
+ 		Enumeration e = topics.elements();
+ 		while (e.hasMoreElements()) {
+ 			TopicBean bean = (TopicBean) e.nextElement();
+-			TopicBeanField mailProp = bean.getField(PROPERTY_EMAIL_ADDRESS);
+-			// direct related Email Topic
+-			if (mailProp != null) {
+-				// ### Value can be not null and just empty &quot;&quot; () have to verify this in the form processor
+-				if (mailProp.value != null &amp;&amp; !mailProp.value.equals(&quot;&quot;)) {
+-					// Type Single
+-					// ### System.out.println(&quot;type single mail property is: &quot; + mailProp.value); 
+-				} else if(mailProp.values != null &amp;&amp; mailProp.values.size() &gt; 0){
+-					// Type Multi
+-					BaseTopic mailTopic = (BaseTopic) mailProp.values.get(0);
+-					if (!mailTopic.getName().equals(&quot;&quot;)) {
+-						mailAdresses.add(mailTopic.getName());
+-						// ### System.out.println(&quot;type multi direct mail topic is: &quot; + mailTopic.getName());
+-					}
++			String mailbox = getMailbox(bean);
++			if (!mailbox.equals(&quot;&quot;)) {
++				mailAdresses.add(mailbox);
++			}
++		}
++		//
++		return mailAdresses;
++	}
++	
++	/** See getMailAddresses
++	 * 
++	 * @param bean
++	 * @return
++	 */
++	private String getMailbox(TopicBean bean) {
++		TopicBeanField mailProp = bean.getField(PROPERTY_EMAIL_ADDRESS);
++		if (mailProp != null) {
++		// direct related Email Topic
++			// ### Value can be not null and just empty &quot;&quot; () have to verify this in the form processor
++			if (mailProp.value != null &amp;&amp; !mailProp.value.equals(&quot;&quot;)) {
++				// Type Single
++				// System.out.println(&quot;type single mail property is: &quot; + mailProp.value); 
++				return mailProp.value;
++			} else if(mailProp.values != null &amp;&amp; mailProp.values.size() &gt; 0){
++				// Type Multi
++				BaseTopic mailTopic = (BaseTopic) mailProp.values.get(0);
++				if (!mailTopic.getName().equals(&quot;&quot;)) {
++					// System.out.println(&quot;type multi direct mail topic is: &quot; + mailTopic.getName());
++					return mailTopic.getName();
+ 				}
+ 			}
+-			// indirect related Email Topic via Person
+-			if (mailProp != null) {
+-				TopicBeanField mailField = bean.getField(&quot;Person / Email Address&quot;);
+-				if (mailField != null &amp;&amp; mailField.type == TopicBeanField.TYPE_MULTI){
+-					// ### System.out.println(&quot;indirect mailProp Field is: &quot; + mailField.name);
+-					if (mailField.values.size() &gt; 0 ){
+-						BaseTopic propTopic = (BaseTopic) mailField.values.get(0);
+-						String mail = as.getTopicProperty(propTopic, PROPERTY_EMAIL_ADDRESS);
+-						if (mail != null &amp;&amp; mail.indexOf(&quot;@&quot;) != -1) {
+-							mailAdresses.add(mail);
+-							// ### System.out.println(&quot;**** found indirect related email adress, added to \&quot;recipient list\&quot;: &quot; +
+-							// mail + &quot;, fieldName is: &quot; + mailField.name);	
+-						}
+-						
++		} else {
++		// indirect related Email Topic via Person
++			TopicBeanField mailField = bean.getField(&quot;Person / Email Address&quot;);
++			if (mailField != null &amp;&amp; mailField.type == TopicBeanField.TYPE_MULTI){
++				// ### System.out.println(&quot;indirect mailProp Field is: &quot; + mailField.name);
++				if (mailField.values.size() &gt; 0 ){
++					BaseTopic propTopic = (BaseTopic) mailField.values.get(0);
++					String mail = as.getTopicProperty(propTopic, PROPERTY_EMAIL_ADDRESS);
++					if (mail != null &amp;&amp; mail.indexOf(&quot;@&quot;) != -1) {
++						//System.out.println(&quot;**** found indirect related email adress, added to \&quot;mailUrl\&quot;: &quot; +
++							//mail + &quot;, fieldName is: &quot; + mailField.name);
++						return mail;
+ 					}
++
+ 				}
+ 			}
+ 		}
+-		//
+-		return mailAdresses;
++		return &quot;&quot;;
+ 	}
+ 	
+ 	/**
+ 	 * 
+ 	 * @param topics
+-	 * @return can be empty an empty stringif the given topics were null
++	 * @return can be empty an empty string if the given topics were null
+ 	 */
+ 	private String createFormLetter(Vector topics) {
+-		String letter = &quot;Name&quot; + createTab() + &quot;Ansprechpartner/in&quot; + createTab() + &quot;Stra&#195;&#159;e / Hnr.&quot; +
++		String letter = &quot;Name&quot; + createTab() + &quot;Email&quot; + createTab() + &quot;Ansprechpartner/in&quot; + createTab() + &quot;Stra&#195;&#159;e / Hnr.&quot; +
+ 			&quot;&quot; + createTab() + &quot;PLZ&quot; + createTab() + &quot;Stadt\n&quot;;
+ 		String personName = &quot;&quot;;
+ 		String entry = &quot;&quot;;
+@@ -324,35 +353,30 @@
+ 			TopicBean bean = (TopicBean) e.nextElement();
+ 			// get related Address
+ 			String address = getAddress(bean);
+-			if (address != null) {
+-				// Create an Entry, starting with Name Tab
++			String mailbox = getMailbox(bean);
++			if (mailbox.equals(&quot;&quot;) &amp;&amp; address == null) {
++				entry = &quot;&quot;;
++				System.out.println(&quot;[Info]: Neither mailbox nor address provided, skip the entry: &quot; + bean.name);
++			} else {
++				// at least one is available, make an entry
+ 				entry += bean.name;
+ 				entry += createTab();
+-				personName = getRelatedPersonName(bean);
+-				if (!personName.equals(&quot;&quot;)) {
+-					// filling the Ansprechpartner Tab
+-					entry += (&quot;z.Hd. &quot;);
+-					entry += personName;
+-					entry += createTab();
+-					// filling the Street, Code, and City Tabs
+-					entry += address;
+-					// prepare for a new entry
+-					entry += &quot;\n&quot;;
+-					letter += entry;
+-					// System.out.println(&quot;Adresseintrag mit Person: &quot; + entry);
+-					entry = &quot;&quot;;
+-				} else {
++				entry += getMailbox(bean);
++				entry += createTab();
++				if (address != null) {
++					// Create an Entry, starting with Name Tab
++					personName = getRelatedPersonName(bean);
+ 					//filling the Ansprechpartner Tab
+ 					entry += personName;
+ 					entry += createTab();
+-					// filling the Street, Code, and City Tabs
++					// filling the Street, Code, and City, method insert Tabs for you
+ 					entry += address;
+-					// prepare for a new entry
+-					entry += &quot;\n&quot;;
+-					letter += entry;
+-					// System.out.println(&quot;Adresseintrag: &quot; + entry);
+-					entry = &quot;&quot;;
+ 				}
++				// prepare for a new entry
++				entry += &quot;\n&quot;;
++				// append it to the letter and clear
++				letter += entry;
++				entry = &quot;&quot;;
+ 			}
+ 		}
+ 		return letter;
+@@ -363,7 +387,8 @@
+ 	}
+ 	
+ 	/**
+-	 * First checks for Related Topic Name, if no relatedPerson looks for Related Info Person
++	 * 
++	 * Related Topic Name, if no relatedPerson looks for Related Info Properties on Person
+ 	 * If no Lastname is set an empty String is returned, normally Firstname Lastname without Gender
+ 	 * 
+ 	 * @param bean
+@@ -373,48 +398,34 @@
+ 		String relatedPerson = new String();
+ 		String firstName = bean.getValue(&quot;Person / First Name&quot;);
+ 		String lastName = bean.getValue(&quot;Person / Name&quot;);
+-		Vector fullName = bean.getValues(&quot;Person&quot;);
+-		// Check both types of related Person Topics
+-		if (lastName != null &amp;&amp; !lastName.equals(&quot;&quot;)) {
+-			// Person: Related Info | Related Deeply Info has at least a name
+-			// String gender = bean.getValue(&quot;Person / Gender&quot;);
+-			// relatedPerson =	!gender.equals(&quot;Female&quot;) ? &quot;Herr &quot; : &quot;Frau &quot;;
++		TopicBeanField personField = (TopicBeanField) bean.getField(&quot;Person&quot;);
++		if (personField != null &amp;&amp; personField.type == TopicBeanField.TYPE_MULTI) {
++			Vector persons = (Vector) personField.values;
++			if (persons.size() &gt; 0) {
++				BaseTopic person = (BaseTopic) persons.get(0);
++				// System.out.println(&quot;&gt;&gt;&gt; createFormLetter:getRelatedPerson(): Related Topic Name is: &quot; + person.getName());
++				relatedPerson = person.getName();
++				return relatedPerson;
++			} else {
++				// System.out.println(&quot;&gt;&gt;&gt; createFormLetter:getRelatedPerson(): Related Topic Name is empty, found props: &quot; 
++					// + lastName + &quot;, &quot;  +firstName);
++			}
++		} else if (lastName != null &amp;&amp; !lastName.equals(&quot;&quot;)) {
+ 			if (firstName != null &amp;&amp; !firstName.equals(&quot;&quot;)) {
+ 				relatedPerson += firstName + &quot; &quot; + lastName;
+ 			} else {
+ 				relatedPerson += lastName;
+ 			}
+-			// System.out.println(&quot;***getRelatedPerson(): There is a LastName, so: &quot; + relatedPerson);
++			// System.out.println(&quot;&gt;&gt;&gt; createFormLetter:getRelatedPerson(): There is no related Person but at least a &quot; +
++				// &quot;lastName, so: take &quot; + relatedPerson);
+ 			return relatedPerson;
+-		} else if (fullName != null &amp;&amp; fullName.size() &gt; 0) {
+-			// Person: Related Topic Name has at least some attributes
+-			BaseTopic person = (BaseTopic) fullName.get(0);
+-			lastName = as.getTopicProperty(person, PROPERTY_NAME);
+-			if (lastName.equals(&quot;&quot;)) {
+-				// Found no name, so no 'ansprechpartner'
+-				return relatedPerson;
+-			} else {
+-				// found a name via Related Topic Name
+-				firstName = as.getTopicProperty(person, PROPERTY_FIRST_NAME);
+-				if (!firstName.equals(&quot;&quot;)) {
+-					relatedPerson += firstName;
+-				}
+-				relatedPerson += lastName;
+-				// System.out.println(&quot;***getRelatedPerson(): RelatedTopicName &quot; + relatedPerson);
+-				return relatedPerson;
+-				/* Commented out since Gender Prefix is prefilled in a lot of data fields
+-				String gender = as.getTopicProperty(person, PROPERTY_GENDER);
+-				if (!gender.equals(&quot;&quot;)) {
+-					relatedPerson = !gender.equals(&quot;Female&quot;) ? &quot;Herr &quot; : &quot;Frau &quot;;
+-				}*/
+-			}
+-		}		
++		}
+ 		return relatedPerson;
+ 	}
+ 	
+ 	/**
+ 	 * Creates an address string with street, code, city divided by tabulator
+-	 * Addresses are not allowed to be empty, Cities are PostalCode is enough
++	 * Addresses are not allowed to be empty, Cities are. PostalCode is enough for us to send a letter.
+ 	 * 
+ 	 * @param bean
+ 	 * @return &lt;Code&gt;null&lt;Code&gt; if no street and zip code could be found
+@@ -424,25 +435,47 @@
+ 		// get Street &amp; Postal Code
+ 		String street = bean.getValue(&quot;Address / Street&quot;);
+ 		String postalCode = bean.getValue(&quot;Address / Postal Code&quot;);
+-		if ( street != null &amp;&amp; postalCode != null ) {
++		// check for web_info deeply related or related info address topic data
++		if (street != null &amp;&amp; postalCode != null) {
++			// if WEB_INFO_ is not deeply, beans do not have &quot;Address / Street&quot; as TopicBeanField. Street is named &quot;Address&quot; then
+ 			if (street.equals(&quot;&quot;) || postalCode.equals(&quot;&quot;)) {
++				// System.out.println(&quot;*** createFormLetter:skipAddr, neither street or postalCode was a 
++					// provided as deep topicdata&quot;);
+ 				return null;
+ 			} else {
+ 				address = street + createTab() + postalCode + createTab();
+ 			}
++		// check for web_info related topic name 
+ 		} else {
+-			return null;
++			 Vector addresses= bean.getValues(&quot;Address&quot;);
++			 BaseTopic addressTopic = (BaseTopic) addresses.get(0);
++			 postalCode = as.getTopicProperty(addressTopic, PROPERTY_POSTAL_CODE);
++ 			 address = addressTopic.getName() + createTab() + postalCode + createTab();
++			 //System.out.println(&quot;*** createFormLetter: not deeply or info related address topic, &quot; +
++				// &quot;topic name delivers: &quot; + address);
+ 		}
+ 		// get City
+ 		String oldCityProp = bean.getValue(&quot;Stadt&quot;);
++		Vector citys = bean.getValues(&quot;Address / City&quot;);
++		// - via &quot;Stadt&quot; Property
+ 		if (oldCityProp != null) {// != null &amp;&amp; oldCityProp.type == TopicBeanField.TYPE_SINGLE) {
+ 			address += oldCityProp;
+ 			// System.out.println(&quot;*** found old \&quot;Stadt\&quot; Property. so City is: &quot; + address.toString());
++		// - via deeply related MultiType City
++		} else if (citys != null &amp;&amp; citys.size() &gt; 0) { // != null &amp;&amp; cityField.type == TopicBeanField.TYPE_MULTI){
++				BaseTopic city = (BaseTopic) citys.get(0);
++				address += city.getName();
++				// System.out.println(&quot;**** found related city: &quot; + address.toString());	
++		// - no city data, but give berlin a plz try
+ 		} else {
+-			String cityField = bean.getValue(&quot;Address / City&quot;);
+-			if (cityField != null) { // != null &amp;&amp; cityField.type == TopicBeanField.TYPE_MULTI){
+-				address += cityField;
+-				// System.out.println(&quot;**** found related city: &quot; + address.toString());	
++			if (postalCode != null) {
++				int value = Integer.valueOf(postalCode).intValue();
++				if (value &gt; 10001 &amp;&amp; value &lt;= 14199) {
++					// is within 10001 and 14199
++					System.out.println(&quot;*** createFormLetter: no city assigned to Address: &quot; + address + &quot;, but internal postal &quot; +
++						&quot;code check delivered \&quot;Berlin\&quot; as the city&quot;);	
++					address += &quot;Berlin&quot;;
++				}
+ 			}
+ 		}
+ 		return address;
+@@ -490,7 +523,7 @@
+ 	}
+ 
+ 	/**
+-	 * Writes tsv files with incremental number into the documents repository
++	 * Writes txt files with incremental number into the documents repository
+ 	 * 
+ 	 * @param letter
+ 	 * @param fileName
+@@ -521,6 +554,10 @@
+ 		}
+ 		return toFile.getName();
+ 	}
++	
++	private void performSortAndFilter(Vector topics, Session session) {
++		
++	}
+ 
+ 	private void checkForWarnings(RequestParameter params, Session session, CorporateDirectives directives) {
+ 		CityMapTopic cityMap = getCityMap(session);
+@@ -544,6 +581,15 @@
+ 
+ 
+ 	// --- Methods to maintain data in the session
++	
++	private void setCachedTopicList(Vector beans, Session session) {
++		System.out.println(&quot;&gt;&gt;&gt; stored &quot; + beans.size() + &quot; \&quot;cachedTopics\&quot; in session&quot;);
++		session.setAttribute(&quot;cachedTopics&quot;, beans);
++	}
++	
++	private Vector getCachedTopicList(Session session) {
++		return (Vector) session.getAttribute(&quot;cachedTopics&quot;);
++	}
+ 
+ 	private void setUser(BaseTopic user, Session session) {
+ 		session.setAttribute(&quot;user&quot;, user);
+@@ -574,11 +620,6 @@
+ 		session.setAttribute(&quot;topics&quot;, beans);
+ 		System.out.println(&quot;&gt; \&quot;topics\&quot; stored in session: &quot; + beans.size());
+ 	}
+-
+-	private void setListedFilteredTopics(Vector beans, Session session) {
+-		session.setAttribute(&quot;filteredTopics&quot;, beans);
+-		System.out.println(&quot;&gt; \&quot;filteredTopics\&quot; stored in session: &quot; + beans.size());
+-	}
+ 	
+ 	private void setFilterText(String value, Session session) {
+ 		session.setAttribute(&quot;filterText&quot;, value);
+@@ -622,14 +663,6 @@
+ 		return (Vector) session.getAttribute(&quot;topics&quot;);
+ 	}
+ 	
+-	private Vector getListedFilteredTopics(Session session) {
+-		return (Vector) session.getAttribute(&quot;filteredTopics&quot;);
+-	}
+-	
+-	private String getFilterText(Session session) {
+-		return (String) session.getAttribute(&quot;filterText&quot;);
+-	}
+-	
+ 	private Boolean isCacheUsed (Session session) {
+ 		if (session.getAttribute(&quot;useCache&quot;).equals(&quot;true&quot;)) {
+ 			return Boolean.TRUE;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000054.html">[Kiezatlas-svn] r65 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#53">[ date ]</a>
+              <a href="thread.html#53">[ thread ]</a>
+              <a href="subject.html#53">[ subject ]</a>
+              <a href="author.html#53">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

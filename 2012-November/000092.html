@@ -1,0 +1,1123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r108 - in trunk: db/patches pages/be.de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2012-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r108%20-%20in%20trunk%3A%20db/patches%20pages/be.de%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C20121109130737.B929855B0C%40scm.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000093.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r108 - in trunk: db/patches pages/be.de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at scm.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r108%20-%20in%20trunk%3A%20db/patches%20pages/be.de%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C20121109130737.B929855B0C%40scm.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r108 - in trunk: db/patches pages/be.de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">maltito at scm.berlios.de
+       </A><BR>
+    <I>Fri Nov  9 14:07:37 CET 2012</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000093.html">[Kiezatlas-svn] r109 - trunk/src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#92">[ date ]</a>
+              <a href="thread.html#92">[ thread ]</a>
+              <a href="subject.html#92">[ subject ]</a>
+              <a href="author.html#92">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2012-11-09 14:07:37 +0100 (Fri, 09 Nov 2012)
+New Revision: 108
+
+Added:
+   trunk/db/patches/ka-1.6.10.sql
+Modified:
+   trunk/pages/be.de/AlternativeAtlas.jsp
+   trunk/pages/be.de/BerlinAtlas.jsp
+   trunk/pages/be.de/kiezatlas.js
+   trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/MapServlet.java
+   trunk/src/de/kiezatlas/deepamehta/TimedEngagementImporter.java
+   trunk/src/de/kiezatlas/deepamehta/TimedEventImporter.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Introducing Last-Modified Header in AJAX-CityMap Servlets.
+
+CHANGES
+on every GeoObjectTopic.propertyChange, all city-maps a geo-object is part of get set a last-modified timestamp
+
+COMMENTED ATTEMPTS
+re-enabling GMaps API v3 with OpenLayers failed due to problems with new key-authentication
+upgrading to openLayers2.12 failed due to problems to be investigated
+
+NOTE
+production instances must apply patch db/ka-1.6.10.sql when updating code-base.
+
+TODO
+Need to clarify the now mixed up indenting all over the place, back to 4 char sized tabs, resp. as it was.
+
+
+
+Added: trunk/db/patches/ka-1.6.10.sql
+===================================================================
+--- trunk/db/patches/ka-1.6.10.sql	                        (rev 0)
++++ trunk/db/patches/ka-1.6.10.sql	2012-11-09 13:07:37 UTC (rev 108)
+@@ -0,0 +1,7 @@
++
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-last-updated', 'Zuletzt aktualisiert');
++INSERT INTO TopicProp VALUES ('pp-ka-last-updated', 1, 'Name', 'Zuletzt aktualisiert');
++INSERT INTO TopicProp VALUES ('pp-ka-last-updated', 1, 'Visualization', 'Hidden');
++
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-140', '', 'tt-ka-stadtplan', 1, 'pp-ka-last-updated', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-1410', 1, 'Ordinal Number', '380');
+
+Modified: trunk/pages/be.de/AlternativeAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/AlternativeAtlas.jsp	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/pages/be.de/AlternativeAtlas.jsp	2012-11-09 13:07:37 UTC (rev 108)
+@@ -3,22 +3,21 @@
+ 	BaseTopic map = (BaseTopic) session.getAttribute(&quot;map&quot;);
+ 	BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspace&quot;);
+ 	String mapTopics = (String) session.getAttribute(&quot;mapTopics&quot;);
+-  String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
+-  String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
+-  String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
+-  String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
+-  String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
++    String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
++    String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
++    String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
++    String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
++    String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
+ 	String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
+ 	String catIds = (String) session.getAttribute(&quot;categories&quot;);
+-  String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
++    String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
+-  String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
+-  // String basePath = &quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;;
+-  //
+-  String title = &quot;Kiezatlas Stadtplan - &quot; + map.getName();
+-
++    String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
++    // String basePath = &quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;;
++    //
++    String title = &quot;Kiezatlas Stadtplan - &quot; + map.getName();
+ %&gt;
+ &lt;% startMaps(session, out); %&gt;
+ &lt;head&gt;
+@@ -33,13 +32,11 @@
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= basePath %&gt;/pages/be.de/maps.css&quot; type=&quot;text/css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= basePath %&gt;/pages/be.de/211/theme/default/style.css&quot; type=&quot;text/css&quot;&gt;
+   &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;%= basePath %&gt;/pages/be.de/211/theme/default/google.css&quot; type=&quot;text/css&quot;&gt;
+-  &lt;!-- script src=&quot;<A HREF="http://maps.google.com/maps/api/js?v=3.5&amp;amp;key=AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&amp;amp;sensor=false">http://maps.google.com/maps/api/js?v=3.5&amp;key=AIzaSyAPiDLMJnA9__sseouoOZM8Nx8IEunjpdw&amp;sensor=false</A>&quot;&gt;&lt;/script--&gt;
++  &lt;!-- script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://maps.google.com/maps/api/js?v=3&amp;key=AIzaSyB3raVpLb3EPWfKOwCOvszGB86kCcQpA54&amp;sensor=false">http://maps.google.com/maps/api/js?v=3&amp;key=AIzaSyB3raVpLb3EPWfKOwCOvszGB86kCcQpA54&amp;sensor=false</A>&quot;&gt;&lt;/script--&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/211/OpenLayers.js&quot;&gt;&lt;/script&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/CustomLayerSwitcher.js&quot;&gt;&lt;/script&gt;
+   &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/jquery.min.js&quot;&gt;&lt;/script&gt;
+-  &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/kiezatlas.js&quot;&gt;&lt;/script&gt;
+-  &lt;!-- &lt;script type=&quot;text/javascript&quot; src=&quot;../pages/be.de/jquery-1.3.2.js&quot;&gt;&lt;/script&gt;--&gt;
+-  &lt;!-- &lt;script type=&quot;text/javascript&quot; src=&quot;<A HREF="http://maps.google.com/maps?file=api&amp;amp;v=2&amp;amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ">http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ</A>&quot;&gt;&lt;/script&gt; --&gt;
++  &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;%= basePath %&gt;/pages/be.de/kiezatlas.js&quot;&gt;&lt;/script&gt;  
+   &lt;script type=&quot;text/javascript&quot;&gt;
+     var basePath = '&lt;%= basePath %&gt;';
+     var mapTitle = '&lt;%= map.getName() %&gt;';
+@@ -85,9 +82,6 @@
+     if (debug) {
+       var debug_window = window.open('','','width=400,height=600,scrollbars=1');
+     }
+-    // 212: ABQIAAAAfPcn9RYcEecc-d1iHvHCIRTIIy1nlKSG8dPHOYwqi5UhuTLB2hT534VlXBVGCIqcQXQ-a4z45J0w6A
+-    // var gKey = 'ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ';
+-    var gKey = 'ABQIAAAAfPcn9RYcEecc-d1iHvHCIRTIIy1nlKSG8dPHOYwqi5UhuTLB2hT534VlXBVGCIqcQXQ-a4z45J0w6A';
+     //
+     jQuery(document).ready(function() {
+       // register resize
+@@ -190,7 +184,7 @@
+         &lt;!-- &lt;img border=&quot;0&quot; id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
+ 		      &lt;!-- &lt;a href=&quot;javascript:removeAllMarker();&quot; style=&quot;text-decoration: none;&quot;&gt;&gt; Alle ausblenden&lt;/a&gt; &lt;br/&gt;--&gt;
+ 		    &lt;a href=&quot;javascript:updateVisibleBounds(null, true, null, true);&quot; id=&quot;resetMarkerHref&quot;&gt;
+-		      &lt;!-- &lt;img border=&quot;0&quot; src=&quot;../pages/be.de/img/Stop.png&quot; title=&quot;zur&#252;cksetzen der Kartenansicht und Informationsebenen&quot; alt=&quot;Reset-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;&gt; --&gt;
++		      &lt;!-- &lt;img border=&quot;0&quot; src=&quot;../pages/be.de/img/Stop.png&quot; title=&quot;zur&#195;&#188;cksetzen der Kartenansicht und Informationsebenen&quot; alt=&quot;Reset-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;&gt; --&gt;
+           Karte zur&uuml;cksetzen
+         &lt;/a&gt;
+         &lt;img src=&quot;<A HREF="http://www.kiezatlas.de/client/images/dropdown-btn.png">http://www.kiezatlas.de/client/images/dropdown-btn.png</A>&quot; title=&quot;Mehr..&quot; alt=&quot;Button: Mehr..&quot;&gt;
+
+Modified: trunk/pages/be.de/BerlinAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/BerlinAtlas.jsp	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/pages/be.de/BerlinAtlas.jsp	2012-11-09 13:07:37 UTC (rev 108)
+@@ -3,23 +3,23 @@
+ 	BaseTopic map = (BaseTopic) session.getAttribute(&quot;map&quot;);
+ 	BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspace&quot;);
+ 	String mapTopics = (String) session.getAttribute(&quot;mapTopics&quot;);
+-  String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
+-  String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
+-  String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
+-  String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
+-  String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
++    String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
++    String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
++    String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
++    String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
++    String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
+ 	String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
+ 	String catIds = (String) session.getAttribute(&quot;categories&quot;);
+-  String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
++    String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
+-  String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
+-  // String basePath = &quot;<A HREF="http://www.berlin.de/atlas">http://www.berlin.de/atlas</A>&quot;;
+-  // String basePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
+-  String resourcePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
+-  //
+-  String title = &quot;&quot; + map.getName() + &quot; im Kiezatlas&quot;;
++    String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
++    // String basePath = &quot;<A HREF="http://www.berlin.de/atlas">http://www.berlin.de/atlas</A>&quot;;
++    // String basePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
++    String resourcePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
++    //
++    String title = &quot;&quot; + map.getName() + &quot; im Kiezatlas&quot;;
+ 
+ %&gt;
+ &lt;% startMaps(session, out); %&gt;
+@@ -197,7 +197,7 @@
+         &lt;!-- &lt;img border=&quot;0&quot; id=&quot;divider&quot; src=&quot;img/division.png&quot; title=&quot;&quot; width=&quot;1&quot; height=&quot;10&quot;&gt; --&gt;
+ 		      &lt;!-- &lt;a href=&quot;javascript:removeAllMarker();&quot; style=&quot;text-decoration: none;&quot;&gt;&gt; Alle ausblenden&lt;/a&gt; &lt;br/&gt;--&gt;
+ 		    &lt;a href=&quot;javascript:updateVisibleBounds(null, true, null, true);&quot; id=&quot;resetMarkerHref&quot;&gt;
+-		      &lt;!-- &lt;img border=&quot;0&quot; src=&quot;../pages/be.de/img/Stop.png&quot; title=&quot;zur&#252;cksetzen der Kartenansicht und Informationsebenen&quot; alt=&quot;Reset-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;&gt; --&gt;
++		      &lt;!-- &lt;img border=&quot;0&quot; src=&quot;../pages/be.de/img/Stop.png&quot; title=&quot;zur&#239;&#191;&#189;cksetzen der Kartenansicht und Informationsebenen&quot; alt=&quot;Reset-Symbol&quot; width=&quot;15&quot; height=&quot;15&quot;&gt; --&gt;
+           Karte zur&uuml;cksetzen
+         &lt;/a&gt;
+         &lt;img src=&quot;<A HREF="http://www.kiezatlas.de/client/images/dropdown-btn.png">http://www.kiezatlas.de/client/images/dropdown-btn.png</A>&quot; title=&quot;Mehr..&quot; alt=&quot;Button: Mehr..&quot;&gt;
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/pages/be.de/kiezatlas.js	2012-11-09 13:07:37 UTC (rev 108)
+@@ -250,10 +250,9 @@
+       map.addLayers([ mapnik ]); // googleBaseLayer
+     } else {
+       //
+-      /* var googleBaseLayer = new OpenLayers.Layer.Google(&quot;Google Streets&quot;, { numZoomLevels: 25, animationEnabled: true,
++      /** var googleBaseLayer = new OpenLayers.Layer.Google(&quot;Google Streets&quot;, { numZoomLevels: 25, animationEnabled: true,
+         // sphericalMercator:true, &lt;&lt; obsolete  maxExtent: openBounds, &lt;&lt; cannot be set..
+-        termsOfUse: jQuery(&quot;#kafooter&quot;).get(0), poweredBy: jQuery(&quot;#kafooter&quot;).get(0)
+-        googleBaseLayer,
++        termsOfUse: jQuery(&quot;#kafooter&quot;).get(0), poweredBy: jQuery(&quot;#kafooter&quot;).get(0) googleBaseLayer,
+       }); **/
+       map.addLayers([ mapnik, mapbox ]);
+     }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/src/de/kiezatlas/deepamehta/AtlasServlet.java	2012-11-09 13:07:37 UTC (rev 108)
+@@ -11,6 +11,7 @@
+ import java.util.Vector;
+ 
+ import javax.servlet.ServletException;
++import javax.servlet.http.HttpServletRequest;
+ import javax.swing.ImageIcon;
+ 
+ import de.deepamehta.BaseTopic;
+@@ -34,6 +35,7 @@
+ import java.io.UnsupportedEncodingException;
+ import java.net.URLConnection;
+ import java.net.UnknownHostException;
++import java.util.*;
+ 
+ 
+ 
+@@ -49,142 +51,145 @@
+ 
+   
+ 
+-  // --
+-  // --- KiezAtlas Service Settings / berlin.de City Map Servlet
+-  // --
++    // --
++    // --- KiezAtlas Service Settings / berlin.de City Map Servlet
++    // --
+ 
+ 
+ 
+-  private final String urlStr = &quot;<A HREF="http://www.kiezatlas.de/rpc/">http://www.kiezatlas.de/rpc/</A>&quot;;
+-  // private final String urlStr = &quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;;
+-  private final String charset = &quot;ISO-8859-1&quot;;
++    // private final String urlStr = &quot;<A HREF="http://www.kiezatlas.de/rpc/">http://www.kiezatlas.de/rpc/</A>&quot;;
++    private final String urlStr = &quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;;
++    private final String charset = &quot;ISO-8859-1&quot;;
++    String topicmapId = &quot;&quot;;
+ 
+ 
+ 
+ 	protected String performAction(String action, RequestParameter params, Session session, CorporateDirectives directives)
+ 																									throws ServletException {
+ 		if (action == null) {
+-			try {
+-        String pathInfo = params.getPathInfo();
+-        // error check
+-				if (pathInfo == null || pathInfo.length() == 1) {
+-					throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
+-				}
+-        String[] elements = pathInfo.split(&quot;/&quot;);
+-        Hashtable requested = parseRequestedPath(elements);
+-        if (requested != null) {
+-          session.setAttribute(&quot;originId&quot;, requested.get(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
+-          session.setAttribute(&quot;topicId&quot;, requested.get(&quot;geo&quot;));
+-          session.setAttribute(&quot;categories&quot;, requested.get(&quot;categories&quot;));
+-          session.setAttribute(&quot;baseLayer&quot;, requested.get(&quot;layer&quot;));
+-          session.setAttribute(&quot;critIndex&quot;, requested.get(&quot;criteria&quot;));
+-          session.setAttribute(&quot;searchTerm&quot;, requested.get(&quot;search&quot;));
++            try {
++                String pathInfo = params.getPathInfo();
++                // error check
++                if (pathInfo == null || pathInfo.length() == 1) {
++                    throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
++                }
++                String[] elements = pathInfo.split(&quot;/&quot;);
++                Hashtable requested = parseRequestedPath(elements);
++                if (requested != null) {
++                    session.setAttribute(&quot;originId&quot;, requested.get(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
++                    session.setAttribute(&quot;topicId&quot;, requested.get(&quot;geo&quot;));
++                    session.setAttribute(&quot;categories&quot;, requested.get(&quot;categories&quot;));
++                    session.setAttribute(&quot;baseLayer&quot;, requested.get(&quot;layer&quot;));
++                    session.setAttribute(&quot;critIndex&quot;, requested.get(&quot;criteria&quot;));
++                    session.setAttribute(&quot;searchTerm&quot;, requested.get(&quot;search&quot;));
++                }
++                // overrides pathinfo url settings just parsed.. for backwards compatibility reasons
++                // application states represented in URL - just passing params to javascript
++                Integer critIndex = 0;
++                if (params.getParameter(&quot;critId&quot;) != null) {
++                    critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
++                } // [0]
++                if (params.getParameter(&quot;linkTo&quot;) != null) session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
++                if (params.getParameter(&quot;topicId&quot;) != null) session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
++                if (params.getParameter(&quot;catIds&quot;) != null) session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
++                if (params.getParameter(&quot;baseLayer&quot;) != null) session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
++                if (params.getParameter(&quot;search&quot;) != null) session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
++                if (session.getAttribute(&quot;critIndex&quot;) == null) session.setAttribute(&quot;critIndex&quot;, critIndex);
++                //
++                String alias = pathInfo.substring(1);
++                if (pathInfo.indexOf(&quot;&amp;&quot;) != -1) {
++                    alias = pathInfo.substring(1, pathInfo.indexOf(&quot;&amp;&quot;));
++                } else if (pathInfo.indexOf(&quot;/&quot;, 1) != -1) {
++                    // if / behind mapname... slice map-alias out
++                    alias = elements[1];
++                }
++                session.setAttribute(&quot;mapAlias&quot;, alias);
++                BaseTopic mapTopic = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
++                setCityMap(mapTopic, session);
++                if (!CityMapTopic.isProtected(mapTopic, as)) {
++                    //
++                    initCityMap(session);
++                    return PAGE_BERLIN_ATLAS;
++                } else {
++                    return PAGE_MAP_LOGIN;
++                }
++            } catch (DeepaMehtaException e) {
++                System.out.println(&quot;*** BrowseServlet.performAction(): &quot; + e);
++                session.setAttribute(&quot;error&quot;, e.getMessage());
++                return PAGE_ERROR;
++            }
+         }
+-        // overrides pathinfo url settings just parsed.. for backwards compatibility reasons
+-        // application states represented in URL - just passing params to javascript
+-        Integer critIndex = 0;
+-        if (params.getParameter(&quot;critId&quot;) != null) {
+-          critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
+-        } // [0]
+-        if (params.getParameter(&quot;linkTo&quot;) != null) session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
+-        if (params.getParameter(&quot;topicId&quot;) != null) session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
+-        if (params.getParameter(&quot;catIds&quot;) != null) session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
+-        if (params.getParameter(&quot;baseLayer&quot;) != null) session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
+-        if (params.getParameter(&quot;search&quot;) != null) session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
+-        if (session.getAttribute(&quot;critIndex&quot;) == null) session.setAttribute(&quot;critIndex&quot;, critIndex);
+-        //
+-				String alias = pathInfo.substring(1);
+-        if (pathInfo.indexOf(&quot;&amp;&quot;) != -1) {
+-          alias = pathInfo.substring(1, pathInfo.indexOf(&quot;&amp;&quot;));
+-        } else if (pathInfo.indexOf(&quot;/&quot;, 1) != -1) {
+-          // if / behind mapname... slice map-alias out
+-          alias = elements[1];
++
++        // session timeout?
++        if (getCityMap(session) == null) {
++            System.out.println(&quot;*** Session Expired ***&quot;);
++            session.setAttribute(&quot;error&quot;, &quot;Timeout: Kiezatlas wurde mehr als &quot; +
++                ((WebSession) session).session.getMaxInactiveInterval() / 60 + &quot; Minuten nicht benutzt&quot;);
++            return PAGE_ERROR;
+         }
+-        session.setAttribute(&quot;mapAlias&quot;, alias);
+-				BaseTopic mapTopic = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
+-        setCityMap(mapTopic, session);
+-        if (!CityMapTopic.isProtected(mapTopic, as)) {
+-          //
+-          initCityMap(session);
+-          return PAGE_BERLIN_ATLAS;
+-        } else {
+-          return PAGE_MAP_LOGIN;
++
++        // login
++        if (action.equals(ACTION_TRY_LOGIN)) {
++            String password = params.getValue(&quot;password&quot;);
++            if (CityMapTopic.passwordCorrect(getCityMap(session), as, password)) {
++                initCityMap(session);
++                return PAGE_BERLIN_ATLAS;
++            } else {
++                return PAGE_MAP_LOGIN;
++            }
++        } else if (action.equals(ACTION_SEARCH)) {
++            // search
++            setSearchMode(SEARCHMODE_BY_NAME, session);
++            setSearchValue(params.getValue(&quot;search&quot;), session);
++            return PAGE_GEO_LIST;
++        // show
++        } else if (action.equals(ACTION_SHOW_CATEGORIES)) {
++            String critNr = params.getValue(&quot;critNr&quot;);
++            setSearchMode(critNr, session);
++            session.setAttribute(&quot;defaultCriteria&quot;, critNr);
++            return PAGE_CATEGORY_LIST;
++        // select
++        } else if (action.equals(ACTION_SELECT_CATEGORY)) {
++            Vector selCats = getSelectedCats(session);
++            String catID = params.getValue(&quot;id&quot;);
++            toggle(selCats, catID);
++            return PAGE_CATEGORY_LIST;
++        // search by
++        } else if (action.equals(ACTION_SEARCH_BY_CATEGORY)) {
++            // needed for &quot;cross-links&quot; ### criterias in geo info are not rendered as links anymore
++            String critNr = params.getValue(&quot;critNr&quot;);
++            if (critNr != null) {
++                setSearchMode(critNr, session);
++            }
++            //
++            String catID = params.getValue(&quot;id&quot;);
++            setSearchValue(as.getLiveTopic(catID, 1).getName(), session);
++            // ### setSearchMode(SEARCHMODE_BY_CATEGORY, session);		// needed for &quot;cross-links&quot;
++            Vector selCats = getSelectedCats(session);
++            switchOn(selCats, catID);
++            return PAGE_GEO_LIST;
++        // info
++        } else if (action.equals(ACTION_SHOW_GEO_INFO)) {
++        // ### should also set the current HotspotMarker (e.g. after searchByCategory)
++                String geoID = params.getValue(&quot;id&quot;);
++            setSelectedGeo(geoID, session);
++            TopicBean topicBean = as.createTopicBean(geoID, 1);
++            session.setAttribute(&quot;topicBean&quot;, topicBean);
++            String imagePath = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH;
++            session.setAttribute(&quot;imagePath&quot;, imagePath);
++            GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(geoID, 1);
++            boolean isForumActivated = geo.isForumActivated();
++            session.setAttribute(&quot;forumActivition&quot;, isForumActivated ? SWITCH_ON : SWITCH_OFF);
++            if (isForumActivated) {
++                session.setAttribute(&quot;commentCount&quot;, new Integer(geo.getComments().size()));
++            }
++            return PAGE_GEO_INFO;
++            // show forum if wanted
+         }
+-			} catch (DeepaMehtaException e) {
+-				System.out.println(&quot;*** BrowseServlet.performAction(): &quot; + e);
+-				session.setAttribute(&quot;error&quot;, e.getMessage());
+-				return PAGE_ERROR;
+-			}
++        return PAGE_ERROR;
+     }
+-    // session timeout?
+-    if (getCityMap(session) == null) {
+-      System.out.println(&quot;*** Session Expired ***&quot;);
+-      session.setAttribute(&quot;error&quot;, &quot;Timeout: Kiezatlas wurde mehr als &quot; +
+-        ((WebSession) session).session.getMaxInactiveInterval() / 60 + &quot; Minuten nicht benutzt&quot;);
+-      return PAGE_ERROR;
+-    }
+-    // login
+-    if (action.equals(ACTION_TRY_LOGIN)) {
+-      String password = params.getValue(&quot;password&quot;);
+-      if (CityMapTopic.passwordCorrect(getCityMap(session), as, password)) {
+-        initCityMap(session);
+-        return PAGE_BERLIN_ATLAS;
+-      } else {
+-        return PAGE_MAP_LOGIN;
+-      }
+-    } else if (action.equals(ACTION_SEARCH)) {
+-      // search
+-			setSearchMode(SEARCHMODE_BY_NAME, session);
+-			setSearchValue(params.getValue(&quot;search&quot;), session);
+-			return PAGE_GEO_LIST;
+-		// show
+-		} else if (action.equals(ACTION_SHOW_CATEGORIES)) {
+-			String critNr = params.getValue(&quot;critNr&quot;);
+-			setSearchMode(critNr, session);
+-			session.setAttribute(&quot;defaultCriteria&quot;, critNr);
+-			return PAGE_CATEGORY_LIST;
+-		// select
+-		} else if (action.equals(ACTION_SELECT_CATEGORY)) {
+-			Vector selCats = getSelectedCats(session);
+-			String catID = params.getValue(&quot;id&quot;);
+-			toggle(selCats, catID);
+-			return PAGE_CATEGORY_LIST;
+-		// search by
+-		} else if (action.equals(ACTION_SEARCH_BY_CATEGORY)) {
+-			// needed for &quot;cross-links&quot; ### criterias in geo info are not rendered as links anymore
+-			String critNr = params.getValue(&quot;critNr&quot;);
+-			if (critNr != null) {
+-				setSearchMode(critNr, session);
+-			}
+-			//
+-			String catID = params.getValue(&quot;id&quot;);
+-			setSearchValue(as.getLiveTopic(catID, 1).getName(), session);
+-			// ### setSearchMode(SEARCHMODE_BY_CATEGORY, session);		// needed for &quot;cross-links&quot;
+-			Vector selCats = getSelectedCats(session);
+-			switchOn(selCats, catID);
+-			return PAGE_GEO_LIST;
+-		// info
+-		} else if (action.equals(ACTION_SHOW_GEO_INFO)) {
+-      // ### should also set the current HotspotMarker (e.g. after searchByCategory)
+-			String geoID = params.getValue(&quot;id&quot;);
+-			setSelectedGeo(geoID, session);
+-			TopicBean topicBean = as.createTopicBean(geoID, 1);
+-			session.setAttribute(&quot;topicBean&quot;, topicBean);
+-			String imagePath = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH;
+-			session.setAttribute(&quot;imagePath&quot;, imagePath);
+-			GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(geoID, 1);
+-			boolean isForumActivated = geo.isForumActivated();
+-			session.setAttribute(&quot;forumActivition&quot;, isForumActivated ? SWITCH_ON : SWITCH_OFF);
+-			if (isForumActivated) {
+-				session.setAttribute(&quot;commentCount&quot;, new Integer(geo.getComments().size()));
+-			}
+-			return PAGE_GEO_INFO;
+-		// show forum if wanted
+-		}
+-    return PAGE_ERROR;
+-	}
+ 
+-	protected void preparePage(String page, RequestParameter params, Session session, CorporateDirectives directives) {
++    protected void preparePage(String page, RequestParameter params, Session session, CorporateDirectives directives) {
+ 		if (page.equals(PAGE_CATEGORY_LIST)) {
+ 			Vector categories = cm.getTopics(getCurrentCriteria(session).criteria.getID());
+ 			Vector selectedCats = getSelectedCats(session);
+@@ -202,19 +207,19 @@
+ 			String instTypeID = getInstitutionType(session).getID();
+ 			String searchMode = getSearchMode(session);
+ 			Vector insts;
+-      // enable the rendering of enumeration
+-      session.setAttribute(&quot;enumerationFlag&quot;, true);
++            // enable the rendering of enumeration
++            session.setAttribute(&quot;enumerationFlag&quot;, true);
+ 			if (searchMode.equals(SEARCHMODE_BY_NAME)) {
+ 				insts = cm.getViewTopics(mapID, 1, instTypeID, getSearchValue(session));
+ 				// hotspots
+ 				setHotspots(insts, ICON_HOTSPOT, session);
+-        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
++                session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
+ 			} else {
+ 				String catID = params.getValue(&quot;id&quot;);
+ 				insts = cm.getRelatedViewTopics(mapID, 1, catID, ASSOCTYPE_ASSOCIATION, instTypeID, 1);	// ### copy in setCategoryHotspots()
+ 				// hotspots + return the index of the current CatID in the multi-dimensional hotspot vector
+ 				int catIndex = setSearchedCategoryHotspots(session, catID);
+-        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
++                session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
+ 			}
+ 			session.setAttribute(&quot;institutions&quot;, insts);
+ 			// categories &amp; addresses
+@@ -246,6 +251,13 @@
+ 			session.setAttribute(&quot;geoComments&quot;, getSelectedGeo(session).getCommentBeans());
+ 		}
+ 	}
++    
++    protected long getLastModified(HttpServletRequest req) {
++        String dateProperty = as.getTopicProperty(this.topicmapId, 1, PROPERTY_LAST_UPDATED);
++        long lastModified = new Date().getTime();
++        if (!dateProperty.equals(&quot;&quot;)) lastModified = new Date(Long.parseLong(dateProperty)).getTime();
++        return lastModified;
++    }
+ 
+ 
+   
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2012-11-09 13:07:37 UTC (rev 108)
+@@ -49,7 +49,7 @@
+ 
+ 
+ 
+-  static final String TOPICTYPE_CITY = &quot;tt-city&quot;;
++    static final String TOPICTYPE_CITY = &quot;tt-city&quot;;
+ 	static final String TOPICTYPE_CITYMAP = &quot;tt-ka-stadtplan&quot;;
+ 	static final String TOPICTYPE_KIEZ_GEO = &quot;tt-ka-geoobject&quot;;
+ 	static final String TOPICTYPE_KIEZ_GEO_SEARCH = &quot;tt-ka-geoobject-search&quot;;
+@@ -73,7 +73,7 @@
+ 
+ 
+ 	static final String ASSOCTYPE_OUTLINE = &quot;at-ka-outline&quot;;
+-  static final String ASSOCTYPE_AFFILIATED = &quot;at-ka-affiliated&quot;;
++    static final String ASSOCTYPE_AFFILIATED = &quot;at-ka-affiliated&quot;;
+ 	static final String ASSOCTYPE_HOMEPAGE_LINK = &quot;at-ka-homepage-link&quot;;
+ 	static final String ASSOCTYPE_IMPRESSUM_LINK = &quot;at-ka-impressum-link&quot;;
+ 
+@@ -132,36 +132,37 @@
+ 	static final String PROPERTY_AGENCY_KIND = &quot;Art&quot;;
+ 	static final String PROPERTY_YADE_X = &quot;YADE x&quot;;
+ 	static final String PROPERTY_YADE_Y = &quot;YADE y&quot;;
+-  static final String PROPERTY_GPS_LONG = &quot;LONG&quot;;
+-  static final String PROPERTY_GPS_LAT = &quot;LAT&quot;;
++    static final String PROPERTY_GPS_LONG = &quot;LONG&quot;;
++    static final String PROPERTY_GPS_LAT = &quot;LAT&quot;;
+ 	static final String PROPERTY_LAST_MODIFIED = &quot;Zuletzt ge&#195;&#164;ndert&quot;;
++    static final String PROPERTY_LAST_UPDATED = &quot;Zuletzt aktualisiert&quot;;
+ 	//
+ 	static final String PROPERTY_FORUM_ACTIVITION = &quot;Aktivierung&quot;;
+ 	static final String PROPERTY_COMMENT_AUTHOR = &quot;Autor&quot;;
+ 	static final String PROPERTY_COMMENT_DATE = &quot;Datum&quot;;
+ 	static final String PROPERTY_COMMENT_TIME = &quot;Uhrzeit&quot;;
+-  //
+-  static final String PROPERTY_TAGFIELD = &quot;Stichworte&quot;;
++    //
++    static final String PROPERTY_TAGFIELD = &quot;Stichworte&quot;;
+ 	//
+ 	static final String PROPERTY_TARGET_WEBALIAS = &quot;Target Web Alias&quot;;
+ 	//
+ 	static final String PROPERTY_CSS = &quot;CSS&quot;;
+-  //
+-  // TOPICTYPE_IMPORTER_SETTINGS Properties
+-  static final String PROPERTY_ICONS_MAP = &quot;Icons / Kategorien&quot;;
+-  static final String PROPERTY_ICON_CAT_DIVIDER = &quot;:&quot;;
+-  static final String PROPERTY_IMPORT_CONTENT_REPORT = &quot;Content Report Mailbox&quot;;
+-  static final String PROPERTY_IMPORT_SERVICE_REPORT = &quot;Service Report Mailbox&quot;;
+-  // Event imported Properties
+-  static final String PROPERTY_EVENT_DESCRIPTION = &quot;Beschreibung&quot;;
+-  static final String PROPERTY_EVENT_TIME = &quot;Datum / Zeit&quot;;
+-  // Event and Engagment imported Properties
+-  static final String PROPERTY_PROJECT_ORIGIN_ID = &quot;OriginId&quot;;
+-  static final String PROPERTY_PROJECT_LAST_MODIFIED = &quot;Timestamp&quot;;
+-  static final String PROPERTY_PROJECT_ORGANISATION = &quot;Organisation&quot;;
+-  static final String PROPERTY_WORKSPACE_ALIAS = &quot;Workspace Web Alias&quot;;
+-  // KiezAtlas-App Property to publish citymaps in html5 mobile client
+-  static final String PROPERTY_MOBILE_CITYMAP = &quot;Mobiler Stadtplan&quot;;
++    //
++    // TOPICTYPE_IMPORTER_SETTINGS Properties
++    static final String PROPERTY_ICONS_MAP = &quot;Icons / Kategorien&quot;;
++    static final String PROPERTY_ICON_CAT_DIVIDER = &quot;:&quot;;
++    static final String PROPERTY_IMPORT_CONTENT_REPORT = &quot;Content Report Mailbox&quot;;
++    static final String PROPERTY_IMPORT_SERVICE_REPORT = &quot;Service Report Mailbox&quot;;
++    // Event imported Properties
++    static final String PROPERTY_EVENT_DESCRIPTION = &quot;Beschreibung&quot;;
++    static final String PROPERTY_EVENT_TIME = &quot;Datum / Zeit&quot;;
++    // Event and Engagment imported Properties
++    static final String PROPERTY_PROJECT_ORIGIN_ID = &quot;OriginId&quot;;
++    static final String PROPERTY_PROJECT_LAST_MODIFIED = &quot;Timestamp&quot;;
++    static final String PROPERTY_PROJECT_ORGANISATION = &quot;Organisation&quot;;
++    static final String PROPERTY_WORKSPACE_ALIAS = &quot;Workspace Web Alias&quot;;
++    // KiezAtlas-App Property to publish citymaps in html5 mobile client
++    static final String PROPERTY_MOBILE_CITYMAP = &quot;Mobiler Stadtplan&quot;;
+ 
+ 	// -----------------------
+ 	// --- Property Values ---
+@@ -179,24 +180,24 @@
+ 	// ----------------
+ 
+ 
+-  static final String ITEM_LOAD_COORDINATES = &quot;Load All GPS Coordinates&quot;;
+-  static final String  CMD_START_GEOCODING = &quot;loadGeoCodes&quot;;
++    static final String ITEM_LOAD_COORDINATES = &quot;Load All GPS Coordinates&quot;;
++    static final String  CMD_START_GEOCODING = &quot;loadGeoCodes&quot;;
+ 
+-  static final String ITEM_LOAD_EMPTY_COORDINATES = &quot;Load Empty GPS Coordinates&quot;;
+-  static final String  CMD_START_EMPTY_GEOCODING = &quot;loadEmptyGeoCodes&quot;;
++    static final String ITEM_LOAD_EMPTY_COORDINATES = &quot;Load Empty GPS Coordinates&quot;;
++    static final String  CMD_START_EMPTY_GEOCODING = &quot;loadEmptyGeoCodes&quot;;
+ 
+-  static final String ITEM_LOCK_GEOMETRY = &quot;Lock&quot;;
+-  static final String  CMD_LOCK_GEOMETRY = &quot;lockGeometry&quot;;
+-	//
+-  static final String ITEM_UNLOCK_GEOMETRY = &quot;Unlock&quot;;
+-  static final String  CMD_UNLOCK_GEOMETRY = &quot;unlockGeometry&quot;;
+-	//
+-  static final String ITEM_REPOSITION_ALL = &quot;Reposition all&quot;;
+-  static final String  CMD_REPOSITION_ALL = &quot;repositionAll&quot;;
+-  static final String ICON_REPOSITION_ALL = &quot;location.png&quot;;
+-	//
+-  static final String ITEM_MAKE_SHAPE = &quot;Make Shape&quot;;
+-  static final String  CMD_MAKE_SHAPE = &quot;makeShape&quot;;
++    static final String ITEM_LOCK_GEOMETRY = &quot;Lock&quot;;
++    static final String  CMD_LOCK_GEOMETRY = &quot;lockGeometry&quot;;
++        //
++    static final String ITEM_UNLOCK_GEOMETRY = &quot;Unlock&quot;;
++    static final String  CMD_UNLOCK_GEOMETRY = &quot;unlockGeometry&quot;;
++        //
++    static final String ITEM_REPOSITION_ALL = &quot;Reposition all&quot;;
++    static final String  CMD_REPOSITION_ALL = &quot;repositionAll&quot;;
++    static final String ICON_REPOSITION_ALL = &quot;location.png&quot;;
++        //
++    static final String ITEM_MAKE_SHAPE = &quot;Make Shape&quot;;
++    static final String  CMD_MAKE_SHAPE = &quot;makeShape&quot;;
+ 
+ 
+ 
+@@ -219,7 +220,7 @@
+ 	public static final int SERVLET_IMPORT = 5;
+ 	public static final int SERVLET_MAPS = 6;
+ 	public static final int SERVLET_ATLAS = 7;
+-  public static final int SERVLET_WORKSPACE = 8;
++    public static final int SERVLET_WORKSPACE = 8;
+ 
+ 
+ 
+@@ -261,8 +262,8 @@
+ 	public static final String ACTION_ACTIVATE_FORUM = &quot;activateForum&quot;;
+ 	public static final String ACTION_DEACTIVATE_FORUM = &quot;deactivateForum&quot;;
+ 	public static final String ACTION_DELETE_COMMENT = &quot;deleteComment&quot;;
+-  // workspace
+-  public static final String ACTION_SHOW_WORKSPACE_FORM = &quot;showWorkspaceForm&quot;;
++    // workspace
++    public static final String ACTION_SHOW_WORKSPACE_FORM = &quot;showWorkspaceForm&quot;;
+ 	// list servlet
+ 	public static final String ACTION_SHOW_INSTITUTIONS = &quot;showInstitutions&quot;;
+ 	public static final String ACTION_SHOW_INSTITUTIONS_SLIM = &quot;showSlimInstitution&quot;;
+@@ -280,12 +281,12 @@
+ 	public static final String ACTION_DOWNLOAD_CITYMAP =&quot;downloadCityMap&quot;;
+ 	public static final String ACTION_SHOW_LIST_LEGEND =&quot;showListLegend&quot;;
+ 	// import servlet
+-  public static final String ACTION_SHOW_IMPORTS = &quot;showImports&quot;;
+-  public static final String ACTION_SHOW_REPORT = &quot;showImportReport&quot;;
+-  public static final String ACTION_DO_IMPORT = &quot;doImport&quot;;
+-  public static final String ACTION_RESET_CRITERIAS = &quot;resetCritCats&quot;;
+-  // Maps Servlets
+-  public static final String ACTION_GEO_CODE = &quot;geoCode&quot;;
++    public static final String ACTION_SHOW_IMPORTS = &quot;showImports&quot;;
++    public static final String ACTION_SHOW_REPORT = &quot;showImportReport&quot;;
++    public static final String ACTION_DO_IMPORT = &quot;doImport&quot;;
++    public static final String ACTION_RESET_CRITERIAS = &quot;resetCritCats&quot;;
++    // Maps Servlets
++    public static final String ACTION_GEO_CODE = &quot;geoCode&quot;;
+   
+ 
+ 
+@@ -319,44 +320,44 @@
+ 
+ 
+ 	// atlas
+-  static final String PAGE_BERLIN_ATLAS = &quot;be.de/BerlinAtlas&quot;;
+-  static final String PAGE_MAP_ATLAS = &quot;be.de/AlternativeAtlas&quot;;
+-	// browse
+-  static final String PAGE_FRAMESET = &quot;frameset&quot;;
+-  static final String PAGE_CITY_MAP = &quot;CityMap&quot;;
+-  static final String PAGE_CATEGORY_LIST = &quot;CategoryList&quot;;
+-  static final String PAGE_GEO_LIST = &quot;GeoObjectList&quot;;
+-  static final String PAGE_GEO_INFO = &quot;GeoObjectInfo&quot;;
+-  static final String PAGE_GEO_FORUM = &quot;GeoObjectForum&quot;;
+-  static final String PAGE_COMMENT_FORM = &quot;CommentForm&quot;;
+-  static final String PAGE_MAP_LOGIN = &quot;MapLogin&quot;;
+-  // workspace
+-  static final String PAGE_WORKSPACE_LOGIN = &quot;WorkspaceObjectLogin&quot;;
+-  static final String PAGE_WORKSPACE_FORM = &quot;WorkspaceObjectForm&quot;;
+-  static final String PAGE_WORKSPACE_OBJECT_ADDED = &quot;WorkspaceObjectAdded&quot;;
+-  static final String PAGE_WORKSPACE_ERROR = &quot;error&quot;;
+-  // edit
+-  static final String PAGE_GEO_LOGIN = &quot;GeoObjectLogin&quot;;
+-  static final String PAGE_GEO_HOME = &quot;GeoObjectHome&quot;;
+-  static final String PAGE_GEO_FORM = &quot;GeoObjectForm&quot;;
+-  static final String PAGE_FORUM_ADMINISTRATION = &quot;ForumAdministration&quot;;
+-  // list
+-  static final String PAGE_LIST_LOGIN = &quot;ListLogin&quot;;
+-  static final String PAGE_LIST_HOME = &quot;ListHome&quot;;
+-  static final String PAGE_LIST = &quot;List&quot;;
+-  static final String PAGE_SLIM_LIST = &quot;SlimList&quot;;
+-  static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+-  static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
++    static final String PAGE_BERLIN_ATLAS = &quot;be.de/BerlinAtlas&quot;;
++    static final String PAGE_MAP_ATLAS = &quot;be.de/AlternativeAtlas&quot;;
++        // browse
++    static final String PAGE_FRAMESET = &quot;frameset&quot;;
++    static final String PAGE_CITY_MAP = &quot;CityMap&quot;;
++    static final String PAGE_CATEGORY_LIST = &quot;CategoryList&quot;;
++    static final String PAGE_GEO_LIST = &quot;GeoObjectList&quot;;
++    static final String PAGE_GEO_INFO = &quot;GeoObjectInfo&quot;;
++    static final String PAGE_GEO_FORUM = &quot;GeoObjectForum&quot;;
++    static final String PAGE_COMMENT_FORM = &quot;CommentForm&quot;;
++    static final String PAGE_MAP_LOGIN = &quot;MapLogin&quot;;
++    // workspace
++    static final String PAGE_WORKSPACE_LOGIN = &quot;WorkspaceObjectLogin&quot;;
++    static final String PAGE_WORKSPACE_FORM = &quot;WorkspaceObjectForm&quot;;
++    static final String PAGE_WORKSPACE_OBJECT_ADDED = &quot;WorkspaceObjectAdded&quot;;
++    static final String PAGE_WORKSPACE_ERROR = &quot;error&quot;;
++    // edit
++    static final String PAGE_GEO_LOGIN = &quot;GeoObjectLogin&quot;;
++    static final String PAGE_GEO_HOME = &quot;GeoObjectHome&quot;;
++    static final String PAGE_GEO_FORM = &quot;GeoObjectForm&quot;;
++    static final String PAGE_FORUM_ADMINISTRATION = &quot;ForumAdministration&quot;;
++    // list
++    static final String PAGE_LIST_LOGIN = &quot;ListLogin&quot;;
++    static final String PAGE_LIST_HOME = &quot;ListHome&quot;;
++    static final String PAGE_LIST = &quot;List&quot;;
++    static final String PAGE_SLIM_LIST = &quot;SlimList&quot;;
++    static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
++    static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
+ 	static final String PAGE_LINK_PAGE = &quot;Print&quot;; // Link Page
+ 	static final String PAGE_DOWNLOAD_PAGE = &quot;Download&quot;; // Link Page
+ 	static final String PAGE_LIST_INFO = &quot;ListHelp&quot;;
+ 	static final String PAGE_LIST_MAILING = &quot;ListMailing&quot;;
+ 	// import
+-  static final String PAGE_IMPORTS_LOGIN = &quot;ImportsLogin&quot;;
+-  static final String PAGE_IMPORTS_HOME = &quot;ImportsHome&quot;;
+-  static final String PAGE_REPORT_HOME = &quot;ReportInfo&quot;;
+-  // error
+-  static final String PAGE_ERROR = &quot;error&quot;;
+-  // service
+-  static final String PAGE_SERVE = &quot;Serve&quot;;
++    static final String PAGE_IMPORTS_LOGIN = &quot;ImportsLogin&quot;;
++    static final String PAGE_IMPORTS_HOME = &quot;ImportsHome&quot;;
++    static final String PAGE_REPORT_HOME = &quot;ReportInfo&quot;;
++    // error
++    static final String PAGE_ERROR = &quot;error&quot;;
++    // service
++    static final String PAGE_SERVE = &quot;Serve&quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/MapServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/MapServlet.java	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/src/de/kiezatlas/deepamehta/MapServlet.java	2012-11-09 13:07:37 UTC (rev 108)
+@@ -11,6 +11,7 @@
+ import java.util.Vector;
+ 
+ import javax.servlet.ServletException;
++import javax.servlet.http.HttpServletRequest;
+ import javax.swing.ImageIcon;
+ 
+ import de.deepamehta.BaseTopic;
+@@ -22,7 +23,6 @@
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+ import de.deepamehta.service.web.WebSession;
+-import de.deepamehta.topics.EmailTopic;
+ import de.deepamehta.topics.TypeTopic;
+ 
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+@@ -34,6 +34,7 @@
+ import java.io.UnsupportedEncodingException;
+ import java.net.URLConnection;
+ import java.net.UnknownHostException;
++import java.util.Date;
+ 
+ 
+ 
+@@ -48,78 +49,81 @@
+ public class MapServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
+ 
+-  // --
+-  // --- KiezAtlas Service Settings / Kiezatlas Labs City Map Servlet
+-  // --
++    // --
++    // --- KiezAtlas Service Settings / Kiezatlas Labs City Map Servlet
++    // --
+ 
+ 
+-  private final String urlStr = &quot;<A HREF="http://www.kiezatlas.de/rpc/">http://www.kiezatlas.de/rpc/</A>&quot;;
+-  // private final String urlStr = &quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;;
+-  // private final String urlStr = &quot;<A HREF="http://212.87.44.116:8080/rpc/">http://212.87.44.116:8080/rpc/</A>&quot;;
+-  private final String charset = &quot;ISO-8859-1&quot;;
++    // private final String urlStr = &quot;<A HREF="http://www.kiezatlas.de/rpc/">http://www.kiezatlas.de/rpc/</A>&quot;;
++    private final String urlStr = &quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;;
++    // private final String urlStr = &quot;<A HREF="http://212.87.44.116:8080/rpc/">http://212.87.44.116:8080/rpc/</A>&quot;;
++    private final String charset = &quot;ISO-8859-1&quot;;
++    
++    String topicmapId = &quot;is-set-to-current-topicmap-id-of-request&quot;; // used by new getLastModified impl
+ 
+ 
+ 
+ 	protected String performAction(String action, RequestParameter params, Session session, CorporateDirectives directives)
+ 																									throws ServletException {
+ 		if (action == null) {
+-			try {
+-        String pathInfo = params.getPathInfo();
+-        // error check
+-				if (pathInfo == null || pathInfo.length() == 1) {
+-					throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
+-				}
+-        String[] elements = pathInfo.split(&quot;/&quot;);
+-        Hashtable requested = parseRequestedPath(elements);
+-        if (requested != null) {
+-          session.setAttribute(&quot;originId&quot;, requested.get(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
+-          session.setAttribute(&quot;topicId&quot;, requested.get(&quot;geo&quot;));
+-          session.setAttribute(&quot;categories&quot;, requested.get(&quot;categories&quot;));
+-          session.setAttribute(&quot;baseLayer&quot;, requested.get(&quot;layer&quot;));
+-          session.setAttribute(&quot;critIndex&quot;, requested.get(&quot;criteria&quot;));
+-          session.setAttribute(&quot;searchTerm&quot;, requested.get(&quot;search&quot;));
++        try {
++            String pathInfo = params.getPathInfo();
++            // error check
++            if (pathInfo == null || pathInfo.length() == 1) {
++                throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
++            }
++            String[] elements = pathInfo.split(&quot;/&quot;);
++            Hashtable requested = parseRequestedPath(elements);
++            if (requested != null) {
++                session.setAttribute(&quot;originId&quot;, requested.get(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
++                session.setAttribute(&quot;topicId&quot;, requested.get(&quot;geo&quot;));
++                session.setAttribute(&quot;categories&quot;, requested.get(&quot;categories&quot;));
++                session.setAttribute(&quot;baseLayer&quot;, requested.get(&quot;layer&quot;));
++                session.setAttribute(&quot;critIndex&quot;, requested.get(&quot;criteria&quot;));
++                session.setAttribute(&quot;searchTerm&quot;, requested.get(&quot;search&quot;));
++            }
++            // overrides pathinfo url settings just parsed.. for backwards compatibility reasons
++            // application states represented in URL - just passing params to javascript
++            Integer critIndex = 0;
++            if (params.getParameter(&quot;critId&quot;) != null) {
++                critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
++            } // [0]
++            if (params.getParameter(&quot;linkTo&quot;) != null) session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
++            if (params.getParameter(&quot;topicId&quot;) != null) session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
++            if (params.getParameter(&quot;catIds&quot;) != null) session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
++            if (params.getParameter(&quot;baseLayer&quot;) != null) session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
++            if (params.getParameter(&quot;search&quot;) != null) session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
++            if (session.getAttribute(&quot;critIndex&quot;) == null) session.setAttribute(&quot;critIndex&quot;, critIndex);
++            //
++            String alias = pathInfo.substring(1);
++            if (pathInfo.indexOf(&quot;&amp;&quot;) != -1) {
++                alias = pathInfo.substring(1, pathInfo.indexOf(&quot;&amp;&quot;));
++            } else if (pathInfo.indexOf(&quot;/&quot;, 1) != -1) {
++                // if / behind mapname... slice map-alias out
++                alias = elements[1];
++            }
++            session.setAttribute(&quot;mapAlias&quot;, alias);
++            BaseTopic mapTopic = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
++            setCityMap(mapTopic, session);
++            this.topicmapId = mapTopic.getID();
++            if (!CityMapTopic.isProtected(mapTopic, as)) {
++                //
++                initCityMap(session);
++                return PAGE_MAP_ATLAS;
++            } else {
++                return PAGE_MAP_LOGIN;
++            }
++        } catch (DeepaMehtaException e) {
++            System.out.println(&quot;*** BrowseServlet.performAction(): &quot; + e);
++            session.setAttribute(&quot;error&quot;, e.getMessage());
++            return PAGE_ERROR;
+         }
+-        // overrides pathinfo url settings just parsed.. for backwards compatibility reasons
+-        // application states represented in URL - just passing params to javascript
+-        Integer critIndex = 0;
+-        if (params.getParameter(&quot;critId&quot;) != null) {
+-          critIndex = Integer.parseInt(params.getParameter(&quot;critId&quot;))-1;
+-        } // [0]
+-        if (params.getParameter(&quot;linkTo&quot;) != null) session.setAttribute(&quot;originId&quot;, params.getParameter(&quot;linkTo&quot;)); // linkTo here for backwards compatibility rsn
+-        if (params.getParameter(&quot;topicId&quot;) != null) session.setAttribute(&quot;topicId&quot;, params.getParameter(&quot;topicId&quot;));
+-        if (params.getParameter(&quot;catIds&quot;) != null) session.setAttribute(&quot;categories&quot;, params.getParameter(&quot;catIds&quot;));
+-        if (params.getParameter(&quot;baseLayer&quot;) != null) session.setAttribute(&quot;baseLayer&quot;, params.getParameter(&quot;baseLayer&quot;));
+-        if (params.getParameter(&quot;search&quot;) != null) session.setAttribute(&quot;searchTerm&quot;, params.getParameter(&quot;search&quot;));
+-        if (session.getAttribute(&quot;critIndex&quot;) == null) session.setAttribute(&quot;critIndex&quot;, critIndex);
+-        //
+-				String alias = pathInfo.substring(1);
+-        if (pathInfo.indexOf(&quot;&amp;&quot;) != -1) {
+-          alias = pathInfo.substring(1, pathInfo.indexOf(&quot;&amp;&quot;));
+-        } else if (pathInfo.indexOf(&quot;/&quot;, 1) != -1) {
+-          // if / behind mapname... slice map-alias out
+-          alias = elements[1];
+-        }
+-        session.setAttribute(&quot;mapAlias&quot;, alias);
+-				BaseTopic mapTopic = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
+-        setCityMap(mapTopic, session);
+-        if (!CityMapTopic.isProtected(mapTopic, as)) {
+-          //
+-          initCityMap(session);
+-          return PAGE_MAP_ATLAS;
+-        } else {
+-          return PAGE_MAP_LOGIN;
+-        }
+-			} catch (DeepaMehtaException e) {
+-				System.out.println(&quot;*** BrowseServlet.performAction(): &quot; + e);
+-				session.setAttribute(&quot;error&quot;, e.getMessage());
+-				return PAGE_ERROR;
+-			}
+     }
+     // session timeout?
+     if (getCityMap(session) == null) {
+       System.out.println(&quot;*** Session Expired ***&quot;);
+-      session.setAttribute(&quot;error&quot;, &quot;Timeout: Kiezatlas wurde mehr als &quot; +
+-        ((WebSession) session).session.getMaxInactiveInterval() / 60 + &quot; Minuten nicht benutzt&quot;);
++      session.setAttribute(&quot;error&quot;, &quot;Timeout: Kiezatlas wurde mehr als &quot; + 
++              ((WebSession) session).session.getMaxInactiveInterval() / 60 + &quot; Minuten nicht benutzt&quot;);
+       return PAGE_ERROR;
+     }
+     // login
+@@ -132,10 +136,10 @@
+         return PAGE_MAP_LOGIN;
+       }
+     } else if (action.equals(ACTION_SEARCH)) {
+-      // search
+-			setSearchMode(SEARCHMODE_BY_NAME, session);
+-			setSearchValue(params.getValue(&quot;search&quot;), session);
+-			return PAGE_GEO_LIST;
++        // search
++        setSearchMode(SEARCHMODE_BY_NAME, session);
++        setSearchValue(params.getValue(&quot;search&quot;), session);
++        return PAGE_GEO_LIST;
+ 		// show
+ 		} else if (action.equals(ACTION_SHOW_CATEGORIES)) {
+ 			String critNr = params.getValue(&quot;critNr&quot;);
+@@ -189,8 +193,8 @@
+ 			Vector selectedCats = getSelectedCats(session);
+ 			session.setAttribute(&quot;categories&quot;, categories);
+ 			session.setAttribute(&quot;selectedCats&quot;, selectedCats);
+-      // disable enumeration rendering
+-      session.setAttribute(&quot;enumerationFlag&quot;, false);
++            // disable enumeration rendering
++            session.setAttribute(&quot;enumerationFlag&quot;, false);
+ 			// hotspots
+ 			setCategoryHotspots(session);
+ 			// clear marker
+@@ -201,19 +205,19 @@
+ 			String instTypeID = getInstitutionType(session).getID();
+ 			String searchMode = getSearchMode(session);
+ 			Vector insts;
+-      // enable the rendering of enumeration
+-      session.setAttribute(&quot;enumerationFlag&quot;, true);
++            // enable the rendering of enumeration
++            session.setAttribute(&quot;enumerationFlag&quot;, true);
+ 			if (searchMode.equals(SEARCHMODE_BY_NAME)) {
+ 				insts = cm.getViewTopics(mapID, 1, instTypeID, getSearchValue(session));
+ 				// hotspots
+ 				setHotspots(insts, ICON_HOTSPOT, session);
+-        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
++                session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
+ 			} else {
+ 				String catID = params.getValue(&quot;id&quot;);
+ 				insts = cm.getRelatedViewTopics(mapID, 1, catID, ASSOCTYPE_ASSOCIATION, instTypeID, 1);	// ### copy in setCategoryHotspots()
+ 				// hotspots + return the index of the current CatID in the multi-dimensional hotspot vector
+ 				int catIndex = setSearchedCategoryHotspots(session, catID);
+-        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
++                session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
+ 			}
+ 			session.setAttribute(&quot;institutions&quot;, insts);
+ 			// categories &amp; addresses
+@@ -246,6 +250,12 @@
+ 		}
+ 	}
+ 
++    protected long getLastModified(HttpServletRequest req) {
++        String dateProperty = as.getTopicProperty(this.topicmapId, 1, PROPERTY_LAST_UPDATED);
++        long lastModified = new Date().getTime();
++        if (!dateProperty.equals(&quot;&quot;)) lastModified = new Date(Long.parseLong(dateProperty)).getTime();
++        return lastModified;
++    }
+ 
+   
+ 	// *****************
+
+Modified: trunk/src/de/kiezatlas/deepamehta/TimedEngagementImporter.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/TimedEngagementImporter.java	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/src/de/kiezatlas/deepamehta/TimedEngagementImporter.java	2012-11-09 13:07:37 UTC (rev 108)
+@@ -18,6 +18,7 @@
+ import java.net.URL;
+ import java.net.URLConnection;
+ import java.net.UnknownHostException;
++import java.util.Date;
+ import java.util.HashMap;
+ import java.util.Hashtable;
+ import java.util.Vector;
+@@ -163,6 +164,7 @@
+         //
+         System.out.println(&quot;[EngagementJob] stored &quot; + validEntries + &quot; in public cityMap \&quot;&quot; +as.getTopicProperty(cityMapId, 1, PROPERTY_WEB_ALIAS)+ &quot;\&quot;&quot;);
+         System.out.println(&quot;[EngagementJob] skipped &quot; + unusable.size() + &quot; unlocatable \&quot;&quot;+getWorkspaceGeoType(workspaceId).getName()+&quot;\&quot; &quot;);
++        as.setTopicProperty(cityMapId, 1, PROPERTY_LAST_UPDATED, &quot;&quot; + new Date().getTime() + &quot;&quot;);
+         sendNotificationEmail(unusable, false);
+     }
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/TimedEventImporter.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/TimedEventImporter.java	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/src/de/kiezatlas/deepamehta/TimedEventImporter.java	2012-11-09 13:07:37 UTC (rev 108)
+@@ -18,6 +18,7 @@
+ import java.net.URL;
+ import java.net.URLConnection;
+ import java.net.UnknownHostException;
++import java.util.Date;
+ import java.util.Hashtable;
+ import java.util.Vector;
+ import javax.xml.parsers.DocumentBuilder;
+@@ -137,6 +138,7 @@
+             + as.getTopicProperty(cityMapId, 1, PROPERTY_WEB_ALIAS)+ &quot;\&quot;&quot;);
+         System.out.println(&quot;[EventJob] skipped &quot; + unusable.size() + &quot; unlocatable \&quot;&quot; 
+             + getWorkspaceGeoType(workspaceId).getName()+&quot;\&quot;&quot;);
++        as.setTopicProperty(cityMapId, 1, PROPERTY_LAST_UPDATED, &quot;&quot; + new Date().getTime() + &quot;&quot;);
+         sendNotificationEmail(unusable);
+         //
+     }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2012-10-21 19:47:01 UTC (rev 107)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2012-11-09 13:07:37 UTC (rev 108)
+@@ -26,6 +26,7 @@
+ import java.net.URL;
+ import java.net.URLConnection;
+ import java.net.URLEncoder;
++import java.util.Date;
+ import java.util.Enumeration;
+ import java.util.Hashtable;
+ import java.util.StringTokenizer;
+@@ -225,9 +226,17 @@
+ 					e.getMessage() + &quot;)&quot;);
+ 			}
+ 		}
+-		// --- update timestamp ---
++		// --- update timestamp on topic level ---
+ 		cm.setTopicData(getID(), 1, PROPERTY_LAST_MODIFIED, DeepaMehtaUtils.getDate());
+-		//
++        // --- update timestamp on city map level ---
++        Vector&lt;BaseTopic&gt; cityMaps = cm.getViews(getID(), 1, VIEWMODE_HIDDEN);
++        System.out.println(&quot;Topic is in &quot; + cityMaps.size() + &quot; city maps contained.&quot;);
++        // for the ease we now update this property for *all* citymaps a topic is part (also of the unpublished)
++        for (int i = 0; i &lt; cityMaps.size(); i++) {
++            BaseTopic cityMap = cityMaps.get(i);
++            long lastUpdated = new Date().getTime();
++            as.setTopicProperty(cityMap, PROPERTY_LAST_UPDATED, &quot;&quot; + lastUpdated + &quot;&quot;);
++        }
+ 		return directives;
+ 	}
+ 
+
+</PRE>
+
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000093.html">[Kiezatlas-svn] r109 - trunk/src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#92">[ date ]</a>
+              <a href="thread.html#92">[ thread ]</a>
+              <a href="subject.html#92">[ subject ]</a>
+              <a href="author.html#92">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

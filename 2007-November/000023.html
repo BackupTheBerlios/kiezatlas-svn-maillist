@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r31%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200711271732.lARHWVch003619%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000022.html">
+   <LINK REL="Next"  HREF="000024.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r31%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200711271732.lARHWVch003619%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r31 - in trunk: docs pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue Nov 27 18:32:31 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000022.html">[Kiezatlas-svn] r30 - trunk/pages
+</A></li>
+        <LI>Next message: <A HREF="000024.html">[Kiezatlas-svn] r32 - trunk/src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23">[ date ]</a>
+              <a href="thread.html#23">[ thread ]</a>
+              <a href="subject.html#23">[ subject ]</a>
+              <a href="author.html#23">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-27 18:32:23 +0100 (Tue, 27 Nov 2007)
+New Revision: 31
+
+Modified:
+   trunk/docs/session.txt
+   trunk/pages/List.jsp
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+bug fixed: in the list frontend, if no categories are assigned to a citymap
+1) ListServlet and ListPage removed sessionAttribute
+2) session.txt updated session doc
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2007-11-27 17:09:14 UTC (rev 30)
++++ trunk/docs/session.txt	2007-11-27 17:32:23 UTC (rev 31)
+@@ -92,6 +92,7 @@
+ ----------------
+ 
+ topicBean			Instance of TopicBean
++imagefile			full path to image 			
+ html				Instance of HTML Generator
+ 
+ 
+@@ -130,5 +131,4 @@
+ ----
+ 
+ mapName				String
+-critName			String (name of first search criteria)
+ topics				Vector of TopicBeans
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2007-11-27 17:09:14 UTC (rev 30)
++++ trunk/pages/List.jsp	2007-11-27 17:32:23 UTC (rev 31)
+@@ -4,7 +4,6 @@
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	String mapName = (String) session.getAttribute(&quot;mapName&quot;);
+-	String critName = (String) session.getAttribute(&quot;critName&quot;);
+ 	Vector topics = (Vector) session.getAttribute(&quot;topics&quot;);
+ 	// --- list of institutions ---
+ 	out.println(&quot;&lt;h2&gt;&quot; + mapName + &quot;&lt;/h2&gt;&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2007-11-27 17:09:14 UTC (rev 30)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2007-11-27 17:32:23 UTC (rev 31)
+@@ -58,7 +58,6 @@
+ 			Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+ 			SearchCriteria[] criterias = cityMap.getSearchCriterias();
+ 			session.setAttribute(&quot;mapName&quot;, cityMap.getName());
+-			session.setAttribute(&quot;critName&quot;, criterias[0].criteria.getPluralName());
+ 			session.setAttribute(&quot;topics&quot;, createBaseTopicBeans(insts, criterias, instTypeID));
+ 		}
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000022.html">[Kiezatlas-svn] r30 - trunk/pages
+</A></li>
+	<LI>Next message: <A HREF="000024.html">[Kiezatlas-svn] r32 - trunk/src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#23">[ date ]</a>
+              <a href="thread.html#23">[ thread ]</a>
+              <a href="subject.html#23">[ subject ]</a>
+              <a href="author.html#23">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

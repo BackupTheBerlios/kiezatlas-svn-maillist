@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r37 - trunk/pages
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r37%20-%20trunk/pages&In-Reply-To=%3C200801141257.m0ECvaCO011959%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000028.html">
+   <LINK REL="Next"  HREF="000029.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r37 - trunk/pages</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r37%20-%20trunk/pages&In-Reply-To=%3C200801141257.m0ECvaCO011959%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r37 - trunk/pages">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Jan 14 13:57:36 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000028.html">[Kiezatlas-svn] r36 - trunk/config/default
+</A></li>
+        <LI>Next message: <A HREF="000029.html">[Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30">[ date ]</a>
+              <a href="thread.html#30">[ thread ]</a>
+              <a href="subject.html#30">[ subject ]</a>
+              <a href="author.html#30">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-01-14 13:57:28 +0100 (Mon, 14 Jan 2008)
+New Revision: 37
+
+Modified:
+   trunk/pages/CityMap.jsp
+Log:
+1) Cluster Display Problems with the Internet Explorer are now fixed
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2008-01-08 18:30:49 UTC (rev 36)
++++ trunk/pages/CityMap.jsp	2008-01-14 12:57:28 UTC (rev 37)
+@@ -23,11 +23,17 @@
+ 				originalPosition = id.split(&quot;.&quot;);
+ 				var xPosition = parseInt(originalPosition[0]);
+ 				var yPosition = parseInt(originalPosition[1]);
+-				
+-				document.getElementById(currentMenu).style.top = yPosition - independentY();
+-				document.getElementById(currentMenu).style.left = xPosition - independentX();
++				if (navigator.appName != &quot;Microsoft Internet Explorer&quot;) {
++					//not ie, recalculate position after scrolling
++					document.getElementById(currentMenu).style.top = yPosition - independentY();
++					document.getElementById(currentMenu).style.left = xPosition - independentX();
++				} else {
++					// ie, no recalculation, handled by included 'fixed.js' script
++					document.getElementById(currentMenu).style.top = yPosition;
++					document.getElementById(currentMenu).style.left = xPosition;
++				}
+ 				document.getElementById(currentMenu).style.visibility = 'visible';
+-				currentActiveMenu = id;
++					currentActiveMenu = id;
+ 			}
+ 			
+ 		}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000028.html">[Kiezatlas-svn] r36 - trunk/config/default
+</A></li>
+	<LI>Next message: <A HREF="000029.html">[Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#30">[ date ]</a>
+              <a href="thread.html#30">[ thread ]</a>
+              <a href="subject.html#30">[ subject ]</a>
+              <a href="author.html#30">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r61 - trunk/src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r61%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200810302127.m9ULRYdO006625%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000049.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r61 - trunk/src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r61%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200810302127.m9ULRYdO006625%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r61 - trunk/src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Thu Oct 30 22:27:34 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000049.html">[Kiezatlas-svn] r60 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50">[ date ]</a>
+              <a href="thread.html#50">[ thread ]</a>
+              <a href="subject.html#50">[ subject ]</a>
+              <a href="author.html#50">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-10-30 22:27:33 +0100 (Thu, 30 Oct 2008)
+New Revision: 61
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+Log:
+Adopted to new API (associationAllowed() hook)
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2008-10-30 21:12:45 UTC (rev 60)
++++ trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2008-10-30 21:27:33 UTC (rev 61)
+@@ -27,9 +27,9 @@
+ 
+ /**
+  * Kiezatlas 1.4.1.&lt;br&gt;
+- * Requires DeepaMehta 2.0b8-pre2.
++ * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last functional change: 11.9.2007&lt;br&gt;
++ * Last change: 14.9.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -116,7 +116,7 @@
+ 
+ 
+ 
+-	public String associationAllowed(String assocTypeID, String relTopicID, CorporateDirectives directives) {
++	public String associationAllowed(String assocTypeID, String relTopicID, int relTopicPos, CorporateDirectives directives) {
+ 		return SEMANTIC_SHAPE_OUTLINE;
+ 	}
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000049.html">[Kiezatlas-svn] r60 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#50">[ date ]</a>
+              <a href="thread.html#50">[ thread ]</a>
+              <a href="subject.html#50">[ subject ]</a>
+              <a href="author.html#50">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

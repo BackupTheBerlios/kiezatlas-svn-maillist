@@ -1,0 +1,224 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r96 - trunk/pages/be.de
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-August/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r96%20-%20trunk/pages/be.de&In-Reply-To=%3C20100830151419.AB159480FE3%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000083.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r96 - trunk/pages/be.de</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r96%20-%20trunk/pages/be.de&In-Reply-To=%3C20100830151419.AB159480FE3%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r96 - trunk/pages/be.de">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Aug 30 17:14:19 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000083.html">[Kiezatlas-svn] r95 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84">[ date ]</a>
+              <a href="thread.html#84">[ thread ]</a>
+              <a href="subject.html#84">[ subject ]</a>
+              <a href="author.html#84">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-08-30 17:14:19 +0200 (Mon, 30 Aug 2010)
+New Revision: 96
+
+Modified:
+   trunk/pages/be.de/bmap.php
+   trunk/pages/be.de/kiezatlas.js
+Log:
+Minor fixes for the alternative Citymap Interface
+fix: after rendering images a &lt;break&gt; was missing
+fix: correct loading and setting of WorkspaceInfos 
+fix: correct to a) showAllMarkers and b) resetAllMarkers 
+fix: rendering Mailbox Addresses
+
+Modified: trunk/pages/be.de/bmap.php
+===================================================================
+--- trunk/pages/be.de/bmap.php	2010-08-23 22:31:34 UTC (rev 95)
++++ trunk/pages/be.de/bmap.php	2010-08-30 15:14:19 UTC (rev 96)
+@@ -78,8 +78,6 @@
+ 	    var hotspots = [];
+ 	    var districtNames = [];
+       var markerGroupIds = new Array();
+-	    var footerMessage = '&lt;b&gt;&lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt; ' 
+-	      + 'is powered by &lt;a href=&quot;<A HREF="http://www.deepamehta.de">http://www.deepamehta.de</A>&quot;&gt;DeepaMehta&lt;/a&gt;';
+     	var helpVisible = false;
+ 	    // var slimWidth = false;
+ 	    // var totalWidth = 1000; // 953
+@@ -159,7 +157,7 @@
+ 		    &lt;div id=&quot;searchInput&quot;&gt;
+ 		      &lt;form id=&quot;searchForm&quot; action=&quot;javascript:searchRequest()&quot;&gt;
+ 			    &lt;label for=&quot;searchInputField&quot;&gt;Suchen&lt;/label&gt;
+-			    &lt;input id=&quot;searchInputField&quot; type=&quot;text&quot; value=&quot;Name / Stra&#223;e&quot; size=&quot;15&quot;/&gt;
++			    &lt;input id=&quot;searchInputField&quot; type=&quot;text&quot; value=&quot;Name&quot; size=&quot;15&quot;/&gt;
+ 			    &lt;ul&gt;
+ 			    &lt;/ul&gt;
+ 		      &lt;/form&gt;
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2010-08-23 22:31:34 UTC (rev 95)
++++ trunk/pages/be.de/kiezatlas.js	2010-08-30 15:14:19 UTC (rev 96)
+@@ -74,11 +74,6 @@
+     panel = new OpenLayers.Control.Panel(
+ 	    {div: document.getElementById(&quot;navPanel&quot;)}
+     );
+-    // OpenLayers.Control.CustomLayerSwitcher = OpenLayers.Class(OpenLayers.Control.LayerSwitcher, {
+-    //  CLASS_NAME: &quot;OpenLayers.Control.CustomLayerSwitcher&quot;
+-    // });
+-    // myLayerSwitcher.moveTo(new OpenLayers.Pixel(50, 300));
+-    // myLayerSwitcher.moveTo(new OpenLayers.Pixel(150, 400));
+     myLayerSwitcher = new OpenLayers.Control.LayerSwitcher({
+       'div':OpenLayers.Util.getElement('mapSwitcher'), 
+       activeColor: &quot;white&quot;
+@@ -90,7 +85,7 @@
+     // setBounds
+     if (debug) log('[Info] mapBounds will be set to: ' + openBounds);
+     map.zoomToExtent(openBounds.transform(map.displayProjection, map.projection));
+-    map.zoomTo(11);
++    if (onBerlinDe) map.zoomTo(LEVEL_OF_CITY_ZOOM);
+   }
+   
+   function setLayout(fullH, fullW) {
+@@ -225,10 +220,10 @@
+ 	      jQuery(&quot;#progContainer&quot;).hide();//(&quot;hidden&quot;, &quot;true&quot;);
+ 	      resultHandler.empty();
+ 	      var imgSrc = getImageSource(topic);
+-	      if (typeof(imgSrc) != &quot;undefined&quot;) {
++        if (imgSrc != &quot;undefined&quot;) {
+ 	        imgSrc = IMAGES_URL + imgSrc;
+-	        var imgWidth = jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;);
+-  	      resultHandler.append('&lt;img src=&quot;'+imgSrc+'&quot; width=&quot;' + imgWidth + '&quot;&gt;');
++	        // var imgWidth = jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;);
++  	      resultHandler.append('&lt;img src=&quot;'+imgSrc+'&quot;&gt;&lt;br/&gt;');
+ 	      }
+ 	      resultHandler.append('&lt;b&gt;'+topic.name+'&lt;/b&gt;&lt;br/&gt;');
+ 	      // resultHandler.append('&lt;table width=&quot;100%&quot; cellpadding=&quot;2&quot; cellspacing=&quot;0&quot; id=&quot;sideBarCategoriesTable&quot;&gt;&lt;/table&gt;');
+@@ -263,8 +258,10 @@
+ 	            stringValue = topic.properties[i].values[k].name;
+ 	            var htmlValue = &quot;&quot;;
+ 	            if (stringValue.startsWith(&quot;<A HREF="http://">http://</A>&quot;)) {
+-	              htmlValue = makeWebpageLink(stringValue, topic.name);
+-	            } else {
++	              htmlValue = makeWebpageLink(stringValue, stringValue);
++	            } else if (stringValue.indexOf(&quot;@&quot;) != -1) {
++	              htmlValue = makeEmailLink(stringValue, stringValue);
++              } else {
+ 	              htmlValue = stringValue;
+ 	            }
+ 	            propertyList += '&lt;br/&gt;&lt;img style=&quot;border-style: none; vertical-align: middle;&quot; '
+@@ -714,6 +711,14 @@
+   
+   /** sets imprint, homepage and logo link associated with the current workspaceInfos*/
+   function setWorkspaceInfos() {
++    var footerMessage = &quot;&quot;;
++    if (onBerlinDe) {
++      footerMessage = '&lt;b&gt;&lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas&lt;/a&gt;&lt;/b&gt; '
++	      + 'is powered by &lt;a href=&quot;<A HREF="http://www.deepamehta.de">http://www.deepamehta.de</A>&quot;&gt;DeepaMehta&lt;/a&gt;';
++    } else {
++      footerMessage = '&lt;b&gt;&lt;a href=&quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;&gt;Kiezatlas &lt;i&gt;Labs&lt;/i&gt;&lt;/a&gt;&lt;/b&gt; '
++	      + 'are powered by &lt;a href=&quot;<A HREF="http://www.deepamehta.de">http://www.deepamehta.de</A>&quot;&gt;DeepaMehta&lt;/a&gt;';
++    }
+     if (workspaceInfos == null) { // ### Improve Exception Handling
+       alert(&quot;Sorry. The workspace you tried to access is not properly configured by the administrator.&quot;);
+     } else {
+@@ -1673,8 +1678,11 @@
+       if (topic.properties[it].name.indexOf(fieldName) == -1) {
+         // log('fieldStrippin: ' + it);
+         newProps.push(topic.properties[it]);
++      } else if (topic.properties[it].name.indexOf(&quot;Email&quot;) != -1) {
++        // save Email Address Property being stripped by a command called &quot;Address&quot;&quot;
++        newProps.push(topic.properties[it]);
+       } else {
+-      // flog('stripping Field ' + topic.properties[it].name);
++        // flog('stripping Field ' + topic.properties[it].name);
+       }
+     }
+     topic.properties = newProps;
+@@ -1700,7 +1708,7 @@
+         return topic.properties[i].value;
+       }
+     }
+-    return &quot;&quot;;
++    return &quot;undefined&quot;;
+   }
+ 
+   function getTopicPostalCode(topic) {
+@@ -1792,14 +1800,14 @@
+   function updateVisibleBounds(newBounds, resetMarkers, zoomLevel) {
+     if (newBounds == null) {
+       map.zoomToExtent(calculateInitialBounds().transform(map.displayProjection, map.projection));
+-      map.zoomTo(11);
++      // map.zoomTo(11);
+     } else {
+       // map.zoomToExtent(newBounds.transform(map.displayProjection, map.projection));
+       map.panTo(newBounds.getCenterLonLat());
+       map.zoomTo(zoomLevel);
+     }
+     if (resetMarkers == true) {
+-      removeAllMarker();
++      reSetMarkers();
+     }
+    
+   }
+@@ -1993,6 +2001,11 @@
+     else urlMarkup = '&lt;a href=&quot;'+url+'&quot; target=&quot;_blank&quot;&gt;'+label+'&lt;/a&gt;';
+     return urlMarkup
+   }
++
++  function makeEmailLink(url, label) {
++    urlMarkup = '&lt;a href=&quot;mailto:'+url+'&quot; target=&quot;_blank&quot;&gt;'+label+'&lt;/a&gt;';
++    return urlMarkup
++  }
+   
+   function removeAllPopUps() {
+     for (var i=0; i &lt; map.popups.length; i++) {
+@@ -2020,4 +2033,5 @@
+       // setWorkspaceInfos();
+       helpVisible = false;
+     }
+-  }
+\ No newline at end of file
++  }
++  
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000083.html">[Kiezatlas-svn] r95 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#84">[ date ]</a>
+              <a href="thread.html#84">[ thread ]</a>
+              <a href="subject.html#84">[ subject ]</a>
+              <a href="author.html#84">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

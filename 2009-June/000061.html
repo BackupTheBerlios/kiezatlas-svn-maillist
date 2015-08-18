@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r73 - in trunk/src/de/kiezatlas/deepamehta: . topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-June/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r73%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200906161148.n5GBm4Jl020291%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000062.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r73 - in trunk/src/de/kiezatlas/deepamehta: . topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r73%20-%20in%20trunk/src/de/kiezatlas/deepamehta%3A%20.%20topics&In-Reply-To=%3C200906161148.n5GBm4Jl020291%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r73 - in trunk/src/de/kiezatlas/deepamehta: . topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue Jun 16 13:48:04 CEST 2009</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000062.html">[Kiezatlas-svn] r74 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61">[ date ]</a>
+              <a href="thread.html#61">[ thread ]</a>
+              <a href="subject.html#61">[ subject ]</a>
+              <a href="author.html#61">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-06-16 13:48:03 +0200 (Tue, 16 Jun 2009)
+New Revision: 73
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+Log:
+KiezAtlas 1.6.3 Revisited
+1) ImageUpload uses now caseInsensitive Check
+2) GPSConverter uses now UTF-8 encoded Address-Strings for the GeoCoder lookup
+
+ATTENTION: TOPICTYPE_CITY (to confirm)
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2009-05-13 13:39:53 UTC (rev 72)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2009-06-16 11:48:03 UTC (rev 73)
+@@ -157,7 +157,7 @@
+ 				String filename = getFilename(item.getName());	// ### explorer includes entire path
+ 				System.out.println(&quot;  &gt; filename=\&quot;&quot; + filename + &quot;\&quot; extension=\&quot;&quot; + fileext + &quot;\&quot;&quot;);
+ 				String path = &quot;/home/jrichter/deepamehta/install/client/documents/&quot;;	// ### hardcoded
+-				if (fileext.equals(&quot;png&quot;) || fileext.equals(&quot;jpg&quot;) || fileext.equals(&quot;gif&quot;)) {
++				if (fileext.equalsIgnoreCase(&quot;png&quot;) || fileext.equalsIgnoreCase(&quot;jpg&quot;) || fileext.equalsIgnoreCase(&quot;gif&quot;)) {
+ 					path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ### hardcoded
+ 				}
+ 				File fileToWrite = new File(path + filename);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-05-13 13:39:53 UTC (rev 72)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-06-16 11:48:03 UTC (rev 73)
+@@ -49,6 +49,7 @@
+ 
+ 
+ 
++    static final String TOPICTYPE_CITY = &quot;tt-city&quot;;
+ 	static final String TOPICTYPE_CITYMAP = &quot;tt-ka-stadtplan&quot;;
+ 	static final String TOPICTYPE_KIEZ_GEO = &quot;tt-ka-geoobject&quot;;
+ 	static final String TOPICTYPE_KIEZ_GEO_SEARCH = &quot;tt-ka-geoobject-search&quot;;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-05-13 13:39:53 UTC (rev 72)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-06-16 11:48:03 UTC (rev 73)
+@@ -14,9 +14,12 @@
+ import java.io.BufferedReader;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
++import java.io.UnsupportedEncodingException;
+ import java.net.URL;
+ import java.net.URLConnection;
+ import java.util.*;
++import java.util.logging.Level;
++import java.util.logging.Logger;
+ 
+ 
+ 
+@@ -123,6 +126,7 @@
+                         if (runs == 10) {
+                             // 10 retries to contact the geocoder again
+                             htmlReport.append(&quot;&lt;br&gt;Adressfehler sind bei insgesamt &lt;b&gt;&quot;+geos.size()+&quot;&lt;/b&gt; Objekten aufgetreten:&quot;);
++                            // checkout the corresponding cityMap
+                             htmlReport.append(&quot;&lt;ul&gt;&quot;);
+                             for(int a = 0; a &lt; geos.size(); a++) {
+                                 BaseTopic geo = (BaseTopic) geos.get(a);
+@@ -168,6 +172,14 @@
+     }
+ 
+ 
++    private String getCityMapId(String geoTypeId, String topicId, String workspaceId) {
++        // get all published topicmaps  from this workspace
++            // go through all topics in in this map and search for the topicId
++            // if topic is part of the Map, return it's cityMapID
++            // ? speed ? maybe, do that first
++        return &quot;&quot;;
++    }
++
+     /**
+      * returns null if no topictype whihc is assigned to the given workspace, is a subtype of &quot;GeoObjectTopic&quot;
+      * @param workspaceId
+@@ -218,6 +230,7 @@
+ 
+ 
+ 	private String getAddressURL(String topicID) {
++        String result;
+ 		StringBuffer address = new StringBuffer();
+         try {
+             // Related Address Topic
+@@ -258,7 +271,13 @@
+             city = removeSpaces(city);
+             address.append(&quot; &quot; + city);
+             System.out.println(&quot;*** GPSConverterTopic.getAddress(): AmbigiousSemanticExc. took &quot; + address.toString());
+-            return address.toString();
++            try {
++                result = new String(address.toString().getBytes(), &quot;UTF-8&quot;);
++            } catch (UnsupportedEncodingException ex) {
++                Logger.getLogger(GPSConverterTopic.class.getName()).log(Level.SEVERE, null, ex);
++                result = address.toString();
++            }
++            return result;
+ 		}
+ 	}
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000062.html">[Kiezatlas-svn] r74 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#61">[ date ]</a>
+              <a href="thread.html#61">[ thread ]</a>
+              <a href="subject.html#61">[ subject ]</a>
+              <a href="author.html#61">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

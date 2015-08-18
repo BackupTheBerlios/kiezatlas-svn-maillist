@@ -1,0 +1,402 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r59 - in trunk: images pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-October/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r59%20-%20in%20trunk%3A%20images%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200810301923.m9UJNK1J028174%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000047.html">
+   <LINK REL="Next"  HREF="000049.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r59 - in trunk: images pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r59%20-%20in%20trunk%3A%20images%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200810301923.m9UJNK1J028174%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r59 - in trunk: images pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Thu Oct 30 20:23:20 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000047.html">[Kiezatlas-svn] r58 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+        <LI>Next message: <A HREF="000049.html">[Kiezatlas-svn] r60 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48">[ date ]</a>
+              <a href="thread.html#48">[ thread ]</a>
+              <a href="subject.html#48">[ subject ]</a>
+              <a href="author.html#48">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-10-30 20:23:16 +0100 (Thu, 30 Oct 2008)
+New Revision: 59
+
+Added:
+   trunk/images/google14.ico
+   trunk/images/marker.png
+Modified:
+   trunk/pages/CityMap.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/List.jsp
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+1) polished .tsv feature
+2) Minor changes
+* EditServlet.writeFiles() configured
+* removed debugging printout's
+* renamed bottom links on List pages
+* fixed encoding in CityMap
+* new Google link on InfoPages
+* 2 new Images (Marker, Google)
+
+Added: trunk/images/google14.ico
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/images/google14.ico
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/images/marker.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/images/marker.png
+___________________________________________________________________
+Name: svn:executable
+   + *
+Name: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2008-10-30 02:54:23 UTC (rev 58)
++++ trunk/pages/CityMap.jsp	2008-10-30 19:23:16 UTC (rev 59)
+@@ -12,6 +12,7 @@
+ &lt;html&gt;
+ &lt;head&gt;
+ 	&lt;title&gt;Kiezatlas&lt;/title&gt;
++	&lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=iso-8859-1&quot;&gt;
+ 	&lt;style type=&quot;text/css&quot;&gt;
+ 	&lt;%= stylesheet %&gt;
+ 	&lt;/style&gt;
+@@ -103,7 +104,7 @@
+ 				Point p = inst.getGeometry();
+ 				// marker and hotspot can't overlap exactly, cause of the new icons don't fit in the old convention of 20x20px chel
+ 				if (selectedInst != null &amp;&amp; selectedInst.geoID.equals(inst.getID())) {
+-					out.println(&quot;&lt;img src=\&quot;../images/marker.gif\&quot; style=\&quot;position:absolute; top:&quot; +
++					out.println(&quot;&lt;img src=\&quot;../images/marker.png\&quot; style=\&quot;position:absolute; top:&quot; +
+ 						(p.y - 20) + &quot;px; left:&quot; + (p.x - 20) + &quot;px;\&quot;&gt;&quot;);
+ 					break;
+ 				}
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2008-10-30 02:54:23 UTC (rev 58)
++++ trunk/pages/KiezAtlas.jsp	2008-10-30 19:23:16 UTC (rev 59)
+@@ -174,22 +174,37 @@
+ 	// ---
+ 
+ 	String mapLink(String street, String postalCode, String city) throws IOException {
+-		System.out.println(&quot;&gt;&gt;&gt; mapLink(): street=\&quot;&quot; + street + &quot;\&quot; postalCode=\&quot;&quot; + postalCode + &quot;\&quot; city=\&quot;&quot; + city + &quot;\&quot;&quot;);
++		// ### System.out.println(&quot;&gt;&gt;&gt; mapLink(): street=\&quot;&quot; + street + &quot;\&quot; postalCode=\&quot;&quot; + postalCode + &quot;\&quot; city=\&quot;&quot; + city + &quot;\&quot;&quot;);
+ 		StringBuffer html = new StringBuffer();
+ 		// render fahr-info link if address is in berlin
+ 		if (city.startsWith(&quot;Berlin&quot;) &amp;&amp; isSet(street)) {
+ 			String mapURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/Stadtplan/index?query=">http://www.fahrinfo-berlin.de/Stadtplan/index?query=</A>&quot; + street + &quot;&amp;search=Suchen&amp;formquery=&amp;address=true&quot;;
+-			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/fahrinfo.gif\&quot; border=\&quot;0\&quot; hspace=\&quot;20\&quot;&gt;&lt;/a&gt;&quot;;
+-			html.append(street + imageLink + &quot;&lt;br&gt;&quot; + postalCode + &quot; &quot; + city);
++			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/fahrinfo.gif\&quot; border=\&quot;0\&quot; &quot; +
++				&quot;hspace=\&quot;20\&quot;&gt;&lt;/a&gt;&quot;;
++			html.append(street + imageLink + &quot;&lt;br&gt;&quot; + postalCode + &quot; &quot; + city + googleLink(street, postalCode, city));
+ 			return html.toString();
+ 		} else {
+ 			html.append(isSet(street) ? street + &quot;&lt;br&gt;&quot; : &quot;&quot;);
+ 			html.append(isSet(postalCode) ? postalCode + &quot; &quot; : &quot;&quot;);
+-			html.append(isSet(city) ? city : &quot;&quot;);
++			html.append(isSet(city) ? city + googleLink(street, postalCode, city) : &quot;&quot;);
+ 			return html.toString();
+ 		}
+ 	}
+ 	
++	String googleLink(String street, String postalCode, String city) throws IOException {
++		// ### System.out.println(&quot;&gt;&gt;&gt; googleLink(): street=\&quot;&quot; + street + &quot;\&quot; postalCode=\&quot;&quot; + postalCode + &quot;\&quot; city=\&quot;&quot; + city + &quot;\&quot;&quot;);
++		StringBuffer html = new StringBuffer();
++		// render googlelink if address is complete
++		if (isSet(city) &amp;&amp; isSet(street) &amp;&amp; isSet(postalCode)) {
++			String mapURL = &quot;<A HREF="http://maps.google.de/maps?q=">http://maps.google.de/maps?q=</A>&quot; + street + &quot;, &quot; + postalCode + &quot; &quot; + city + &quot;&amp;mrt=loc&amp;lci=lmc:panoramio,lmc:wikipedia_en&amp;layer=tc&amp;t=h&quot;;
++			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/google14.ico\&quot; alt=\&quot;Ansicht in Google \&quot; height=\&quot;10\&quot; width=\&quot;10\&quot; hspace=\&quot;20\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;;
++			html.append(imageLink);
++			return html.toString();
++		} else {
++		    return &quot;&quot;;
++		}
++	}
++	
+ 	String mailListLink(Vector mailboxes) {
+ 		Enumeration e = mailboxes.elements();
+ 		StringBuffer html = new StringBuffer();
+@@ -204,7 +219,7 @@
+ 			    html.append(&quot;,&quot;);
+ 			}
+ 		}
+-		html.append(&quot;\&quot; class=\&quot;small\&quot;&gt; Rundmail erstellen&lt;/a&gt;&quot;);
++		html.append(&quot;\&quot; class=\&quot;small\&quot;&gt; Rundmail verfassen&lt;/a&gt;&quot;);
+ 		//
+ 		return html.toString();
+ 	}
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-10-30 02:54:23 UTC (rev 58)
++++ trunk/pages/List.jsp	2008-10-30 19:23:16 UTC (rev 59)
+@@ -72,7 +72,7 @@
+ 	if (mailboxes != null &amp;&amp; mailboxes.size() &gt; 0) {
+ 	    out.println(mailListLink(mailboxes));
+ 	}
+-	out.println(&quot;&lt;a href=\&quot;?action=createFormLetter\&quot; class=\&quot;small\&quot;&gt;Erstelle Serienbrief&lt;/a&gt;&quot;);
++	out.println(&quot;&lt;a href=\&quot;?action=createFormLetter\&quot; class=\&quot;small\&quot;&gt;Steuerdatei f&#252;r Serienbrief erstellen&lt;/a&gt;&quot;);
+ 	out.println(&quot;&lt;/p&gt;&quot;);
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-10-30 02:54:23 UTC (rev 58)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-10-30 19:23:16 UTC (rev 59)
+@@ -156,11 +156,11 @@
+ 				String fileext = getFileExtension(item.getName());	// ### explorer includes entire path
+ 				String filename = getFilename(item.getName());	// ### explorer includes entire path
+ 				System.out.println(&quot;  &gt; filename=\&quot;&quot; + filename + &quot;\&quot; extension=\&quot;&quot; + fileext + &quot;\&quot;&quot;);
+-				// String path = &quot;/home/jrichter/deepamehta/install/client/document/&quot;;	// ### hardcoded
+-				String path = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;;
++				String path = &quot;/home/jrichter/deepamehta/install/client/document/&quot;;	// ### hardcoded
++				// String path = &quot;/home/monty/source/deepaMehta/install/client/documents/&quot;;
+ 				if (fileext.equals(&quot;png&quot;) || fileext.equals(&quot;jpg&quot;) || fileext.equals(&quot;gif&quot;)) {
+-					// String path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ### hardcoded
+-					path = &quot;/home/monty/source/deepaMehta/install/client/images/&quot;;
++					path = &quot;/home/jrichter/deepamehta/install/client/images/&quot;;	// ### hardcoded
++					// path = &quot;/home/monty/source/deepaMehta/install/client/images/&quot;;
+ 				}
+ 				File fileToWrite = new File(path + filename);
+ 				// find new filename if already exists
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-10-30 02:54:23 UTC (rev 58)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-10-30 19:23:16 UTC (rev 59)
+@@ -138,7 +138,6 @@
+ 				return PAGE_LIST;
+ 			}
+ 			session.setAttribute(&quot;formLetter&quot;, letter);
+-			writeLetter(letter, &quot;testLetter.txt&quot;);
+ 			return &quot;Print&quot;;
+ 		}
+ 		//
+@@ -164,7 +163,7 @@
+ 					TopicBean topic = as.createTopicBean(insts.get(i).toString(), 1);
+ 					topicBeans.add(topic);
+ 				}
+-				// recover sorting
++				// re sort
+ 				if (sortBy != null) {
+ 					sortBeans(topicBeans, sortBy);
+ 					// ### System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot; + session.getAttribute(&quot;sortField&quot;) );
+@@ -280,12 +279,12 @@
+ 	}
+ 	
+ 	private String createFormLetter(Vector topics) {
+-		String letter = new String();
++		String letter = &quot;Name&quot; + createTab() + &quot;Ansprechpartner/in&quot; + createTab() + &quot;Stra&#195;&#159;e / Hnr.&quot; +
++			&quot;&quot; + createTab() + &quot;PLZ&quot; + createTab() + &quot;Stadt\n&quot;;
+ 		String personName = &quot;&quot;;
+-		String test = &quot;&quot;;
++		String entry = &quot;&quot;;
+ 		//
+ 		if (topics == null) {
+-			System.out.println(&quot;**** createFormLetter(): somebody gave me an empty topics list&quot;);
+ 			return &quot;&quot;;
+ 		}
+ 		Enumeration e = topics.elements();
+@@ -294,51 +293,49 @@
+ 			// get related Address
+ 			String address = getAddress(bean);
+ 			if (address != null) {
+-				test += bean.name;
+-				test += createTab();
++				// Create an Entry, starting with Name Tab
++				entry += bean.name;
++				entry += createTab();
+ 				personName = getRelatedPersonName(bean);
+-				if (personName != null &amp;&amp; !personName.equals(&quot;&quot;)) {
+-					test += (&quot;z.Hd. &quot;);
+-					test += personName;
+-					test += createTab(); 
+-					test += address;
+-					test += &quot;\n&quot;;
+-					letter += test;
+-					System.out.println(&quot;Adresseintrag mit Person: &quot; + test);
+-					test = &quot;&quot;;
++				if (!personName.equals(&quot;&quot;)) {
++					// filling the Ansprechpartner Tab
++					entry += (&quot;z.Hd. &quot;);
++					entry += personName;
++					entry += createTab();
++					// filling the Street, Code, and City Tabs
++					entry += address;
++					// prepare for a new entry
++					entry += &quot;\n&quot;;
++					letter += entry;
++					// System.out.println(&quot;Adresseintrag mit Person: &quot; + entry);
++					entry = &quot;&quot;;
+ 				} else {
+-					test += address;
+-					test += &quot;\n&quot;;
+-					letter += test;
+-					System.out.println(&quot;Adresseintrag: &quot; + test);
+-					test = &quot;&quot;;
++					//filling the Ansprechpartner Tab
++					entry += personName;
++					entry += createTab();
++					// filling the Street, Code, and City Tabs
++					entry += address;
++					// prepare for a new entry
++					entry += &quot;\n&quot;;
++					letter += entry;
++					// System.out.println(&quot;Adresseintrag: &quot; + entry);
++					entry = &quot;&quot;;
+ 				}
+ 			}
+ 		}
+ 		return letter;
+ 	}
+ 	
+-	private void writeLetter(String letter, String fileName) {
+-		File toFile = new File(&quot;/tmp/&quot; + fileName);
+-		try {
+-			FileWriter fw = new FileWriter(toFile, true);
+-			fw.write(letter);
+-			fw.close(); 
+-			System.out.println(&quot;&gt;&gt;&gt; writeLetter(): written file successfully from: &quot; + toFile.getAbsolutePath());
+-		} catch (IOException ex){
+-			System.out.println(&quot;***: Error with writing File:&quot;);
+-		}
+-	}
+-	
+ 	private String createTab() {
+ 		return &quot;\t&quot;;
+ 	}
+ 	
+ 	/**
+ 	 * First checks for Related Topic Name, if no relatedPerson looks for Related Info Person
++	 * If no Lastname is set an empty String is returned, normally Firstname Lastname without Gender
+ 	 * 
+ 	 * @param bean
+-	 * @return
++	 * @return &lt;Code&gt;&quot;&quot;&lt;Code&gt; if no lastname is assigned to the person
+ 	 */
+ 	private String getRelatedPersonName(TopicBean bean) {
+ 		String relatedPerson = new String();
+@@ -349,13 +346,13 @@
+ 		if (lastName != null &amp;&amp; !lastName.equals(&quot;&quot;)) {
+ 			// Person: Related Info | Related Deeply Info has at least a name
+ 			// String gender = bean.getValue(&quot;Person / Gender&quot;);
+-			//relatedPerson =	!gender.equals(&quot;Female&quot;) ? &quot;Herr &quot; : &quot;Frau &quot;;
++			// relatedPerson =	!gender.equals(&quot;Female&quot;) ? &quot;Herr &quot; : &quot;Frau &quot;;
+ 			if (firstName != null &amp;&amp; !firstName.equals(&quot;&quot;)) {
+ 				relatedPerson += firstName + &quot; &quot; + lastName;
+ 			} else {
+ 				relatedPerson += lastName;
+ 			}
+-			System.out.println(&quot;***getRelatedPerson(): There is a LastName, so: &quot; + relatedPerson);
++			// System.out.println(&quot;***getRelatedPerson(): There is a LastName, so: &quot; + relatedPerson);
+ 			return relatedPerson;
+ 		} else if (fullName != null &amp;&amp; fullName.size() &gt; 0) {
+ 			// Person: Related Topic Name has at least some attributes
+@@ -371,7 +368,7 @@
+ 					relatedPerson += firstName;
+ 				}
+ 				relatedPerson += lastName;
+-				System.out.println(&quot;***getRelatedPerson(): RelatedTopicName &quot; + relatedPerson);
++				// System.out.println(&quot;***getRelatedPerson(): RelatedTopicName &quot; + relatedPerson);
+ 				return relatedPerson;
+ 				/* Commented out since Gender Prefix is prefilled in a lot of data fields
+ 				String gender = as.getTopicProperty(person, PROPERTY_GENDER);
+@@ -383,14 +380,24 @@
+ 		return relatedPerson;
+ 	}
+ 	
++	/**
++	 * Creates an address string with street, code, city divided by tabulator
++	 * Addresses are not allowed to be empty, Cities are PostalCode is enough
++	 * 
++	 * @param bean
++	 * @return &lt;Code&gt;null&lt;Code&gt; if no street and zip code could be found
++	 */
+ 	public String getAddress(TopicBean bean) {
+ 		String address = &quot;&quot;;
+ 		// get Street &amp; Postal Code
+ 		String street = bean.getValue(&quot;Address / Street&quot;);
+ 		String postalCode = bean.getValue(&quot;Address / Postal Code&quot;);
+ 		if ( street != null &amp;&amp; postalCode != null ) {
++			if (street.equals(&quot;&quot;) || postalCode.equals(&quot;&quot;)) {
++				return null;
++			} else {
+ 				address = street + createTab() + postalCode + createTab();
+-				//System.out.println(&quot;**** found related address: &quot; + address.toString());	
++			}
+ 		} else {
+ 			return null;
+ 		}
+@@ -398,12 +405,12 @@
+ 		String oldCityProp = bean.getValue(&quot;Stadt&quot;);
+ 		if (oldCityProp != null) {// != null &amp;&amp; oldCityProp.type == TopicBeanField.TYPE_SINGLE) {
+ 			address += oldCityProp;
+-			System.out.println(&quot;*** found old \&quot;Stadt\&quot; Property. so City is: &quot; + address.toString());
++			// System.out.println(&quot;*** found old \&quot;Stadt\&quot; Property. so City is: &quot; + address.toString());
+ 		} else {
+ 			String cityField = bean.getValue(&quot;Address / City&quot;);
+ 			if (cityField != null) { // != null &amp;&amp; cityField.type == TopicBeanField.TYPE_MULTI){
+ 				address += cityField;
+-				System.out.println(&quot;**** found related city: &quot; + address.toString());	
++				// System.out.println(&quot;**** found related city: &quot; + address.toString());	
+ 			}
+ 		}
+ 		return address;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000047.html">[Kiezatlas-svn] r58 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+	<LI>Next message: <A HREF="000049.html">[Kiezatlas-svn] r60 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48">[ date ]</a>
+              <a href="thread.html#48">[ thread ]</a>
+              <a href="subject.html#48">[ subject ]</a>
+              <a href="author.html#48">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

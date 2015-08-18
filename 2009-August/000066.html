@@ -1,0 +1,535 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r77 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-August/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r77%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200908031513.n73FDgd6010352%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r77 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r77%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200908031513.n73FDgd6010352%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r77 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Aug  3 17:13:42 CEST 2009</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66">[ date ]</a>
+              <a href="thread.html#66">[ thread ]</a>
+              <a href="subject.html#66">[ subject ]</a>
+              <a href="author.html#66">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-08-03 17:13:38 +0200 (Mon, 03 Aug 2009)
+New Revision: 77
+
+Added:
+   trunk/pages/SlimList.jsp
+Modified:
+   trunk/pages/ListHome.jsp
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+New List Features
+* addtional there are now slimLists which allow filtering by name and 'crud' operations, available for Kiez-Administratoren after login at /list/
+
+Fix: The GeoObjectTopic does'not override WGS 84 Coordinates if they are already known to the system
+
+Modified: trunk/pages/ListHome.jsp
+===================================================================
+--- trunk/pages/ListHome.jsp	2009-07-05 23:07:27 UTC (rev 76)
++++ trunk/pages/ListHome.jsp	2009-08-03 15:13:38 UTC (rev 77)
+@@ -4,18 +4,24 @@
+ &lt;%
+ 	Vector workspaces = (Vector) session.getAttribute(&quot;workspaces&quot;);
+ 	Hashtable cityMaps = (Hashtable) session.getAttribute(&quot;cityMaps&quot;);
++	Hashtable mapCounts = (Hashtable) session.getAttribute(&quot;mapCounts&quot;);
++	String membership = (String) session.getAttribute(&quot;membership&quot;);
+ 	//
+ 	out.println(&quot;&lt;dl&gt;&quot;);
+ 	//
+ 	Enumeration e = workspaces.elements();
+ 	while (e.hasMoreElements()) {
+ 		BaseTopic workspace = (BaseTopic) e.nextElement();
+-		out.println(&quot;&lt;dt&gt;&quot; + workspace.getName() + &quot;&lt;/dt&gt;&quot;);
++		out.println(&quot;&lt;dt&gt;&lt;b&gt;&quot; + workspace.getName() + &quot;&lt;/b&gt;&lt;/dt&gt;&quot;);
+ 		Enumeration e2 = ((Vector) cityMaps.get(workspace.getID())).elements();
+ 		while (e2.hasMoreElements()) {
+ 			BaseTopic cityMap = (BaseTopic) e2.nextElement();
+-			out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS +
+-				&quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot;&gt;&quot; + cityMap.getName() + &quot;&lt;/a&gt;&lt;/dd&gt;&quot;);
++					out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS + &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot;&gt;&quot; +
++                            &quot;&quot;+cityMap.getName()+&quot;&lt;/a&gt;&nbsp;&lt;span class=\&quot;small\&quot;&gt;(&quot;+ mapCounts.get(cityMap.getID()) +&quot;)&lt;/span&gt;&nbsp;&amp;nbsp&quot;);
++                if (!membership.equals(&quot;Affiliated&quot;)) {
++                    out.println(&quot;&lt;a href=\&quot;?action=&quot; + KiezAtlas.ACTION_SHOW_INSTITUTIONS_SLIM +
++                    &quot;&amp;cityMapID=&quot; + cityMap.getID() + &quot;\&quot; class=\&quot;small\&quot;&gt; zur schlanken Liste &lt;/a&gt;&lt;/dd&gt;&quot;);
++                }
+ 		}
+ 	}
+ 	out.println(&quot;&lt;/dl&gt;&quot;);
+
+Added: trunk/pages/SlimList.jsp
+===================================================================
+--- trunk/pages/SlimList.jsp	2009-07-05 23:07:27 UTC (rev 76)
++++ trunk/pages/SlimList.jsp	2009-08-03 15:13:38 UTC (rev 77)
+@@ -0,0 +1,55 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
++
++&lt;%
++	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
++	BaseTopic cityMap = (BaseTopic) session.getAttribute(&quot;cityMap&quot;);
++	Vector topics = (Vector) session.getAttribute(&quot;topics&quot;);
++	BaseTopic geo = (BaseTopic) session.getAttribute(&quot;geo&quot;);
++	Vector notifications = (Vector) session.getAttribute(&quot;notifications&quot;);
++	String filterField = (String) session.getAttribute(&quot;filterField&quot;);
++    // String membership = (String) session.getAttribute(&quot;membership&quot;);
++	BaseTopic bean = null;
++	if (topics.size() &gt; 0) {
++	    // get table headers, just if topics are provided
++	    bean = (BaseTopic) topics.get(0);
++	}
++	//
++	String disabledFormString;
++	String selectedFilterField;
++	if(filterField != null) {
++	    disabledFormString = &quot;&quot;;
++	    selectedFilterField = filterField;
++	} else {
++	    disabledFormString = &quot; disabled&quot;;
++	    selectedFilterField = &quot;&quot;;
++	}
++	out.println(&quot;&lt;p&gt;&lt;span class=\&quot;heading\&quot;&gt;&quot; + cityMap.getName() + &quot;&lt;/span&gt;&quot; +
++		&quot;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&quot; +
++		html.link(&quot;Alle Stadtpl&auml;ne anzeigen&quot;, KiezAtlas.ACTION_GO_HOME) + &quot;&lt;/p&gt;&quot;);
++	out.println(&quot;&lt;p&gt;&quot; + topics.size() + &quot; Objekte&quot;);
++    out.println(&quot;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&quot; + html.link(&quot;Neues Objekt eingeben&quot;, KiezAtlas.ACTION_SHOW_EMPTY_GEO_FORM));
++	if (bean != null) {
++	    out.println(&quot;&lt;form id=\&quot;filterForm\&quot; method=\&quot;GET\&quot; action=\&quot;controller\&quot;&gt;Enth&#228;lt im Namen: &quot;);
++			// fieldOptions(bean, hiddenProps, hiddenPropsContaining, filterField) +
++	    // -- had to encode the action into a hidden form element. cause of '?'
++	    out.println(&quot;&lt;input type=\&quot;hidden\&quot; name=\&quot;action\&quot; value=\&quot;&quot;+KiezAtlas.ACTION_FILTER+&quot;\&quot;&gt;\n&quot;);
++	    out.println(&quot;&lt;input type=\&quot;hidden\&quot; name=\&quot;filterField\&quot; value=\&quot;Name\&quot;&gt;\n&quot;);
++        out.println(&quot;&lt;input type=\&quot;text\&quot; name=\&quot;filterText\&quot;&gt;\n&quot;);
++	    out.println(&quot;&lt;input type=\&quot;submit\&quot; value=\&quot;Filtern\&quot;&gt;\n&quot;);
++	    out.println(&quot;&lt;/form&gt;\n&quot;);
++	}
++	out.println(&quot;&lt;form method=\&quot;GET\&quot; action=\&quot;controller\&quot; &gt;&quot;);
++	out.println(&quot;&lt;input type=\&quot;hidden\&quot; name=\&quot;action\&quot; value=\&quot;&quot;+KiezAtlas.ACTION_CLEAR_FILTER+&quot;\&quot;&gt;\n&quot;);
++	out.println(&quot;&lt;input type=\&quot;submit\&quot; value=\&quot;Filter aufheben\&quot;&quot; + disabledFormString + &quot;&gt;\n&quot;);
++	out.println(&quot;&lt;/form&gt;\n&quot;);
++	out.println(&quot;&lt;br&gt;&lt;/p&gt;&quot;);
++	out.println(html.notification(notifications) + (notifications.size() &gt; 0 ? &quot;&lt;br/&gt;&lt;br/&gt;&quot; : &quot;&quot;));
++	// --- list of institutions ---
++	// String selectedID = geo != null ? geo.getID() : null;
++	out.println(&quot;&lt;b&gt;Name&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&quot;);
++    out.println(html.linkList(topics, KiezAtlas.ACTION_SHOW_GEO_FORM, &quot;deleteEntry&quot;));
++	//
++%&gt;
++&lt;% end(out); %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-07-05 23:07:27 UTC (rev 76)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-08-03 15:13:38 UTC (rev 77)
+@@ -239,6 +239,7 @@
+ 	public static final String ACTION_DELETE_COMMENT = &quot;deleteComment&quot;;
+ 	// list servlet
+ 	public static final String ACTION_SHOW_INSTITUTIONS = &quot;showInstitutions&quot;;
++	public static final String ACTION_SHOW_INSTITUTIONS_SLIM = &quot;showSlimInstitution&quot;;
+ 	public static final String ACTION_SHOW_EMPTY_GEO_FORM = &quot;showEmptyGeoObjectForm&quot;;
+ 	public static final String ACTION_CREATE_GEO = &quot;createGeo&quot;;
+ 	public static final String ACTION_SORT_BY =&quot;sort&quot;;
+@@ -296,6 +297,7 @@
+     static final String PAGE_LIST_LOGIN = &quot;ListLogin&quot;;
+     static final String PAGE_LIST_HOME = &quot;ListHome&quot;;
+     static final String PAGE_LIST = &quot;List&quot;;
++    static final String PAGE_SLIM_LIST = &quot;SlimList&quot;;
+     static final String PAGE_SERVE = &quot;Serve&quot;;
+     static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+     static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-07-05 23:07:27 UTC (rev 76)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-08-03 15:13:38 UTC (rev 77)
+@@ -10,6 +10,8 @@
+ import de.deepamehta.service.TopicBeanField;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
++import de.deepamehta.topics.TypeTopic;
++import de.deepamehta.util.DeepaMehtaUtils;
+ import java.io.File;
+ import java.io.FileOutputStream;
+ import java.io.FileWriter;
+@@ -62,7 +64,19 @@
+ 			session.setAttribute(&quot;sortField&quot;, null);
+ 			session.setAttribute(&quot;filterField&quot;, null);
+ 			setUseCache(Boolean.FALSE, session);
++            session.setAttribute(&quot;isSlim&quot;, &quot;false&quot;);
+ 			return PAGE_LIST;
++		} else if (action.equals(ACTION_SHOW_INSTITUTIONS_SLIM)) {
++            BaseTopic cityMap = cm.getTopic(params.getValue(&quot;cityMapID&quot;), 1);
++			String instTypeID = ((CityMapTopic) as.getLiveTopic(cityMap)).getInstitutionType().getID();
++			setCityMap(cityMap, session);
++			setInstTypeID(instTypeID, session);
++			// -- initialize filter and search attributes with &quot;null&quot;
++			session.setAttribute(&quot;sortField&quot;, null);
++			session.setAttribute(&quot;isSlim&quot;, &quot;true&quot;);
++			session.setAttribute(&quot;filterField&quot;, null);
++			setUseCache(Boolean.FALSE, session);
++			return PAGE_SLIM_LIST;
+ 		} else if (action.equals(ACTION_SHOW_GEO_FORM)) {
+ 			String geoObjectID = params.getValue(&quot;id&quot;);
+ 			setGeoObject(cm.getTopic(geoObjectID, 1), session);
+@@ -85,10 +99,15 @@
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
+             setGPSCoordinates(geo, directives); //{ // ### should load coordinates if address was changed
+-			// make sure that element in cache is updated
+-            updateTopicInCache(geo, session);
+-            setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with cached topics now
+-			return PAGE_LIST;
++            if (session.getAttribute(&quot;isSlim&quot;).equals(&quot;true&quot;)) {
++                setUseCache(Boolean.FALSE, session);	// slim list don't use the cache
++                return PAGE_SLIM_LIST;
++            } else {
++                // make sure that element in cache is updated
++                updateTopicInCache(geo, session);
++                setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with cached topics now
++                return PAGE_LIST;
++            }
+ 		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
+ 			return PAGE_GEO_EMPTY_FORM;
+ 		} else if (action.equals(ACTION_CREATE_GEO)) {
+@@ -111,14 +130,20 @@
+ 			setGPSCoordinates(geo, directives); //{ // ### should load coordinates if address was changed
+             // --- store image ---
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+-            inserTopicIntoCache(geo, session);
+-			setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
+-			return PAGE_LIST;
++            if (session.getAttribute(&quot;isSlim&quot;).equals(&quot;true&quot;)) {
++                setUseCache(Boolean.FALSE, session);	// slim list don't uses the cache
++                return PAGE_SLIM_LIST;
++            } else {
++                setUseCache(Boolean.TRUE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
++                inserTopicIntoCache(geo, session);
++                return PAGE_LIST;
++            }
+ 		} else if (action.equals(ACTION_GO_HOME)) {
+ 			setFilterField(null, session);
+ 			setFilterText(null, session);
+ 			setSortByField(null, session);
+-			return PAGE_LIST_HOME;
++            session.setAttribute(&quot;isSlim&quot;, &quot;false&quot;);
++            return PAGE_LIST_HOME;
+ 		} else if (action.equals(ACTION_SORT_BY)) {
+             // just sort currently rendered list of topics
+ 			Vector topicBeans = getListedTopics(session);
+@@ -127,19 +152,34 @@
+ 			setListedTopics(topicBeans, session);
+ 			setSortByField(sortBy, session);
+ 			setUseCache(Boolean.TRUE, session);
++            // not used yet
++            if (session.getAttribute(&quot;isSlim&quot;).equals(&quot;true&quot;)) {
++               return PAGE_SLIM_LIST;
++            }
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_FILTER)) {
+             // always filter on the full list of cached topics
+-			Vector topicBeans = getCachedTopicList(session);
++			Vector cachedTopics = getCachedTopicList(session);
+ 			String filterField = params.getParameter(&quot;filterField&quot;);
++            // resulting topics can be either topicbeans or basetopics
++            Vector topics;
+ 			if (filterField != null) {
+-				String filterText = params.getParameter(&quot;filterText&quot;);
+-				Vector newBeans = filterBeansByField(topicBeans, filterField, filterText);
+-				setListedTopics(newBeans, session);
+-				setFilterField(filterField, session);
+-				setFilterText(filterText, session);
+-				setUseCache(Boolean.TRUE, session);
+-				return PAGE_LIST;
++                String filterText = params.getParameter(&quot;filterText&quot;);
++                if (session.getAttribute(&quot;isSlim&quot;).equals(&quot;true&quot;)) {
++                    topics = filterTopicsByName(cachedTopics, filterField, filterText);
++                    setListedTopics(topics, session);
++                    setFilterField(filterField, session);
++                    setFilterText(filterText, session);
++                    setUseCache(Boolean.TRUE, session);
++                    return PAGE_SLIM_LIST;
++                } else {
++                    topics = filterBeansByField(cachedTopics, filterField, filterText);
++                    setListedTopics(topics, session);
++                    setFilterField(filterField, session);
++                    setFilterText(filterText, session);
++                    setUseCache(Boolean.TRUE, session);
++                    return PAGE_LIST;
++                }
+ 			}
+ 			setUseCache(Boolean.TRUE, session);
+ 			return PAGE_LIST;
+@@ -152,6 +192,9 @@
+ 			session.setAttribute(&quot;filterField&quot;, null);
+ 			setUseCache(Boolean.TRUE, session);
+ 			System.out.println(&quot;&gt;&gt;&gt; cleared Filter&quot;);
++            if (session.getAttribute(&quot;isSlim&quot;).equals(&quot;true&quot;)) {
++               return PAGE_SLIM_LIST;
++            }
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_CREATE_FORM_LETTER)) {
+ 			String letter = &quot;&quot;;
+@@ -174,8 +217,13 @@
+ 		} else if (action.equals(ACTION_DELETE_ENTRY)){
+ 			String topicId = params.getParameter(&quot;id&quot;);
+ 			deleteTopic(topicId);
+-            removeTopicFromCache(topicId, session);
+-			setUseCache(Boolean.TRUE, session);
++            if (session.getAttribute(&quot;isSlim&quot;).equals(&quot;true&quot;)) {
++                setUseCache(Boolean.FALSE, session);
++                return PAGE_SLIM_LIST;
++            } else {
++                removeTopicFromCache(topicId, session);
++                setUseCache(Boolean.TRUE, session);
++            }
+ 			return PAGE_LIST;
+ 		}
+ 		//
+@@ -187,6 +235,8 @@
+             // next line: membership preferences are set according to workspaces
+ 			Vector workspaces = getWorkspaces(getUserID(session), session);
+ 			Hashtable cityMaps = getCityMaps(workspaces);
++            Hashtable mapCounts = getMapCounts(cityMaps);
++            session.setAttribute(&quot;mapCounts&quot;, mapCounts);
+ 			session.setAttribute(&quot;workspaces&quot;, workspaces);
+ 			session.setAttribute(&quot;cityMaps&quot;, cityMaps);
+ 			session.setAttribute(&quot;emailList&quot;, null);
+@@ -199,12 +249,13 @@
+ 				Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+ 				Vector topicBeans = new Vector();
+ 				for (int i = 0; i &lt; insts.size(); i++) {
++                    // Creates TopicBean 
+ 					TopicBean topic = as.createTopicBean(insts.get(i).toString(), 1);
+ 					topicBeans.add(topic);
+ 				}
+                 //
+ 				setCachedTopicList(topicBeans, session);
+-				// System.out.println(&quot;&gt;&gt;&gt; refreshed beans in cache with serverside data&quot;);
++				System.out.println(&quot;&gt;&gt;&gt; refreshed &quot;+topicBeans.size()+&quot; topics for the fat list&quot;);
+ 				// fresh topic data &amp; re sorted
+ 				if (sortBy != null) {
+ 					sortBeans(topicBeans, sortBy);
+@@ -239,9 +290,44 @@
+ 				session.setAttribute(&quot;emailList&quot;, mailAdresses);
+ 				// System.out.println(&quot;&gt;&gt;&gt;&gt; emailList created with : &quot; + mailAdresses.size() + &quot; Eintr&#195;&#164;ge&quot;);
+ 			}
+-            // total memory of a jvm is flexible 
+-            System.out.println(&quot;CHECK: jvm has &quot; + Runtime.getRuntime().freeMemory() + &quot; free memory, &quot; +
+-                    &quot;it's max memory is &quot;+Runtime.getRuntime().maxMemory());
++		} else if (page.equals(PAGE_SLIM_LIST)) {
++			String sortBy = getSortByField(session);
++			// SLIM list is not using the cache check to be dropped
++			if(!isCacheUsed(session).booleanValue()) {
++				String cityMapID = getCityMap(session).getID();
++				String instTypeID = getInstTypeID(session);
++				Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
++				Vector topicBeans = new Vector();
++				for (int i = 0; i &lt; insts.size(); i++) {
++                    // Loads BaseTopic
++					BaseTopic topic = as.getLiveTopic(insts.get(i).toString(), 1);
++					topicBeans.add(topic);
++				}
++                //
++				setCachedTopicList(topicBeans, session);
++				System.out.println(&quot;&gt;&gt;&gt; slim refresh &quot;+topicBeans.size()+&quot; topics in cache with serverside data&quot;);
++				// fresh topic data &amp; re sorted
++				if (sortBy != null) {
++					sortBeans(topicBeans, sortBy);
++					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot;
++						+ session.getAttribute(&quot;sortField&quot;) );
++				} else {
++					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server with sortByTopicName&quot;);
++				}
++				// fresh topic data &amp; re filtered (just used after create geo)
++				if(getFilterField(session) != null) {
++					String filterText = (String) session.getAttribute(&quot;filterText&quot;);
++					topicBeans = filterTopicsByName(topicBeans, getFilterField(session), filterText);
++					// System.out.println(&quot;&gt;&gt;&gt;&gt; re-filtered fresh data in topicList&quot;);
++				}
++                // set topics to render in list, differ from cached if sorted or filtered
++				setListedTopics(topicBeans, session);
++				// notifications
++				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
++			} else {
++				// System.out.println(&quot;&gt;&gt;&gt; used cached or filtered topic list&quot;);
++				session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
++			}
+ 		}
+ 	}
+ 
+@@ -300,6 +386,27 @@
+ 		//
+ 		return filteredBeans;
+ 	}
++
++
++
++	private Vector filterTopicsByName(Vector topics, String filterField, String filterText) {
++		Vector filteredTopics = new Vector();
++		//
++		String prop;
++		// BaseTopic topicProp;
++		BaseTopic topic;
++		String beanField;
++		for (int i = 0; i &lt; topics.size(); i++) {
++			topic  = (BaseTopic) topics.get(i);
++			beanField = topic.getName();
++			// TopicBeanFields of TYPE_MULTI
++            if (beanField.toLowerCase().indexOf(filterText.toLowerCase()) != -1) {
++                filteredTopics.add(topic);
++            }
++		}
++		//
++		return filteredTopics;
++	}
+ 	
+ 	/**
+ 	 * Collects Email Addresses for all given beans by searching for TopicBeanFields {@link TopicBeanField} 
+@@ -559,6 +666,53 @@
+ 		return cityMaps;
+ 	}
+ 
++    private Hashtable getMapCounts(Hashtable cityMaps) {
++        Hashtable counts = new Hashtable();
++        // System.out.println(&quot;&gt;&gt; TIMER: mapCount was started at : &quot; + DeepaMehtaUtils.getTime(true));
++        Enumeration wsIds = cityMaps.keys();
++        while (wsIds.hasMoreElements()) {
++            String workspaceId = (String) wsIds.nextElement();
++            Vector maps = (Vector) cityMaps.get(workspaceId);
++            BaseTopic typeTopic = getWorkspaceSubType(workspaceId, KiezAtlas.TOPICTYPE_KIEZ_GEO);
++            for (int i = 0; i &lt; maps.size(); i++) {
++                BaseTopic map = (BaseTopic) maps.get(i);
++                Vector allTopics = cm.getViewTopics(map.getID(), 1, typeTopic.getID());
++                counts.put(map.getID(), allTopics.size());
++            }
++        }
++        // System.out.println(&quot;&gt;&gt; TIMER: mapCount has finished at : &quot; + DeepaMehtaUtils.getTime(true));
++        return counts;
++    }
++
++    /**
++     * returns null if no topictype whihc is assigned to the given workspace,
++     * is a subtype of &quot;GeoObjectTopic&quot;
++     *
++     * @param workspaceId
++     * @return
++     */
++    private BaseTopic getWorkspaceSubType(String workspaceId, String superTypeId) {
++        //
++        TypeTopic geotype = as.type(superTypeId, 1);
++        Vector subtypes = geotype.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, ASSOCTYPE_USES, 2);
++        int i;
++        for (i = 0; i &lt; workspacetypes.size(); i++) {
++            BaseTopic topic = (BaseTopic) workspacetypes.get(i);
++            int a;
++            for (a = 0; a &lt; subtypes.size(); a++) {
++                // System.out.println(&quot; counter: &quot; + a);
++                String derivedOne = (String) subtypes.get(a);
++                // System.out.println(&quot;    &quot; + derivedOne.getID() + &quot;:&quot; + derivedOne.getName());
++                if (derivedOne.equals(topic.getID())) {
++                    // System.out.println(&quot; found geoType &quot; + topic.getID() + &quot;:&quot; + topic.getName());
++                    return topic;
++                }
++            }
++        }
++        return null;
++    }
++
+     private void updateTopicInCache(GeoObjectTopic geo, Session session) {
+         Vector topics = getCachedTopicList(session);
+         for (int i=0; i &lt; topics.size(); i++) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-07-05 23:07:27 UTC (rev 76)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-08-03 15:13:38 UTC (rev 77)
+@@ -604,19 +604,27 @@
+     }
+ 
+     public void setGPSCoordinates(CorporateDirectives directives) {
+-        // ### alternatively fetch city property
+-        String[] point = loadGPSCoordinates(directives);
+-        if(point[2] != null &amp;&amp; point[3] != null) {
+-            if (!point[2].equals(&quot;&quot;) &amp;&amp; !point[3].equals(&quot;&quot;)) {
+-                as.setTopicProperty(this, PROPERTY_GPS_LAT, point[2]);
+-                as.setTopicProperty(this, PROPERTY_GPS_LONG, point[3]);
+-                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Die Adresse hat &quot;+point[2]+&quot;,&quot;+point[3]+&quot; als GPS Koordinaten zugewiesen bekommen.&quot;, new Integer(NOTIFICATION_DEFAULT));
+-                System.out.println(&quot;GeoObjectTopic.setGPSCoordinates(): successful to &quot; + point[2] +&quot;,&quot; + point[3] +&quot; for address:&quot; + getAddressString());
++        boolean emptyLat = (!as.getTopicProperty(this, PROPERTY_GPS_LAT).equals(&quot;&quot;)) ? true : false;
++        boolean emptyLong = (!as.getTopicProperty(this, PROPERTY_GPS_LONG).equals(&quot;&quot;)) ? true : false;
++        if (emptyLat &amp;&amp; emptyLong) {
++            directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;WGS 84 coordinates are already known to the system, &quot; +
++                    &quot;skipping repositioning. (Means: Changes to the &lt;i&gt;Address&lt;/i&gt; do not &lt;i&gt;automatically&lt;/i&gt; update &quot; +
++                    &quot;the position of this GeoObject in a \&quot;Citymap\&quot;.&quot;, new Integer(NOTIFICATION_DEFAULT));
++        } else {
++            // ### alternatively fetch city property
++            String[] point = loadGPSCoordinates(directives);
++            if(point[2] != null &amp;&amp; point[3] != null) {
++                if (!point[2].equals(&quot;&quot;) &amp;&amp; !point[3].equals(&quot;&quot;)) {
++                    as.setTopicProperty(this, PROPERTY_GPS_LAT, point[2]);
++                    as.setTopicProperty(this, PROPERTY_GPS_LONG, point[3]);
++                    directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Die Adresse hat &quot;+point[2]+&quot;,&quot;+point[3]+&quot; als GPS Koordinaten zugewiesen bekommen.&quot;, new Integer(NOTIFICATION_DEFAULT));
++                    System.out.println(&quot;GeoObjectTopic.setGPSCoordinates(): successful to &quot; + point[2] +&quot;,&quot; + point[3] +&quot; for address:&quot; + getAddressString());
++                } else {
++                    directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to WGS 84 coordinates. Leaving the topic like it is. &quot;, new Integer(NOTIFICATION_ERROR));
++                }
+             } else {
+-                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates. Leaving the topic like it is. &quot;, new Integer(NOTIFICATION_ERROR));
++                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to WGS 84 coordinates. Leaving the topic like it is. &quot;, new Integer(NOTIFICATION_ERROR));
+             }
+-        } else {
+-            directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates. Leaving the topic like it is. &quot;, new Integer(NOTIFICATION_ERROR));
+         }
+     }
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#66">[ date ]</a>
+              <a href="thread.html#66">[ thread ]</a>
+              <a href="subject.html#66">[ subject ]</a>
+              <a href="author.html#66">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r90 - in trunk: config/default	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r90%20-%20in%20trunk%3A%20config/default%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C201005192119.o4JLJLhf016416%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000077.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r90 - in trunk: config/default	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r90%20-%20in%20trunk%3A%20config/default%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C201005192119.o4JLJLhf016416%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r90 - in trunk: config/default	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed May 19 23:19:21 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000077.html">[Kiezatlas-svn] r89 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78">[ date ]</a>
+              <a href="thread.html#78">[ thread ]</a>
+              <a href="subject.html#78">[ subject ]</a>
+              <a href="author.html#78">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-05-19 23:19:19 +0200 (Wed, 19 May 2010)
+New Revision: 90
+
+Modified:
+   trunk/config/default/web.xml
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+Log:
+Minor Edit
+* removed some debug messages,
+* named this rev: 1.6.5beta
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2010-05-18 11:42:20 UTC (rev 89)
++++ trunk/config/default/web.xml	2010-05-19 21:19:19 UTC (rev 90)
+@@ -1,27 +1,26 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;!DOCTYPE web-app PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+-
+ &lt;web-app&gt;
+ 
+-    &lt;Listener className=&quot;de.kiezatlas.deepamehta.LifeCycleWatcher&quot;&gt;&lt;/Listener&gt;
++    &lt;Listener className=&quot;de.kiezatlas.deepamehta.LifeCycleWatcher&quot;/&gt;
+ 
+ 	&lt;!-- General description of the web application --&gt;
+ 
+ 	&lt;display-name&gt;Kiezatlas&lt;/display-name&gt;
+-	&lt;description&gt;Version 1.6.2
+-		Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>)&lt;/description&gt;
++	&lt;description&gt;Version 1.6.5b
++		Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>) and Malte Rei&#223;ig (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>)&lt;/description&gt;
+ 
+ 	&lt;!-- Context initialization parameters that define shared
+ 		 String constants used within your application, which
+ 		 can be customized by the system administrator who is
+ 		 installing your application.
+ 	--&gt;
+-    
++
+ 	&lt;context-param&gt;
+ 		&lt;param-name&gt;service&lt;/param-name&gt;
+ 		&lt;!-- &lt;param-value&gt;kiezbox&lt;/param-value&gt; --&gt; &lt;!-- mre's local kiezatlas instance --&gt;
+ 		&lt;!-- &lt;param-value&gt;mysql5&lt;/param-value&gt; --&gt; &lt;!-- jri's default instance --&gt;
+-		&lt;param-value&gt;kieztest&lt;/param-value&gt; &lt;!-- www.kiezatlas.de production instance--&gt;
++		&lt;param-value&gt;kiezatlas&lt;/param-value&gt; &lt;!-- www.kiezatlas.de production instance--&gt;
+ 		&lt;description&gt;Selects a DeepaMehta service.
+ 			If this parameter is not set the &quot;default&quot; service will be used.
+ 			To configure DeepaMehta services see the file install/client/dms.rc&lt;/description&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-05-18 11:42:20 UTC (rev 89)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-05-19 21:19:19 UTC (rev 90)
+@@ -312,21 +312,13 @@
+                     bean.append(&quot;\&quot;values\&quot;: [&quot;);
+                     for (int r = 0; r &lt; relatedFields.size(); r++) {
+                         BaseTopic relatedTopic = (BaseTopic) relatedFields.get(r);
+-                        if ( relatedTopic == null ) {
+-                            System.out.println(&quot;[ERROR] no topic in values[&quot;+r+&quot;]... &quot; + topicBean.getValue(&quot;Name&quot;));
++                        bean.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
++                        // ### geoObject has it's own icon ?
++                        bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getLiveTopic(relatedTopic).getIconfile() + &quot;\&quot;}&quot;);
++                        if ( r == relatedFields.size()-1 )  {
++                            bean.append(&quot;]&quot;);
+                         } else {
+-                            bean.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
+-                            // ### geoObject has it's own icon ?
+-                            try {
+-                                bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getLiveTopic(relatedTopic).getIconfile() + &quot;\&quot;}&quot;);
+-                            } catch (Exception lex) {
+-                                System.out.println(&quot;[ERROR] liveException at &quot; + lex.toString() + topicBean.getValue(&quot;Name&quot;));
+-                            }
+-                            if ( r == relatedFields.size()-1 )  {
+-                                bean.append(&quot;]&quot;);
+-                            } else {
+-                                bean.append(&quot;, &quot;);
+-                            }
++                            bean.append(&quot;, &quot;);
+                         }
+                     }
+                 }
+@@ -338,8 +330,6 @@
+         }
+         bean.append(&quot;]&quot;);
+         bean.append(&quot;}&quot;);
+-        // System.out.println(&quot;GeoObjectBean is: \n ------------------------------------------- \n &quot; + bean.toString());
+-        // System.out.println(&quot;---------------------------------------------\n&quot;);
+         return bean.toString();
+     }
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000077.html">[Kiezatlas-svn] r89 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#78">[ date ]</a>
+              <a href="thread.html#78">[ thread ]</a>
+              <a href="subject.html#78">[ subject ]</a>
+              <a href="author.html#78">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

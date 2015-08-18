@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r55 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-September/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r55%20-%20in%20trunk%3A%20db/patches%20pages%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200809021035.m82AZ3KD008952%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000045.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r55 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r55%20-%20in%20trunk%3A%20db/patches%20pages%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200809021035.m82AZ3KD008952%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r55 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Tue Sep  2 12:35:03 CEST 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000045.html">[Kiezatlas-svn] r56 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#44">[ date ]</a>
+              <a href="thread.html#44">[ thread ]</a>
+              <a href="subject.html#44">[ subject ]</a>
+              <a href="author.html#44">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-09-02 12:34:56 +0200 (Tue, 02 Sep 2008)
+New Revision: 55
+
+Modified:
+   trunk/db/patches/ka-1.6.1.sql
+   trunk/pages/CommentForm.jsp
+   trunk/pages/ForumAdministration.jsp
+   trunk/pages/GeoObjectForm.jsp
+   trunk/pages/GeoObjectForum.jsp
+   trunk/pages/GeoObjectHome.jsp
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Minor extension: the forum status (on/off) for each institution is shown on the list page (ListServlet)
+
+Modified: trunk/db/patches/ka-1.6.1.sql
+===================================================================
+--- trunk/db/patches/ka-1.6.1.sql	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/db/patches/ka-1.6.1.sql	2008-09-02 10:34:56 UTC (rev 55)
+@@ -1,3 +1,19 @@
++
++-------------------------------------------
++--- Add &quot;Forum Activation&quot; to list view ---
++-------------------------------------------
++
++
++
++INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-118', '', 'tt-ka-geoobject', 1, 'tt-ka-forum', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-118', 1, 'Cardinality', 'one');
++INSERT INTO AssociationProp VALUES ('a-ka-118', 1, 'Association Type ID', 'at-association');
++INSERT INTO AssociationProp VALUES ('a-ka-118', 1, 'Web Info', 'Related Info');
++INSERT INTO AssociationProp VALUES ('a-ka-118', 1, 'Web Form', 'Related Form');
++INSERT INTO AssociationProp VALUES ('a-ka-118', 1, 'Ordinal Number', '390');
++
++
++
+ ----------------------------------------
+ --- New Feature: Customizable Layout ---
+ ----------------------------------------
+@@ -65,6 +81,9 @@
+ -- &quot;Image&quot;
+ INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-112', '', 't-ka-workspace', 1, 'tt-image', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-112', 1, 'Access Permission', 'create');
++-- &quot;Webpage&quot;
++INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-119', '', 't-ka-workspace', 1, 'tt-webpage', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-119', 1, 'Access Permission', 'create');
+ -- &quot;Homepage Link&quot;
+ INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-114', '', 't-ka-workspace', 1, 'at-ka-homepage-link', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-114', 1, 'Access Permission', 'create');
+
+Modified: trunk/pages/CommentForm.jsp
+===================================================================
+--- trunk/pages/CommentForm.jsp	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/pages/CommentForm.jsp	2008-09-02 10:34:56 UTC (rev 55)
+@@ -6,13 +6,12 @@
+ 	GeoObject inst = (GeoObject) session.getAttribute(&quot;selectedGeo&quot;);
+ 	Vector comments = (Vector) session.getAttribute(&quot;geoComments&quot;);
+ %&gt;
+-	&lt;br&gt;&lt;br&gt;
+-	&lt;p&gt;&lt;b&gt;&lt;%= inst.name %&gt; -- Forum&lt;/b&gt;&lt;/p&gt;
++	&lt;p&gt;&lt;b&gt;&lt;%= inst.name %&gt; - Forum&lt;/b&gt;&lt;/p&gt;
+ 	&lt;p&gt;Kommentar schreiben&lt;/p&gt;
+ 	&lt;form&gt;
+ 		&lt;table&gt;
+ 		&lt;tr&gt;
+-			&lt;td colspan=&quot;2&quot;&gt;&lt;textarea name=&quot;&lt;%=KiezAtlas.PROPERTY_TEXT%&gt;&quot; rows=&quot;8&quot; cols=&quot;36&quot;&gt;&lt;/textarea&gt;&lt;/td&gt;
++			&lt;td colspan=&quot;2&quot;&gt;&lt;textarea name=&quot;&lt;%=KiezAtlas.PROPERTY_TEXT%&gt;&quot; rows=&quot;12&quot; cols=&quot;40&quot;&gt;&lt;/textarea&gt;&lt;/td&gt;
+ 		&lt;/tr&gt;
+ 		&lt;tr&gt;
+ 			&lt;td class=&quot;small&quot;&gt;Autor&lt;/td&gt;
+
+Modified: trunk/pages/ForumAdministration.jsp
+===================================================================
+--- trunk/pages/ForumAdministration.jsp	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/pages/ForumAdministration.jsp	2008-09-02 10:34:56 UTC (rev 55)
+@@ -7,8 +7,9 @@
+ 	String activition = (String) session.getAttribute(&quot;activition&quot;);
+ 	Vector comments = (Vector) session.getAttribute(&quot;comments&quot;);
+ %&gt;
+-	&lt;h2&gt;&lt;%= inst.getName() %&gt; -- Forum Administration&lt;/h2&gt;
+-	Hier k&ouml;nnen Sie das Forum zu Ihrer Einrichtung aktivieren und deaktivieren. Nur wenn das Forum aktiviert ist, haben Websurfer die M&ouml;glichkeit, Kommentare zu Ihrer Einrichtung zu hinterlassen.
++	&lt;h2&gt;&lt;%= inst.getName() %&gt; - Forum Administration&lt;/h2&gt;
++	Hier k&ouml;nnen Sie das Forum zu Ihrer Einrichtung aktivieren und deaktivieren.&lt;br&gt;
++	Wenn das Forum aktiviert ist, haben Websurfer die M&ouml;glichkeit, Kommentare zu Ihrer Einrichtung zu hinterlassen.
+ 	&lt;p&gt;
+ 	Au&szlig;erdem haben Sie hier die M&ouml;glichkeit einzelne Kommentare zu l&ouml;schen.
+ 	&lt;hr&gt;
+
+Modified: trunk/pages/GeoObjectForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectForm.jsp	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/pages/GeoObjectForm.jsp	2008-09-02 10:34:56 UTC (rev 55)
+@@ -11,6 +11,8 @@
+ 		KiezAtlas.PROPERTY_YADE_X,
+ 		KiezAtlas.PROPERTY_YADE_Y,
+ 		KiezAtlas.PROPERTY_LAST_MODIFIED,
++		&quot;Forum Aktivierung&quot;,	/* can't use PROPERTY_FORUM_ACTIVITION because       */
++								/* relabled by GeoObjectTopic's propertyLabel() hook */
+ 		&quot;Title&quot;, &quot;Content&quot;,
+ 		&quot;Width&quot;, &quot;Height&quot;};
+ %&gt;
+
+Modified: trunk/pages/GeoObjectForum.jsp
+===================================================================
+--- trunk/pages/GeoObjectForum.jsp	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/pages/GeoObjectForum.jsp	2008-09-02 10:34:56 UTC (rev 55)
+@@ -6,8 +6,7 @@
+ 	GeoObject geo = (GeoObject) session.getAttribute(&quot;selectedGeo&quot;);
+ 	Vector comments = (Vector) session.getAttribute(&quot;geoComments&quot;);
+ %&gt;
+-	&lt;br&gt;&lt;br&gt;
+-	&lt;p&gt;&lt;b&gt;&lt;%= geo.name %&gt; -- Forum&lt;/b&gt;&lt;/p&gt;
++	&lt;p&gt;&lt;b&gt;&lt;%= geo.name %&gt; - Forum&lt;/b&gt;&lt;/p&gt;
+ 	&lt;p class=&quot;small&quot;&gt;Das Forum enth&auml;lt &lt;%= comments.size() %&gt; Kommentare&lt;/p&gt;
+ 	&lt;p&gt;&lt;%= html.link(&quot;Kommentar schreiben&quot;, KiezAtlas.ACTION_SHOW_COMMENT_FORM) %&gt;&lt;/p&gt;
+ 	&lt;%
+
+Modified: trunk/pages/GeoObjectHome.jsp
+===================================================================
+--- trunk/pages/GeoObjectHome.jsp	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/pages/GeoObjectHome.jsp	2008-09-02 10:34:56 UTC (rev 55)
+@@ -16,6 +16,7 @@
+ 	topicBean.removeField(&quot;Password&quot;);
+ 	topicBean.removeField(&quot;Address / Name&quot;);
+ 	topicBean.removeField(&quot;Address / Description&quot;);
++	topicBean.removeField(&quot;Forum / Aktivierung&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Owner ID&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Description&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Locked Geometry&quot;);
+@@ -26,7 +27,7 @@
+ 	out.println(html.info(topicBean, DeepaMehtaConstants.LAYOUT_STYLE_FLOW));
+ 	//
+ 	// links to form page and forum administration
+-	out.println(&quot;&lt;p&gt;\r&quot; + html.link(&quot;Zum &Auml;nderungsformular&quot;, KiezAtlas.ACTION_SHOW_GEO_FORM) + &quot;&lt;/p&gt;&quot;);
++	out.println(&quot;&lt;p&gt;\r&lt;br&gt;\r&quot; + html.link(&quot;Zum &Auml;nderungsformular&quot;, KiezAtlas.ACTION_SHOW_GEO_FORM) + &quot;&lt;/p&gt;&quot;);
+ 	out.println(&quot;&lt;p&gt;\r&lt;hr&gt;\r&quot; + html.link(&quot;Zur Forum Administration&quot;, KiezAtlas.ACTION_SHOW_FORUM_ADMINISTRATION) + &quot;&lt;/p&gt;&quot;);
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/pages/GeoObjectInfo.jsp	2008-09-02 10:34:56 UTC (rev 55)
+@@ -15,6 +15,7 @@
+ 	topicBean.removeFieldsContaining(&quot;Web Alias&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Locked Geometry&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Description&quot;);
++	topicBean.removeField(&quot;Forum / Aktivierung&quot;);
+ 	// --- image ---
+ 	String imageFile = topicBean.getValue(&quot;Image / File&quot;);
+ 	if (!imageFile.equals(&quot;&quot;)) {
+@@ -28,7 +29,7 @@
+ 	if (city == null) {
+ 		Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+ 		if (tmp != null) {
+-			if (tmp.size() &gt; 0){
++			if (tmp.size() &gt; 0) {
+ 				city = ((BaseTopic) tmp.elementAt(0)).getName();
+ 			} else {
+ 				city = &quot;&quot;;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-08-15 14:23:44 UTC (rev 54)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-09-02 10:34:56 UTC (rev 55)
+@@ -27,10 +27,10 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6&lt;br&gt;
++ * Kiezatlas 1.6.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 8.7.2008&lt;br&gt;
++ * Last change: 19.8.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -275,6 +275,10 @@
+ 			if (propName.equals(PROPERTY_EMAIL_ADDRESS)) {
+ 				return &quot;E-mail&quot;;
+ 			}
++		} else if (relTopicTypeID.equals(TOPICTYPE_FORUM)) {
++			if (propName.equals(PROPERTY_FORUM_ACTIVITION)) {
++				return &quot;Forum Aktivierung&quot;;
++			}
+ 		}
+ 		return LiveTopic.propertyLabel(propDef, relTopicTypeID, as);
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000045.html">[Kiezatlas-svn] r56 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#44">[ date ]</a>
+              <a href="thread.html#44">[ thread ]</a>
+              <a href="subject.html#44">[ subject ]</a>
+              <a href="author.html#44">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

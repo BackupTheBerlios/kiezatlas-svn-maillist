@@ -1,0 +1,1044 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r48 - in trunk: config/default icons pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-July/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r48%20-%20in%20trunk%3A%20config/default%20icons%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200807061918.m66JIvCF022960%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000039.html">
+   <LINK REL="Next"  HREF="000041.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r48 - in trunk: config/default icons pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r48%20-%20in%20trunk%3A%20config/default%20icons%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200807061918.m66JIvCF022960%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r48 - in trunk: config/default icons pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Sun Jul  6 21:18:57 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000039.html">[Kiezatlas-svn] r47 - in trunk: docs images pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics	src/de/swers/kiezatlas/tools
+</A></li>
+        <LI>Next message: <A HREF="000041.html">[Kiezatlas-svn] r49 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40">[ date ]</a>
+              <a href="thread.html#40">[ thread ]</a>
+              <a href="subject.html#40">[ subject ]</a>
+              <a href="author.html#40">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-07-06 21:18:48 +0200 (Sun, 06 Jul 2008)
+New Revision: 48
+
+Added:
+   trunk/icons/redball-bigger.gif
+Modified:
+   trunk/config/default/web.xml
+   trunk/pages/ForumAdministration.jsp
+   trunk/pages/GeoObjectAdminForm.jsp
+   trunk/pages/GeoObjectEmptyForm.jsp
+   trunk/pages/GeoObjectForm.jsp
+   trunk/pages/GeoObjectHome.jsp
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/GeoObjectLogin.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/List.jsp
+   trunk/pages/ListHome.jsp
+   trunk/pages/ListLogin.jsp
+   trunk/pages/UploadDataDone.jsp
+   trunk/pages/UploadDataHome.jsp
+   trunk/pages/UploadDataLogin.jsp
+   trunk/pages/UploadDataLoginTryAgain.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/Cluster.java
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Finalization of Kiezatlas 1.5.1
+1) List-page (ListServlet): more warning conditions checked and better error messages
+    1a) New warning: YADE is &quot;off&quot;
+    1b) New warning: no YADE-coordinated entered
+2) Bug fix in ListServlet: image upload is performed also from create-form (formerly upadte-form only)
+3) the design of a geo object info page converges to the original one
+4) in order to identify Kiezatlas windows in the browser's &quot;Windows&quot; menu the owner interface and list interface have different page titles (not yet the public interface)
+
+REQUIRES DeepaMehta revision 333 or later
+
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/config/default/web.xml	2008-07-06 19:18:48 UTC (rev 48)
+@@ -21,8 +21,8 @@
+ 
+ 	&lt;context-param&gt;
+ 		&lt;param-name&gt;service&lt;/param-name&gt;
+-		&lt;param-value&gt;mysql5&lt;/param-value&gt;&lt;!-- jri's default instance --&gt;
+-		&lt;!-- &lt;param-value&gt;kiezatlas&lt;/param-value&gt; --&gt;&lt;!-- www.kiezatlas.de production instance --&gt;
++		&lt;!-- &lt;param-value&gt;mysql5&lt;/param-value&gt; --&gt;	&lt;!-- jri's default instance --&gt;
++		&lt;param-value&gt;kiezatlas&lt;/param-value&gt;		&lt;!-- www.kiezatlas.de production instance --&gt;
+ 		&lt;description&gt;
+ 			Selects a DeepaMehta service.
+ 			If this parameter is not set the &quot;default&quot; service will be used.
+
+Added: trunk/icons/redball-bigger.gif
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/icons/redball-bigger.gif
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/ForumAdministration.jsp
+===================================================================
+--- trunk/pages/ForumAdministration.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/ForumAdministration.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_EDIT, session, out); %&gt;
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	BaseTopic inst = (BaseTopic) session.getAttribute(&quot;geo&quot;);
+
+Modified: trunk/pages/GeoObjectAdminForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectAdminForm.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/GeoObjectAdminForm.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
+ &lt;%!
+ 	static String[] hiddenProps = {
+ 		KiezAtlas.PROPERTY_DESCRIPTION,
+
+Modified: trunk/pages/GeoObjectEmptyForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectEmptyForm.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/GeoObjectEmptyForm.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
+ &lt;%!
+ 	static String[] hiddenProps = {
+ 		KiezAtlas.PROPERTY_DESCRIPTION,
+
+Modified: trunk/pages/GeoObjectForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectForm.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/GeoObjectForm.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_EDIT, session, out); %&gt;
+ &lt;%!
+ 	static String[] hiddenProps = {
+ 		&quot;Name&quot;,
+
+Modified: trunk/pages/GeoObjectHome.jsp
+===================================================================
+--- trunk/pages/GeoObjectHome.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/GeoObjectHome.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_EDIT, session, out); %&gt;
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	TopicBean topicBean = (TopicBean) session.getAttribute(&quot;topicBean&quot;);
+@@ -23,7 +23,7 @@
+ 	topicBean.removeFieldsContaining(&quot;YADE&quot;);
+ 	//
+ 	out.println(&quot;&lt;H2&gt;&quot; + topicBean.getValue(&quot;Name&quot;) + &quot;&lt;/H2&gt;&quot;);
+-	out.println(html.info(topicBean, DeepaMehtaConstants.BEAN_LAYOUT_BOX));
++	out.println(html.info(topicBean, DeepaMehtaConstants.LAYOUT_STYLE_FLOW));
+ 	//
+ 	// links to form page and forum administration
+ 	out.println(&quot;&lt;p&gt;\r&quot; + html.link(&quot;Zum &Auml;nderungsformular&quot;, KiezAtlas.ACTION_SHOW_GEO_FORM) + &quot;&lt;/p&gt;&quot;);
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/GeoObjectInfo.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -63,7 +63,7 @@
+ 	topicBean.removeField(&quot;Stadt&quot;);
+ 	//print properties which were not removed, starting generic content rendering 
+ 	out.println(&quot;&lt;br/&gt;&lt;br/&gt;&quot;);
+-	out.println(html.info(topicBean, 2));
++	out.println(html.info(topicBean, DeepaMehtaConstants.LAYOUT_STYLE_FLOW));
+ 	//If forum is activated by the owner, it will be shown a link here
+ 	if (forumActivition.equals(KiezAtlas.SWITCH_ON)) {
+ 		// link to forum page
+
+Modified: trunk/pages/GeoObjectLogin.jsp
+===================================================================
+--- trunk/pages/GeoObjectLogin.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/GeoObjectLogin.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_EDIT, session, out); %&gt;
+ &lt;%
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	BaseTopic geo = (BaseTopic) session.getAttribute(&quot;geo&quot;);
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/KiezAtlas.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -25,11 +25,22 @@
+ &lt;%@ page import=&quot;java.awt.Point&quot; %&gt;
+ 
+ &lt;%!
+-	// edit / list
+-	void begin(HttpSession session, JspWriter out) throws IOException {
+-		out.println(&quot;&lt;html&gt;\r&lt;head&gt;\r&lt;title&gt;Kiezatlas&lt;/title&gt;\r&quot; +
+-			&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;\r&lt;/head&gt;\r&quot; +
+-			&quot;&lt;body&gt;\r&lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/\">http://www.kiezatlas.de/\</A>&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/kiezatlas-logo.png\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++	// edit / list / upload
++	void begin(int servlet, HttpSession session, JspWriter out) throws IOException {
++		String title = &quot;Kiezatlas&quot;;
++		switch (servlet) {
++		case KiezAtlas.SERVLET_EDIT:
++			BaseTopic geo = (BaseTopic) session.getAttribute(&quot;geo&quot;);
++			title = title + &quot; - &quot; + geo.getName();
++			break;
++		case KiezAtlas.SERVLET_LIST:
++			title = title + &quot; - Listenzugang&quot;;
++			break;
++		}
++		out.println(&quot;&lt;html&gt;\r&lt;head&gt;\r&lt;title&gt;&quot; + title + &quot;&lt;/title&gt;\r&quot; +
++			&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;\r&lt;/head&gt;\r&lt;body&gt;\r&quot; +
++			&quot;&lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/\">http://www.kiezatlas.de/\</A>&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/kiezatlas-logo.png\&quot; border=\&quot;0\&quot;&gt;&quot; +
++			&quot;&lt;/a&gt;\r&lt;br&gt;&lt;br&gt;&quot;);
+ 	}
+ 
+ 	// browse
+@@ -138,11 +149,11 @@
+ 			}
+ 			//assemble the html block with streetname, postal code and city with the fahrplan img as a link in a block
+ 			String mapURL = (postalCode == null) ? 
+-					&quot;<A HREF="http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=&amp;adr_street=">http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=&amp;adr_street=</A>&quot; + streetname + &quot;&amp;adr_house=&quot; + hnr :
+-					&quot;<A HREF="http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=">http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=</A>&quot; + postalCode + &quot;&amp;adr_street=&quot; + streetname + &quot;&amp;adr_house=&quot; + hnr;
++				&quot;<A HREF="http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=&amp;adr_street=">http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=&amp;adr_street=</A>&quot; + streetname + &quot;&amp;adr_house=&quot; + hnr :
++				&quot;<A HREF="http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=">http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=</A>&quot; + postalCode + &quot;&amp;adr_street=&quot; + streetname + &quot;&amp;adr_house=&quot; + hnr;
+ 			//
+ 			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;fahrinfo\&quot;&gt;&lt;img src=\&quot;../images/fahrinfo.gif\&quot; border=\&quot;0\&quot; hspace=\&quot;20\&quot;&gt;&lt;/a&gt;&quot;;
+-			blockString.append((postalCode == null) ? street + imageLink + &quot;&lt;/br&gt;&quot; + city : street + imageLink + &quot;&lt;/br&gt;&quot; + postalCode + &quot; &quot; + city);	
++			blockString.append((postalCode == null) ? street + imageLink + &quot;&lt;/br&gt;&quot; + city : street + imageLink + &quot;&lt;/br&gt;&quot; + postalCode + &quot; &quot; + city);
+ 			return blockString.toString();
+ 		} else {
+ 			//else render what is available
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/List.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
+ &lt;%!
+ 	static String[] hiddenProps = {
+ 		KiezAtlas.PROPERTY_DESCRIPTION,
+
+Modified: trunk/pages/ListHome.jsp
+===================================================================
+--- trunk/pages/ListHome.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/ListHome.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
+ &lt;%
+ 	Vector workspaces = (Vector) session.getAttribute(&quot;workspaces&quot;);
+ 	Hashtable cityMaps = (Hashtable) session.getAttribute(&quot;cityMaps&quot;);
+
+Modified: trunk/pages/ListLogin.jsp
+===================================================================
+--- trunk/pages/ListLogin.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/ListLogin.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_LIST, session, out); %&gt;
+ &lt;h2&gt;Zugang zu den Listen&lt;/h2&gt;
+ &lt;form method=&quot;post&quot;&gt;
+ 	&lt;table&gt;
+
+Modified: trunk/pages/UploadDataDone.jsp
+===================================================================
+--- trunk/pages/UploadDataDone.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/UploadDataDone.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,5 +1,5 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_UPLOAD, session, out); %&gt;
+ &lt;h2&gt;Upload von Neuk&ouml;lln-Stadtinfo-Daten erfolgreich durchgef&uuml;hrt&lt;/h2&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/pages/UploadDataHome.jsp
+===================================================================
+--- trunk/pages/UploadDataHome.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/UploadDataHome.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_UPLOAD, session, out); %&gt;
+ &lt;%
+         /*
+ 	Vector workspaces = (Vector) session.getAttribute(&quot;workspaces&quot;);
+
+Modified: trunk/pages/UploadDataLogin.jsp
+===================================================================
+--- trunk/pages/UploadDataLogin.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/UploadDataLogin.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_UPLOAD, session, out); %&gt;
+ &lt;h2&gt;Zugang zum Upload von Neuk&ouml;lln-Stadtinfo-Daten&lt;/h2&gt;
+ &lt;form method=&quot;post&quot;&gt;
+ 	&lt;table&gt;
+
+Modified: trunk/pages/UploadDataLoginTryAgain.jsp
+===================================================================
+--- trunk/pages/UploadDataLoginTryAgain.jsp	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/UploadDataLoginTryAgain.jsp	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,6 +1,6 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ 
+-&lt;% begin(session, out); %&gt;
++&lt;% begin(KiezAtlas.SERVLET_UPLOAD, session, out); %&gt;
+ &lt;h2&gt;Zugang zum Upload von Neuk&ouml;lln-Stadtinfo-Daten&lt;/h2&gt;
+ &lt;h3&gt;Passwort ist falsch, versuchen Sie es bitte nocheinmal.&lt;/h3&gt;
+ &lt;form method=&quot;post&quot;&gt;
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/pages/kiezatlas.css	2008-07-06 19:18:48 UTC (rev 48)
+@@ -8,11 +8,11 @@
+ }
+ 
+ .header-box {
+-	background-color: #DDDDDD;
++	background-color: #F3F3F3;
+ }
+ 
+ .footer-box {
+-	background-color: #DDDDDD;
++	background-color: #F3F3F3;
+ }
+ 
+ .big {
+@@ -42,33 +42,25 @@
+ 	background-color: #FFFFFF;
+ }
+ 
+-/* used to display the label/key/name of the property */
+-.label {
++/* container for entire geo object info (public website and owner interface) */
++.info-container {
++}
++
++/* label of a single geo object info field (public website and owner interface) */
++.info-label {
+ 	font-size: 10px;
+ 	font-weight: bold;
+ 	color: #666666;
+ }
+ 
+-/* used to display the value of the property for every layout mostly typo */
+-.content {
++/* content of a single geo object info field (public website and owner interface) */
++.info-content {
+ }
+ 
+-/* used in the Flow and Box Layout as the background for the one big div container instead of table, starts below the image and fahrplan link */
+-.infoContainer {
+-	width: 95%;
+-	padding: 10px;
+-	background-color: #EEEEEE;
+-  	border: 1px dashed silver;
++/* container for a geo object multi-field, e.g. &quot;Telefon&quot; (public website and owner interface) */
++.info-multibox {
+ }
+ 
+-/* used in the Box Layout as a container for Fields  */
+-.multiBox {
+-	width: 97%;
+-	padding: 5px;
+-	background-color: #FFFFFF;
+-  	border: 1px dashed silver;
+-}
+-
+ .notification {
+ 	color: red;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -35,9 +35,9 @@
+  * Kiezatlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 29.6.2008&lt;br&gt;
++ * Last change: 4.7.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+ public class BrowseServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
+@@ -45,19 +45,19 @@
+ 																									throws ServletException {
+ 		if (action == null) {
+ 			try {
+-				//first visit regular or special 
++				// first visit regular or special 
+ 				String pathInfo = params.getPathInfo();
+ 				String alias = pathInfo.substring(1);
+-				//extension for optional parameters needed for a special visit
++				// extension for optional parameters needed for a special visit
+ 				String geoID = params.getParameter(&quot;id&quot;);
+ 				String kiez = params.getParameter(&quot;kiez&quot;);
+ 				// error check
+ 				if (pathInfo == null || pathInfo.length() == 1) {
+ 					throw new DeepaMehtaException(&quot;Fehler in URL&quot;);
+ 				}
+-				//handling for single geoObjectUrls in the right CityMap, the old url scheme was not applicable for this task
+-				//cause of incorrect paths to icons and css files, if relative to /browse/nk-reuter/controller?action=showInfo....
+-				//for this task now a special kiez param was introduced, for the code it means, eliminating redundancy
++				// handling for single geoObjectUrls in the right CityMap, the old url scheme was not applicable for this task
++				// cause of incorrect paths to icons and css files, if relative to /browse/nk-reuter/controller?action=showInfo...
++				// for this task now a special kiez param was introduced, for the code it means, eliminating redundancy
+ 				if(geoID != null &amp;&amp; kiez != null) {
+ 					TopicBean topicBean = as.createTopicBean(geoID, 1);
+ 					session.setAttribute(&quot;topicBean&quot;, topicBean);
+@@ -91,17 +91,17 @@
+ 			String frame = params.getValue(&quot;frame&quot;);
+ 			TopicBean topicBean = (TopicBean) session.getAttribute(&quot;topicBean&quot;);
+ 			if (frame.equals(FRAME_LEFT)) {
+-				//selectMarker if topicBean is set / form external call
+-				if(topicBean != null){
++				// selectMarker if topicBean is set / form external call
++				if(topicBean != null) {
+ 					setSelectedGeo(topicBean.id, session);
+ 				}					
+ 				return PAGE_CITY_MAP;
+ 			} else if (frame.equals(FRAME_RIGHT)) {
+ 				if (topicBean != null) {
+-					//try to show a given GeoObject, have to set a hotspot
+-					String mapID = getCityMap(session).getID(); // ### just for the hotspot
+-					String instTypeID = getInstitutionType(session).getID(); // ### just for the hotspot 
+-					setSearchMode(&quot;0&quot;, session); // ### i have to set a searchmode
++					// try to show a given GeoObject, have to set a hotspot
++					String mapID = getCityMap(session).getID();					// ### just for the hotspot
++					String instTypeID = getInstitutionType(session).getID();	// ### just for the hotspot 
++					setSearchMode(&quot;0&quot;, session);								// ### i have to set a searchmode
+ 					String imagePath = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH;
+ 					session.setAttribute(&quot;imagePath&quot;, imagePath);
+ 					GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(topicBean.id, 1);
+@@ -110,7 +110,7 @@
+ 					if (isForumActivated) {
+ 						session.setAttribute(&quot;commentCount&quot;, new Integer(geo.getComments().size()));
+ 					}
+-					//just trial and error, somehow it looks good, but don&#180;t now what i did exactly here
++					// just trial and error, somehow it looks good, but don't now what i did exactly here (mre)
+ 					Vector insts = cm.getViewTopics(mapID, 1, instTypeID, getSearchValue(session));
+ 					setHotspots(insts, ICON_HOTSPOT, session);
+ 					return PAGE_GEO_INFO;
+@@ -245,7 +245,7 @@
+ 					// address		
+ 					BaseTopic address = geo.getAddress();
+ 					// if no related address put new hashtable in it for property city
+-					Hashtable addressProps = address != null ?  as.getTopicProperties(address) : new Hashtable(); 
++					Hashtable addressProps = address != null ? as.getTopicProperties(address) : new Hashtable(); 
+ 					addressProps.put(PROPERTY_CITY, geo.getCity());
+ 					addresses.put(geo.getID(), addressProps);
+ 				} catch (ClassCastException e) {
+@@ -360,8 +360,7 @@
+ 	}
+ 
+ 	private void initInstitutaionType(Session session) {
+-		BaseTopic instT = ((CityMapTopic) as.getLiveTopic(getCityMap(session))).getInstitutionType();	// ### ugly
+-		TypeTopic instType = (TypeTopic) as.getLiveTopic(instT);
++		BaseTopic instType = ((CityMapTopic) as.getLiveTopic(getCityMap(session))).getInstitutionType();	// ### ugly
+ 		session.setAttribute(&quot;instType&quot;, instType);
+ 		System.out.println(&quot;&gt;&gt;&gt; \&quot;instType\&quot; stored in session: &quot; + instType);
+ 	}
+@@ -432,7 +431,7 @@
+ 		Vector presentables = new Vector(topics);
+ 		presentables.insertElementAt(as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH + icon, 0);
+ 		hotspots.addElement(presentables);
+-		//System.out.println(&quot;Have to handle clusters in here&quot;);
++		// ### System.out.println(&quot;Have to handle clusters in here&quot;);
+ 		makeCluster(hotspots, cluster);
+ 		session.setAttribute(&quot;cluster&quot;, cluster);
+ 		session.setAttribute(&quot;hotspots&quot;, hotspots);
+@@ -449,18 +448,18 @@
+ 	public void makeCluster(Vector hotspots, Vector clusters) {
+ 		Iterator vectorOfHotspots = hotspots.iterator();
+ 		while ( vectorOfHotspots.hasNext() ) {
+-			//for size of hotspot vectors in vector hotspot
++			// for size of hotspot vectors in vector hotspot
+ 			Vector currentHotspots = (Vector) vectorOfHotspots.next();
+ 			Iterator presentableTopics = currentHotspots.iterator();
+-			//System.out.println(&quot;size of current Hotspot &quot; + currentHotspots.toString() +&quot; : &quot;+ currentHotspots.size());
+-			//jump over the string, and make sure something is there as first item in our vector
++			// ### System.out.println(&quot;size of current Hotspot &quot; + currentHotspots.toString() +&quot; : &quot;+ currentHotspots.size());
++			// jump over the string, and make sure something is there as first item in our vector
+ 			if (presentableTopics.hasNext()) presentableTopics.next();
+ 			while( presentableTopics.hasNext() ) {
+ 				// the first element is always the icon path of the following hotspots
+ 				PresentableTopic currentPT = (PresentableTopic) presentableTopics.next();
+ 				Cluster foundCluster = findAndCheckClusters(currentPT, clusters);
+ 				if (foundCluster != null) {
+-					//addPresentable, checks for doubles
++					// addPresentable, checks for doubles
+ 					foundCluster.addPresentable(currentPT);
+ 				} else {
+ 					// es gibt noch kein cluster oder es wurde kein passendes gefunden also suchen, 
+@@ -468,23 +467,23 @@
+ 					PresentableTopic foundPT = findPT(currentPT, hotspots);
+ 					if ( foundPT != null ) {
+ 						// create Cluster, with two points, if they don't have the same ID add the respective dm server icon path
+-						// System.out.println(&quot;created new cluster with &quot; + currentPT.getID() + &quot; and &quot; + foundPT.getID());
++						// ### System.out.println(&quot;created new cluster with &quot; + currentPT.getID() + &quot; and &quot; + foundPT.getID());
+ 						clusters.add(new Cluster(currentPT, foundPT, as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH));
+ 					}
+ 				}
+ 			}
+-			//System.out.println(&quot;&gt; \&quot;clusters\&quot;: &quot;+clusters.toString());
++			// ### System.out.println(&quot;&gt; \&quot;clusters\&quot;: &quot;+clusters.toString());
+ 		}
+ 	}
+ 	
+ 	private Cluster findAndCheckClusters(PresentableTopic currentPT, Vector clusters){
+ 			for (int c=0; c &lt; clusters.size(); c++) {	
+-				//checking each cluster for point of current pt
++				// checking each cluster for point of current pt
+ 				Cluster currentCluster = (Cluster) clusters.get(c);
+-				//System.out.println(currentCluster.presentables.size() + &quot; topics in current Cluster&quot; + currentCluster.getPoint());
+-				//System.out.println(&quot;point to Check &quot; + currentPT.getName() +&quot;, &quot;+ currentPT.getGeometry());
++				// ### System.out.println(currentCluster.presentables.size() + &quot; topics in current Cluster&quot; + currentCluster.getPoint());
++				// ### System.out.println(&quot;point to Check &quot; + currentPT.getName() +&quot;, &quot;+ currentPT.getGeometry());
+ 				if (currentCluster.getPoint().equals(currentPT.getGeometry())) {
+-					//System.out.println(&quot;found cluster to return for adding pt&quot;);
++					// ### System.out.println(&quot;found cluster to return for adding pt&quot;);
+ 					return currentCluster;
+ 				}
+ 			}
+@@ -579,8 +578,8 @@
+ 		return getCriteria(i, session);
+ 	}
+ 
+-	private TypeTopic getInstitutionType(Session session) {
+-		return (TypeTopic) session.getAttribute(&quot;instType&quot;);
++	private BaseTopic getInstitutionType(Session session) {
++		return (BaseTopic) session.getAttribute(&quot;instType&quot;);
+ 	}
+ 
+ 	private String getSearchMode(Session session) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Cluster.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -1,34 +1,32 @@
+ package de.kiezatlas.deepamehta;
+ 
++import de.deepamehta.PresentableTopic;
++//
+ import java.awt.Point;
++import java.io.Serializable;
+ import java.util.Vector;
+-//
+-import de.deepamehta.PresentableTopic;
+ 
+ 
+ 
+-public class Cluster {
++public class Cluster implements KiezAtlas, Serializable {
+ 
+ 	private Point p;
+ 	private String icon;
+ 	private Vector presentables = new Vector();
+ 
+-	public Cluster (PresentableTopic presentableOne, PresentableTopic presentableTwo, String clusterIconPath) {		
+-		// first object is the point of this cluster
++	public Cluster(PresentableTopic presentableOne, PresentableTopic presentableTwo, String clusterIconPath) {		
+ 		p = presentableOne.getGeometry();
+-		icon = clusterIconPath + &quot;redball-bigger.gif&quot;;
++		icon = clusterIconPath + ICON_CLUSTER;
+ 		presentables.add(presentableOne);
+ 		presentables.add(presentableTwo);
+ 	}
+ 
+-	// Override
+ 	public String toString() {
+ 		return &quot;:: &quot; + presentables.toString() + &quot; :: &quot;;
+ 	}
+ 
+ 	public void addPresentable(PresentableTopic presentable) {
+ 		if (!presentables.contains(presentable)) {
+-			//System.out.println(&quot;added &quot;+ presentable.getID()+&quot; into &quot; + this.p);
+ 			presentables.add(presentable);
+ 		}
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -4,6 +4,7 @@
+ //
+ import de.deepamehta.BaseTopic;
+ import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.service.ApplicationService;
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.service.TopicBean;
+@@ -26,7 +27,7 @@
+  * Kiezatlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 29.6.2008&lt;br&gt;
++ * Last change: 4.7.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -75,10 +76,8 @@
+ 			// update timestamp
+ 			cm.setTopicData(geo.getID(), 1, PROPERTY_LAST_MODIFIED, DeepaMehtaUtils.getDate());
+ 			// store image
+-			String newFilename = writeImage(params.getUploads());
+-			if (newFilename != null) {
+-				as.setTopicProperty(geo.getImage(), PROPERTY_FILE, newFilename);
+-			}
++			writeImage(params.getUploads(), geo.getImage(), PROPERTY_FILE, as);
++			//
+ 			return PAGE_GEO_HOME;
+ 			//
+ 		} else if (action.equals(ACTION_SHOW_FORUM_ADMINISTRATION)) {
+@@ -144,7 +143,11 @@
+ 
+ 
+ 
+-	static String writeImage(Vector fileItems) {
++	/**
++	 * @see		#performAction
++	 * @see		ListServlet#performAction
++	 */
++	static String writeImage(Vector fileItems, BaseTopic topic, String propName, ApplicationService as) {
+ 		try {
+ 			System.out.println(&quot;&gt;&gt;&gt; EditServlet.writeImage(): &quot; + fileItems.size() + &quot; files uploaded&quot;);
+ 			if (fileItems.size() &gt; 0) {
+@@ -169,6 +172,9 @@
+ 				// ### item.write(new File(as.getCorporateWebBaseURL().substring(5) + &quot;images/&quot; + filename));
+ 				System.out.println(&quot;  &gt; file \&quot;&quot; + fileToWrite + &quot;\&quot; written successfully&quot;);
+ 				if (copyCount &gt; 0) {
++					if (newFilename != null) {
++						as.setTopicProperty(topic, propName, newFilename);
++					}
+ 					return newFilename;
+ 				}
+ 			}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -8,7 +8,7 @@
+  * Kiezatlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 25.6.2008&lt;br&gt;
++ * Last change: 6.7.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -157,6 +157,19 @@
+ 
+ 
+ 
++	// ----------------
++	// --- Servlets ---
++	// ----------------
++
++
++
++	public static final int SERVLET_BROWSE = 1;
++	public static final int SERVLET_EDIT = 2;
++	public static final int SERVLET_LIST = 3;
++	public static final int SERVLET_UPLOAD = 4;
++
++
++
+ 	// -------------
+ 	// --- Icons ---
+ 	// -------------
+@@ -164,6 +177,7 @@
+ 
+ 
+ 	public static final String ICON_HOTSPOT = &quot;redball-middle.gif&quot;;
++	public static final String ICON_CLUSTER = &quot;redball-bigger.gif&quot;;
+ 
+ 
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -7,6 +7,7 @@
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
++import de.deepamehta.service.web.Notification;
+ import de.deepamehta.service.web.RequestParameter;
+ import de.deepamehta.util.DeepaMehtaUtils;
+ //
+@@ -22,7 +23,7 @@
+  * Kiezatlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 29.6.2008&lt;br&gt;
++ * Last change: 6.7.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -52,26 +53,42 @@
+ 			setGeoObject(cm.getTopic(geoObjectID, 1), session);
+ 			return PAGE_GEO_ADMIN_FORM;
+ 		} else if (action.equals(ACTION_UPDATE_GEO)) {
+-			// update geo object
+ 			GeoObjectTopic geo = getGeoObject(session);
+-			String cityMapID = getCityMap(session).getID();
+-			updateTopic(geo.getType(), params, session, directives, cityMapID, VIEWMODE_USE);
+-			// update timestamp
++			CityMapTopic cityMap = getCityMap(session);
++			// --- notification ---
++			// Note: the check for warnings is performed before the form input is processed
++			// because the processing eat the parameters up.
++			checkForWarnings(params, session, directives);
++			// --- update geo object ---
++			updateTopic(geo.getType(), params, session, directives, cityMap.getID(), VIEWMODE_USE);
++			// --- update timestamp ---
+ 			cm.setTopicData(geo.getID(), 1, PROPERTY_LAST_MODIFIED, DeepaMehtaUtils.getDate());
+-			// store image
+-			String newFilename = EditServlet.writeImage(params.getUploads());
+-			if (newFilename != null) {
+-				as.setTopicProperty(geo.getImage(), PROPERTY_FILE, newFilename);
+-			}
++			// --- store image ---
++			EditServlet.writeImage(params.getUploads(), geo.getImage(), PROPERTY_FILE, as);
++			//
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
+ 			return PAGE_GEO_EMPTY_FORM;
+ 		} else if (action.equals(ACTION_CREATE_GEO)) {
+ 			String geoObjectID = as.getNewTopicID();
+-			String cityMapID = getCityMap(session).getID();
+-			cm.createViewTopic(cityMapID, 1, VIEWMODE_USE, geoObjectID, 1, 0, 0, false);	// performExistenceCheck=false
+-			createTopic(getInstTypeID(session), params, session, directives, cityMapID, geoObjectID);
++			CityMapTopic cityMap = getCityMap(session);
++			// --- notification ---
++			// Note: the check for warnings is performed before the form input is processed
++			// because the processing eat the parameters up.
++			checkForWarnings(params, session, directives);
++			// --- place in city map ---
++			// Note: the geo object is placed in city map before it is actually created.
++			// This way YADE-based autopositioning can perform through geo object's propertiesChanged() hook.
++			cm.createViewTopic(cityMap.getID(), 1, VIEWMODE_USE, geoObjectID, 1, 0, 0, false);	// performExistenceCheck=false
++			// --- create geo object ---
++			// Note: timestamp, password, and geometry-lock are initialized through geo object's evoke() hook.
++			createTopic(getInstTypeID(session), params, session, directives, cityMap.getID(), geoObjectID);
++			// --- get geo object ---
+ 			setGeoObject(cm.getTopic(geoObjectID, 1), session);
++			GeoObjectTopic geo = getGeoObject(session);
++			// --- store image ---
++			EditServlet.writeImage(params.getUploads(), geo.getImage(), PROPERTY_FILE, as);
++			//
+ 			return PAGE_LIST;
+ 		} else if (action.equals(ACTION_GO_HOME)) {
+ 			return PAGE_LIST_HOME;
+@@ -87,10 +104,12 @@
+ 			session.setAttribute(&quot;workspaces&quot;, workspaces);
+ 			session.setAttribute(&quot;cityMaps&quot;, cityMaps);
+ 		} else if (page.equals(PAGE_LIST)) {
++			// geo objects
+ 			String cityMapID = getCityMap(session).getID();
+ 			String instTypeID = getInstTypeID(session);
+ 			Vector insts = cm.getTopicIDs(instTypeID, cityMapID, true);		// sortByTopicName=true
+ 			session.setAttribute(&quot;topics&quot;, insts);
++			// notifications
+ 			session.setAttribute(&quot;notifications&quot;, directives.getNotifications());
+ 		}
+ 	}
+@@ -144,8 +163,21 @@
+ 		return cityMaps;
+ 	}
+ 
++	private void checkForWarnings(RequestParameter params, Session session, CorporateDirectives directives) {
++		CityMapTopic cityMap = getCityMap(session);
++		String geoName = params.getValue(PROPERTY_NAME);
++		// warning if YADE is &quot;off&quot;
++		if (!cityMap.isYADEOn()) {
++			directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;\&quot;&quot; + geoName + &quot;\&quot; wurde hilfsweise in die Ecke oben/links positioniert &quot; +
++				&quot;(Stadtplan \&quot;&quot; + cityMap.getName() + &quot;\&quot; hat keine YADE-Referenzpunkte)&quot;, new Integer(NOTIFICATION_WARNING));
++		} else if (params.getValue(PROPERTY_YADE_X).equals(&quot;&quot;) &amp;&amp; params.getValue(PROPERTY_YADE_Y).equals(&quot;&quot;)) {
++			directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;\&quot;&quot; + geoName + &quot;\&quot; wurde hilfsweise in die Ecke oben/links positioniert &quot; +
++				&quot;-- Bitte YADE-Koordinaten angeben&quot;, new Integer(NOTIFICATION_WARNING));
++		}
++	}
+ 
+ 
++
+ 	// *************************
+ 	// *** Session Utilities ***
+ 	// *************************
+@@ -176,8 +208,8 @@
+ 
+ 	// ---
+ 
+-	private BaseTopic getCityMap(Session session) {
+-		return (BaseTopic) session.getAttribute(&quot;cityMap&quot;);
++	private CityMapTopic getCityMap(Session session) {
++		return (CityMapTopic) as.getLiveTopic((BaseTopic) session.getAttribute(&quot;cityMap&quot;));
+ 	}
+ 
+ 	private String getInstTypeID(Session session) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -24,9 +24,9 @@
+  * Kiezatlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 30.6.2008&lt;br&gt;
++ * Last change: 3.7.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+ public class CityMapTopic extends TopicMapTopic implements KiezAtlas {
+ 
+@@ -168,7 +168,6 @@
+ 				Point p = inst.getPoint(getID());	// throws DME
+ 				// set new geometry
+ 				if (p != null) {	// Note: p is null if YADE is &quot;off&quot;
+-					// ### System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.getPresentableTopic(): &quot; + topic + &quot; prgramatically placed to &quot; + p);
+ 					pt.setGeometry(p);
+ 				}
+ 			} catch (DeepaMehtaException e) {
+@@ -238,6 +237,10 @@
+ 
+ 	// ---
+ 
++	public boolean isYADEOn() {
++		return getYADERefPoints().size() == 2;
++	}
++
+ 	/**
+ 	 * @return	2-element array of YADE-reference topics, or &lt;code&gt;null&lt;/code&gt; if there are no YADE-reference topics
+ 	 *			inside this city map (YADE is &quot;off&quot;).
+@@ -246,13 +249,15 @@
+ 	 * @see		GeoObjectTopic#getYadePoint
+ 	 */
+ 	public PresentableTopic[] getYADEReferencePoints() throws DeepaMehtaException {
+-		Vector yp = cm.getViewTopics(getID(), 1, TOPICTYPE_YADE_POINT);
++		Vector yp = getYADERefPoints();
+ 		if (yp.size() == 0) {
+ 			// Note: this is not an error (YADE is &quot;off&quot;).
+ 			return null;
+ 		} else if (yp.size() != 2) {
+-			throw new DeepaMehtaException(&quot;Administrator-Fehler: Stadtplan \&quot;&quot; + getName() + &quot;\&quot; hat &quot; +
+-				yp.size() + &quot; YADE Referenzpunkte. Notwendig sind 0 oder 2.&quot;);
++			String errText = yp.size() == 1 ? &quot;Stadtplan \&quot;&quot; + getName() + &quot;\&quot; hat nur einen YADE-Referenzpunkt. &quot; +
++				&quot;Notwendig sind zwei.&quot;		: &quot;Stadtplan \&quot;&quot; + getName() + &quot;\&quot; hat &quot; + yp.size() + &quot; YADE-Referenzpunkte. &quot; +
++				&quot;Notwendig sind zwei.&quot;;
++			throw new DeepaMehtaException(errText);
+ 		}
+ 		PresentableTopic[] yt = new PresentableTopic[2];
+ 		yt[0] = (PresentableTopic) yp.elementAt(0);
+@@ -276,7 +281,8 @@
+ 				Point p = inst.getPoint(getID());	// throws DME
+ 				// Note: if YADE is &quot;off&quot; p is null
+ 				if (p == null) {
+-					String txt = &quot;Die Einrichtungen konnten nicht neuplatziert werden. Es m&#252;ssen erst 2 Referenzpunkte gesetzt werden.&quot;;
++					String txt = &quot;Die Einrichtungen konnten nicht neupositioniert werden. &quot; +
++						&quot;Es m&#252;ssen erst 2 YADE-Referenzpunkte gesetzt werden.&quot;;
+ 					directives.add(DIRECTIVE_SHOW_MESSAGE, txt, new Integer(NOTIFICATION_WARNING));
+ 					System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + txt);
+ 					return;
+@@ -285,7 +291,7 @@
+ 				directives.add(DIRECTIVE_SET_TOPIC_GEOMETRY, inst.getID(), p, getID());
+ 				System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + inst + &quot; -&gt; moved to &quot; + p.x + &quot; &quot; + p.y);
+ 			} catch (DeepaMehtaException dme) {
+-				String txt = &quot;Die Neuplatzierung der Einrichtungen wurde abgebrochen (&quot; + dme.getMessage() + &quot;)&quot;;
++				String txt = &quot;Die Neupositionierung der Einrichtungen wurde abgebrochen (&quot; + dme.getMessage() + &quot;)&quot;;
+ 				directives.add(DIRECTIVE_SHOW_MESSAGE, txt, new Integer(NOTIFICATION_WARNING));
+ 				System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + txt);
+ 				return;
+@@ -293,6 +299,10 @@
+ 		}
+ 	}
+ 
++	private Vector getYADERefPoints() {
++		return cm.getViewTopics(getID(), 1, TOPICTYPE_YADE_POINT);
++	}
++
+ 	// --- lookupCityMap (3 forms) ---
+ 
+ 	// Note: only published city maps are considered
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-07-02 22:53:41 UTC (rev 47)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-07-06 19:18:48 UTC (rev 48)
+@@ -30,7 +30,7 @@
+  * Kiezatlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 25.6.2008&lt;br&gt;
++ * Last change: 3.7.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -190,14 +190,20 @@
+ 		CorporateDirectives directives = super.propertiesChanged(newProps, oldProps, topicmapID, viewmode, session);
+ 		// --- &quot;YADE&quot; ---
+ 		if (newProps.get(PROPERTY_YADE_X) != null || newProps.get(PROPERTY_YADE_Y) != null) {
+-			// determine new geometry
+-			Point p = getPoint(topicmapID);	// throws DME
+-			// set new geometry
+-			if (p != null) {	// Note: p is null if YADE is &quot;off&quot;
+-				directives.add(DIRECTIVE_SET_TOPIC_GEOMETRY, getID(), p, topicmapID);
+-			} else {
+-				// ###
+-				System.out.println(&quot;&gt;&gt;&gt; GeoObjectTopic.propertiesChanged(): &quot; + this + &quot; not (re)positioned (VADE is off)&quot;);
++			try {
++				// determine new geometry
++				Point p = getPoint(topicmapID);	// throws DME
++				// set new geometry
++				if (p != null) {	// Note: p is null if YADE is &quot;off&quot;
++					directives.add(DIRECTIVE_SET_TOPIC_GEOMETRY, getID(), p, topicmapID);
++				} else {
++					// ###
++					System.out.println(&quot;&gt;&gt;&gt; GeoObjectTopic.propertiesChanged(): &quot; + this +
++						&quot; not (re)positioned (VADE is \&quot;off\&quot;)&quot;);
++				}
++			} catch (DeepaMehtaException e) {
++				throw new DeepaMehtaException(&quot;\&quot;&quot; + getName() + &quot;\&quot; konnte nicht automatisch positioniert werden (&quot; +
++					e.getMessage() + &quot;)&quot;);
+ 			}
+ 		}
+ 		//
+@@ -303,7 +309,7 @@
+ 		Vector institutions = as.cm.getTopics(typeIDs, props, true);		// caseSensitiv=true
+ 		// error check
+ 		if (institutions.size() == 0) {
+-			throw new DeepaMehtaException(&quot;Fehler in URL: Einrichtung \&quot;&quot; + alias + &quot;\&quot; ist nicht bekannt&quot;);
++			throw new DeepaMehtaException(&quot;Fehler in URL: \&quot;&quot; + alias + &quot;\&quot; ist nicht bekannt&quot;);
+ 		}
+ 		if (institutions.size() &gt; 1) {
+ 			throw new DeepaMehtaException(&quot;Mehrdeutigkeit: es gibt &quot; + institutions.size() + &quot; \&quot;&quot; + alias + &quot;\&quot; Einrichtungen&quot;);
+@@ -415,8 +421,8 @@
+ 			yadeX2 = Float.parseFloat(as.getTopicProperty(yp[1], PROPERTY_YADE_X));
+ 			yadeY2 = Float.parseFloat(as.getTopicProperty(yp[1], PROPERTY_YADE_Y));
+ 		} catch (NumberFormatException e) {
+-			throw new DeepaMehtaException(&quot;Administrator-Fehler: ein YADE Referenzpunkt von &quot; +
+-				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#252;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
++			throw new DeepaMehtaException(&quot;ein YADE-Referenzpunkt von Stadtplan \&quot;&quot; + citymap.getName() +
++				&quot;\&quot; hat ung&#252;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 		// yade -&gt; pixel
+ 		try {
+@@ -426,7 +432,7 @@
+ 			int y = (int) (y2 + (y1 - y2) * (yadeY - yadeY2) / (yadeY1 - yadeY2));
+ 			return new Point(x, y);
+ 		} catch (NumberFormatException e) {
+-			throw new DeepaMehtaException(&quot;YADE Koordinate von Einrichtung \&quot;&quot; + getName() + &quot;\&quot; ist ung&#252;ltig (&quot; +
++			throw new DeepaMehtaException(&quot;YADE-Koordinate von \&quot;&quot; + getName() + &quot;\&quot; ist ung&#252;ltig (&quot; +
+ 				e.getMessage() + &quot;)&quot;);
+ 		}
+ 	}
+@@ -437,7 +443,6 @@
+ 	 * @return	the YADE-coordinate, or &lt;code&gt;null&lt;/code&gt; if YADE is &quot;off&quot;.
+ 	 *
+ 	 * @see		#moved
+-	 * @see		CityMapTopic#updateYADECoordinates
+ 	 */
+ 	Point2D.Float getYadePoint(int x, int y, String citymapID) throws DeepaMehtaException {
+ 		// ### copied
+@@ -460,8 +465,8 @@
+ 			float yadeY = yadeY2 + (yadeY1 - yadeY2) * (y2 - y) / (y2 - y1);
+ 			return new Point2D.Float(yadeX, yadeY);
+ 		} catch (NumberFormatException e) {
+-			throw new DeepaMehtaException(&quot;Administrator-Fehler: ein YADE Referenzpunkt von &quot; +
+-				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#252;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
++			throw new DeepaMehtaException(&quot;ein YADE-Referenzpunkt von Stadtplan \&quot;&quot; + citymap.getName() +
++				&quot;\&quot; hat ung&#252;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 	}
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000039.html">[Kiezatlas-svn] r47 - in trunk: docs images pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics	src/de/swers/kiezatlas/tools
+</A></li>
+	<LI>Next message: <A HREF="000041.html">[Kiezatlas-svn] r49 - in trunk: db/patches pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40">[ date ]</a>
+              <a href="thread.html#40">[ thread ]</a>
+              <a href="subject.html#40">[ subject ]</a>
+              <a href="author.html#40">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

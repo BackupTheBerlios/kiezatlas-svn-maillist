@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r94 - in trunk/pages/be.de: . proxies
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-August/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r94%20-%20in%20trunk/pages/be.de%3A%20.%20proxies&In-Reply-To=%3C20100820103008.5D692480F72%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000081.html">
+   <LINK REL="Next"  HREF="000083.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r94 - in trunk/pages/be.de: . proxies</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r94%20-%20in%20trunk/pages/be.de%3A%20.%20proxies&In-Reply-To=%3C20100820103008.5D692480F72%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r94 - in trunk/pages/be.de: . proxies">maltito at mail.berlios.de
+       </A><BR>
+    <I>Fri Aug 20 12:30:08 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000081.html">[Kiezatlas-svn] r93 - in trunk: docs pages pages/be.de	pages/be.de/img pages/be.de/proxies pages/be.de/theme	pages/be.de/theme/default pages/be.de/theme/default/img	src/de/kiezatlas/deepamehta
+</A></li>
+        <LI>Next message: <A HREF="000083.html">[Kiezatlas-svn] r95 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82">[ date ]</a>
+              <a href="thread.html#82">[ thread ]</a>
+              <a href="subject.html#82">[ subject ]</a>
+              <a href="author.html#82">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-08-20 12:30:08 +0200 (Fri, 20 Aug 2010)
+New Revision: 94
+
+Modified:
+   trunk/pages/be.de/kiezatlas.js
+   trunk/pages/be.de/proxies/getMapTopics.php
+   trunk/pages/be.de/proxies/getWorkspaceInfos.php
+   trunk/pages/be.de/proxies/searchGeoObjects.php
+Log:
+Slightly changed RPC Service
+* searchGeoObjects reset and fixed for a searchByName
+* added some testing lines in the proxy-scripts
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2010-08-18 11:11:47 UTC (rev 93)
++++ trunk/pages/be.de/kiezatlas.js	2010-08-20 10:30:08 UTC (rev 94)
+@@ -18,6 +18,7 @@
+   //
+   
+   var SERVICE_URL = &quot;<A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A>&quot;; // to be used by the jquery ajax methods
++  var TESTING_SERVICE_URL = &quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;; // to be used by the jquery ajax methods
+   var HIDDEN_SERVICE_URL = &quot;proxies/&quot;; // to use your proxy service scripts
+   var ICONS_URL = &quot;<A HREF="http://www.kiezatlas.de/client/icons/">http://www.kiezatlas.de/client/icons/</A>&quot;; // to be used by all icons if not relative to this folder
+   var IMAGES_URL = &quot;<A HREF="http://www.kiezatlas.de/client/images/">http://www.kiezatlas.de/client/images/</A>&quot;; // bo be used by all images in the sidebar
+@@ -373,9 +374,10 @@
+ 
+ 
+   /** ask my kiezatlas.de proxy for geoObjects */
+-  function searchRequest() {
+-    var queryString = jQuery(&quot;#searchInputField&quot;).attr(&quot;value&quot;);
+-    log('start searching for ' + queryString);
++  function searchRequest(query) {
++    if (typeof query == &quot;undefined&quot;) var queryString= jQuery(&quot;#searchInputField&quot;).attr(&quot;value&quot;);
++    else queryString = query;
++    if(debug) log('start searching for ' + queryString);
+     queryString = urlencode(queryString);
+     var anotherUrl = HIDDEN_SERVICE_URL + 'searchGeoObjects.php?query=' + queryString + '&amp;topicmapId=' + topicId + '&amp;workspaceId=' + workspaceId;
+     showProgressInSideBar(&quot;Suchanfrage&quot;);
+
+Modified: trunk/pages/be.de/proxies/getMapTopics.php
+===================================================================
+--- trunk/pages/be.de/proxies/getMapTopics.php	2010-08-18 11:11:47 UTC (rev 93)
++++ trunk/pages/be.de/proxies/getMapTopics.php	2010-08-20 10:30:08 UTC (rev 94)
+@@ -5,8 +5,8 @@
+     $workspaceId = $_GET['workspaceId'];
+     $topicId = $_GET['topicId'];
+     $body = '{&quot;method&quot;: &quot;getMapTopics&quot;, &quot;params&quot;: [&quot;'.$topicId.'&quot; , &quot;'.$workspaceId.'&quot;]}';
+-    // $req1 =&amp; new HTTP_Request(&quot;<A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A>&quot;);
+     $req1 =&amp; new HTTP_Request(&quot;<A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A>&quot;);
++    // $req1 =&amp; new HTTP_Request(&quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;);
+     // <A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A> --
+     $req1-&gt;addHeader(&quot;Content-Type&quot;, &quot;application/json&quot;);
+     // $req2-&gt;addHeader(&quot;Charset&quot;, &quot;utf-8&quot;);
+
+Modified: trunk/pages/be.de/proxies/getWorkspaceInfos.php
+===================================================================
+--- trunk/pages/be.de/proxies/getWorkspaceInfos.php	2010-08-18 11:11:47 UTC (rev 93)
++++ trunk/pages/be.de/proxies/getWorkspaceInfos.php	2010-08-20 10:30:08 UTC (rev 94)
+@@ -3,8 +3,9 @@
+     // get workspaceCriterias
+     $workspaceId = $_GET['workspaceId'];
+     $body = '{&quot;method&quot;: &quot;getWorkspaceInfos&quot;, &quot;params&quot;: [&quot;'.$workspaceId.'&quot;]}';
+-    // $req2 =&amp; new HTTP_Request(&quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A> - <A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A>&quot;);
+     $req2 =&amp; new HTTP_Request(&quot;<A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A>&quot;);
++    // $req2 =&amp; new HTTP_Request(&quot;<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>&quot;);
++    // 
+     $req2-&gt;addHeader(&quot;Content-Type&quot;, &quot;application/json&quot;); 
+     // $req2-&gt;addHeader(&quot;Charset&quot;, &quot;utf-8&quot;);
+     $req2-&gt;setBody($body);
+
+Modified: trunk/pages/be.de/proxies/searchGeoObjects.php
+===================================================================
+--- trunk/pages/be.de/proxies/searchGeoObjects.php	2010-08-18 11:11:47 UTC (rev 93)
++++ trunk/pages/be.de/proxies/searchGeoObjects.php	2010-08-20 10:30:08 UTC (rev 94)
+@@ -3,6 +3,7 @@
+     $queryString = $_GET['query'];
+ 	$workspaceId = $_GET['workspaceId'];
+ 	$topicmapId = $_GET['topicmapId'];
++    // $request = new HTTP_Request('<A HREF="http://localhost:8080/kiezatlas/rpc/">http://localhost:8080/kiezatlas/rpc/</A>');
+     $request = new HTTP_Request('<A HREF="http://www.kiezatlas.de:8080/rpc/">http://www.kiezatlas.de:8080/rpc/</A>');
+     $body = '{&quot;method&quot;: &quot;searchGeoObjects&quot;, &quot;params&quot;: [&quot;'.$queryString.'&quot;, &quot;'.$topicmapId.'&quot;, &quot;'.$workspaceId.'&quot;]}';
+     $request-&gt;addHeader(&quot;Content-Type&quot;, &quot;application/json&quot;);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000081.html">[Kiezatlas-svn] r93 - in trunk: docs pages pages/be.de	pages/be.de/img pages/be.de/proxies pages/be.de/theme	pages/be.de/theme/default pages/be.de/theme/default/img	src/de/kiezatlas/deepamehta
+</A></li>
+	<LI>Next message: <A HREF="000083.html">[Kiezatlas-svn] r95 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82">[ date ]</a>
+              <a href="thread.html#82">[ thread ]</a>
+              <a href="subject.html#82">[ subject ]</a>
+              <a href="author.html#82">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

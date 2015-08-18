@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r84 - in trunk: pages src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-December/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r84%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200912041253.nB4CrPsL021040%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r84 - in trunk: pages src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r84%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200912041253.nB4CrPsL021040%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r84 - in trunk: pages src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Fri Dec  4 13:53:25 CET 2009</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73">[ date ]</a>
+              <a href="thread.html#73">[ thread ]</a>
+              <a href="subject.html#73">[ subject ]</a>
+              <a href="author.html#73">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-12-04 13:53:21 +0100 (Fri, 04 Dec 2009)
+New Revision: 84
+
+Added:
+   trunk/pages/Serve.jsp
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+Minor Improvements
+
+* Fixing Encoding Bug caused by mirrorFile in DownloadWorker
+* KiezServlet delivers a proper and valid GeoObjectInfo JSON Result
+* Introduced a simple webpage for KiezService
+
+
+Added: trunk/pages/Serve.jsp
+===================================================================
+--- trunk/pages/Serve.jsp	2009-11-20 05:36:47 UTC (rev 83)
++++ trunk/pages/Serve.jsp	2009-12-04 12:53:21 UTC (rev 84)
+@@ -0,0 +1,10 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;%@page contentType=&quot;text/html&quot; pageEncoding=&quot;iso-8859-1&quot;%&gt;
++&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot;
++   &quot;<A HREF="http://www.w3.org/TR/html4/loose.dtd">http://www.w3.org/TR/html4/loose.dtd</A>&quot;&gt;
++
++&lt;%
++    String link = (String) session.getAttribute(&quot;html&quot;);
++    out.println(link);
++%&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2009-11-20 05:36:47 UTC (rev 83)
++++ trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2009-12-04 12:53:21 UTC (rev 84)
+@@ -13,10 +13,11 @@
+ import de.deepamehta.service.TopicBeanField;
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import java.io.File;
++import java.io.FileInputStream;
+ import java.io.FileNotFoundException;
+ import java.io.FileOutputStream;
+-import java.io.FileReader;
+ import java.io.IOException;
++import java.io.InputStreamReader;
+ import java.io.OutputStreamWriter;
+ import java.io.UnsupportedEncodingException;
+ import java.util.Enumeration;
+@@ -42,19 +43,21 @@
+     public void run() {
+         System.out.println(&quot;    &gt;&gt; DownloadWorker was initalized to run for &quot;+map.getName());
+         String filePath = mapAlias; // DeepaMehtaConstants.FILESERVER_DOCUMENTS_PATH + 
++        // string wille be an UTF-8 Java String filled from within through a Latin 1 MYSQL Connector
+         String content = getFileContent(map);
++        // write tmp file
+         exportFile(filePath, content);
+         // now copy tmp file and replace the original file
+         // worst case is; former file deleted and .tmp file could not be copied
+         try {
+-            FileReader fis = new FileReader(filePath+&quot;.tmp&quot;); // read input
++            FileInputStream fis = new FileInputStream(filePath+&quot;.tmp&quot;); // read input
++            InputStreamReader isr = new InputStreamReader(fis, &quot;ISO-8859-1&quot;);
+             File fileToWrite = new File(filePath);
+             fileToWrite.delete(); // delete the former file and start to write the new one
+             FileOutputStream fout = new FileOutputStream(filePath, true);
+-            OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
+-            // OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;UTF-8&quot;);
+-            while(fis.ready()) {
+-                out.write(fis.read());
++            OutputStreamWriter out = new OutputStreamWriter(fout, &quot;ISO-8859-1&quot;);
++            while(isr.ready()) {
++                out.write(isr.read());
+             }
+             out.close();
+             System.out.println(&quot;    &gt;&gt; DownloadWorker sucessfully replaced CityMapData in &quot; + mapAlias);
+@@ -71,10 +74,10 @@
+             // copying failed
+             System.out.println(&quot;*** ListServlet.DownloadWorker.run() :&quot; + iox.getMessage());
+         } finally {
++            // delete the tmp file, too
+             File f = new File(filePath+&quot;.tmp&quot;);
+             f.delete(); // cleanup tmp file
+         }
+-        // throw new UnsupportedOperationException(&quot;Not supported yet.&quot;);
+     }
+ 
+     /**
+@@ -157,7 +160,7 @@
+                 // System.out.println(&quot;&gt;&gt;&gt;&gt; DownloadWorker.exportFile(): &quot; + filePath);
+                 File fileToWrite = new File(filePath+&quot;.tmp&quot;);
+                 FileOutputStream fout = new FileOutputStream(fileToWrite, true);
+-                OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
++                OutputStreamWriter out = new OutputStreamWriter(fout, &quot;ISO-8859-1&quot;);
+                 // OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;UTF-8&quot;);
+                 out.write(content);
+                 out.close();
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-11-20 05:36:47 UTC (rev 83)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-12-04 12:53:21 UTC (rev 84)
+@@ -301,7 +301,6 @@
+     static final String PAGE_LIST_HOME = &quot;ListHome&quot;;
+     static final String PAGE_LIST = &quot;List&quot;;
+     static final String PAGE_SLIM_LIST = &quot;SlimList&quot;;
+-    static final String PAGE_SERVE = &quot;Serve&quot;;
+     static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
+     static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
+ 	static final String PAGE_LINK_PAGE = &quot;Print&quot;;
+@@ -309,4 +308,6 @@
+ 	static final String PAGE_LIST_INFO = &quot;ListHelp&quot;;
+ 	// error
+     static final String PAGE_ERROR = &quot;error&quot;;
++    // service
++    static final String PAGE_SERVE = &quot;Serve&quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-11-20 05:36:47 UTC (rev 83)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-12-04 12:53:21 UTC (rev 84)
+@@ -29,7 +29,9 @@
+ 
+     protected String performAction(String topicId, String params, Session session, CorporateDirectives directives)
+     {
+-        return topicId;
++        session.setAttribute(&quot;html&quot;, &quot;&lt;h3&gt;Willkommen zu ihrem Kiezatlas Dienst&lt;/h3&gt;&quot; +
++                &quot;&lt;br&gt;Hier geht's zur &lt;a href=\&quot;<A HREF="http://www.deepamehta.de/wiki/en/Application:_Web_Service\">http://www.deepamehta.de/wiki/en/Application:_Web_Service\</A>&quot;&gt;Software Dokumentation&lt;/a&gt;&quot;);
++        return PAGE_SERVE;
+     }
+ 
+     protected void preparePage(String page, String params, Session session, CorporateDirectives directives)
+@@ -41,12 +43,12 @@
+ 
+     private String getGeoObjectInfo(String params)
+     {
+-        System.out.println(&quot;&gt;&gt;&gt;&gt; getGeoObjectInfo(&quot; + params + &quot;)&quot;);
+-        String parameters[] = params.split(&quot;,&quot;);
+-        String topicId = parameters[0];
++        String topicId = params.substring(2,params.length()-2);
++        System.out.println(&quot;&gt;&gt;&gt;&gt; getGeoObjectInfo(&quot; + topicId + &quot;)&quot;);
++        // String parameters[] = params.split(&quot;,&quot;);
+         StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+-        String geoObjectString = createGeoObjectBean(cm.getTopic(topicId.substring(2,topicId.length()-2), 1), messages);
++        String geoObjectString = createGeoObjectBean(cm.getTopic(topicId, 1), messages);
+         result.append(geoObjectString);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         // System.out.println(&quot;result: &quot;+ result.toString());
+@@ -216,22 +218,22 @@
+                 bean.append(&quot;\&quot;value\&quot;:  \&quot;&quot; + value + &quot;\&quot;&quot;);
+             } else {
+                 Vector relatedFields = field.values;
+-                for(int r = 0; r &lt; relatedFields.size(); r++)
+-                {
+-                    BaseTopic relatedTopic = (BaseTopic)relatedFields.get(r);
++                if (relatedFields.size() == 0) {
++                    bean.append(&quot;\&quot;values\&quot;: []&quot;);
++                } else {
+                     bean.append(&quot;\&quot;values\&quot;: [&quot;);
+-                    bean.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
+-                    // ### geoObject has it's own icon ?
+-                    bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getTopicProperty(relatedTopic.getID(), 1, PROPERTY_ICON) + &quot;\&quot;}&quot;);
+-                    if (r == relatedFields.size()-1)  {
+-                        bean.append(&quot;]&quot;);
+-                    } else {
+-                        bean.append(&quot;, &quot;);
++                    for (int r = 0; r &lt; relatedFields.size(); r++) {
++                        BaseTopic relatedTopic = (BaseTopic) relatedFields.get(r);
++                        bean.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
++                        // ### geoObject has it's own icon ?
++                        bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getTopicProperty(relatedTopic.getID(), 1, PROPERTY_ICON) + &quot;\&quot;}&quot;);
++                        if (r == relatedFields.size()-1)  {
++                            bean.append(&quot;]&quot;);
++                        } else {
++                            bean.append(&quot;, &quot;);
++                        }
+                     }
+                 }
+-                if (relatedFields.size() == 0) {
+-                    bean.append(&quot;\&quot;values\&quot;: {}&quot;);
+-                }
+             }
+             if(properties.indexOf(field) == properties.size() - 1)
+                 bean.append(&quot;}&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-11-20 05:36:47 UTC (rev 83)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-12-04 12:53:21 UTC (rev 84)
+@@ -110,7 +110,7 @@
+ 			// --- store image / files---
+ 			for (int a = 0; a &lt; params.getUploads().size(); a++) {
+ 				FileItem f = (FileItem) params.getUploads().get(a);
+-				System.out.println(&quot;***ListServlet. uploaded files are &quot; + EditServlet.getFilename(f.getName()));
++				System.out.println(&quot;*** ListServlet. uploaded files are &quot; + EditServlet.getFilename(f.getName()));
+ 			}
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			//
+@@ -227,7 +227,6 @@
+ 			}
+ 			String link = as.getCorporateWebBaseURL() + FILESERVER_DOCUMENTS_PATH;
+ 			link += writeLetter(letter, &quot;Adressen.txt&quot;);
+-			System.out.println(&quot;&gt;&gt;&gt; created Form Letter&quot;);
+ 			session.setAttribute(&quot;formLetter&quot;, link);
+ 			return PAGE_LINK_PAGE;
+ 		} else if (action.equals(ACTION_DELETE_ENTRY)){
+@@ -396,8 +395,8 @@
+ 				// fresh topic data &amp; re sorted
+ 				if (sortBy != null) {
+ 					sortBeans(topics, sortBy);
+-					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot;
+-						+ session.getAttribute(&quot;sortField&quot;) );
++					// System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server and sorted by: &quot;
++						//+ session.getAttribute(&quot;sortField&quot;) );
+ 				} else {
+ 					System.out.println(&quot;&gt;&gt;&gt;&gt; topics are fresh from server with sortByTopicName&quot;);
+ 				}
+@@ -694,6 +693,7 @@
+ 		// - no city data, but give berlin a plz try
+ 		} else {
+ 			if (postalCode != null) {
++                postalCode.replaceAll(&quot; &quot;, &quot;&quot;); // clean up for an evtl. valueOf NumberFormatException
+ 				int value = Integer.valueOf(postalCode).intValue();
+ 				if (value &gt; 10001 &amp;&amp; value &lt;= 14199) {
+ 					// is within 10001 and 14199
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73">[ date ]</a>
+              <a href="thread.html#73">[ thread ]</a>
+              <a href="subject.html#73">[ subject ]</a>
+              <a href="author.html#73">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

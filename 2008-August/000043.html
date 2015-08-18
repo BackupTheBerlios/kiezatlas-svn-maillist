@@ -1,0 +1,740 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r54 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-August/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r54%20-%20in%20trunk%3A%20db/patches%20docs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200808151423.m7FENnFH022858%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r54 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r54%20-%20in%20trunk%3A%20db/patches%20docs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200808151423.m7FENnFH022858%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r54 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Fri Aug 15 16:23:49 CEST 2008</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43">[ date ]</a>
+              <a href="thread.html#43">[ thread ]</a>
+              <a href="subject.html#43">[ subject ]</a>
+              <a href="author.html#43">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-08-15 16:23:44 +0200 (Fri, 15 Aug 2008)
+New Revision: 54
+
+Modified:
+   trunk/db/patches/ka-1.6.1.sql
+   trunk/docs/session.txt
+   trunk/pages/CategoryList.jsp
+   trunk/pages/CommentForm.jsp
+   trunk/pages/GeoObjectForum.jsp
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/GeoObjectList.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/frameset.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+Log:
+Feature &quot;Customizable Layout&quot;, step 3 (last one): every workspace can use individual homepage and impressum links (assign Webpage topics to the workspace, use association types &quot;Homepage Link&quot; resp. &quot;Impressum Link&quot;).
+CSS-based layout polished for all 3 servlets (browse, edit, list).
+
+Modified: trunk/db/patches/ka-1.6.1.sql
+===================================================================
+--- trunk/db/patches/ka-1.6.1.sql	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/db/patches/ka-1.6.1.sql	2008-08-15 14:23:44 UTC (rev 54)
+@@ -4,7 +4,7 @@
+ 
+ 
+ 
+---- define topic type &quot;Stylesheet&quot; ---
++--- topic type &quot;Stylesheet&quot; ---
+ INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-stylesheet', 'Stylesheet');
+ INSERT INTO TopicProp VALUES ('tt-ka-stylesheet', 1, 'Name', 'Stylesheet');
+ INSERT INTO TopicProp VALUES ('tt-ka-stylesheet', 1, 'Plural Name', 'Stylesheets');
+@@ -25,19 +25,39 @@
+ -- assign search type to type
+ INSERT INTO Association VALUES ('at-aggregation', 1, 1, 'a-ka-107', '', 'tt-ka-stylesheet-search', 1, 'tt-ka-stylesheet', 1);
+ 
+---- define property &quot;CSS&quot; ---
++--- property &quot;CSS&quot; ---
+ INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-css', 'CSS');
+ INSERT INTO TopicProp VALUES ('pp-ka-css', 1, 'Name', 'CSS');
+ INSERT INTO TopicProp VALUES ('pp-ka-css', 1, 'Visualization', 'Multiline Input Field');
+ -- assign property to &quot;Stylesheet&quot;
+ INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-108', '', 'tt-ka-stylesheet', 1, 'pp-ka-css', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-108', 1, 'Ordinal Number', '200');
+--- assign &quot;Name&quot; property
++-- assign &quot;Name&quot; property to &quot;Stylesheet&quot;
+ INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-109', '', 'tt-ka-stylesheet', 1, 'pp-name', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-109', 1, 'Ordinal Number', '100');
+ 
+ 
+ 
++--- association type &quot;Homepage Link&quot; ---
++INSERT INTO Topic VALUES ('tt-assoctype', 1, 1, 'at-ka-homepage-link', 'Homepage Link');
++INSERT INTO TopicProp VALUES ('at-ka-homepage-link', 1, 'Name', 'Homepage Link');
++INSERT INTO TopicProp VALUES ('at-ka-homepage-link', 1, 'Plural Name', 'Homepage Links');
++INSERT INTO TopicProp VALUES ('at-ka-homepage-link', 1, 'Color', '#cc9933');
++-- INSERT INTO TopicProp VALUES ('at-ka-homepage-link', 1, 'Custom Implementation', '...');
++-- super type
++-- INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-757', '', 'at-generic', 1, 'at-ka-homepage-link', 1);
++
++--- association type &quot;Impressum Link&quot; ---
++INSERT INTO Topic VALUES ('tt-assoctype', 1, 1, 'at-ka-impressum-link', 'Impressum Link');
++INSERT INTO TopicProp VALUES ('at-ka-impressum-link', 1, 'Name', 'Impressum Link');
++INSERT INTO TopicProp VALUES ('at-ka-impressum-link', 1, 'Plural Name', 'Impressum Links');
++INSERT INTO TopicProp VALUES ('at-ka-impressum-link', 1, 'Color', '#9933cc');
++-- INSERT INTO TopicProp VALUES ('at-ka-impressum-link', 1, 'Custom Implementation', '...');
++-- super type
++-- INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-757', '', 'at-generic', 1, 'at-ka-impressum-link', 1);
++
++
++
+ --- assign types to workspace &quot;Kiez-Atlas&quot; ---
+ -- &quot;Stylesheet&quot;
+ INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-111', '', 't-ka-workspace', 1, 'tt-ka-stylesheet', 1);
+@@ -45,6 +65,12 @@
+ -- &quot;Image&quot;
+ INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-112', '', 't-ka-workspace', 1, 'tt-image', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-112', 1, 'Access Permission', 'create');
++-- &quot;Homepage Link&quot;
++INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-114', '', 't-ka-workspace', 1, 'at-ka-homepage-link', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-114', 1, 'Access Permission', 'create');
++-- &quot;Impressum Link&quot;
++INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-115', '', 't-ka-workspace', 1, 'at-ka-impressum-link', 1);
++INSERT INTO AssociationProp VALUES ('a-ka-115', 1, 'Access Permission', 'create');
+ 
+ 
+ 
+@@ -61,11 +87,25 @@
+ -- assign to &quot;Kiez-Atlas&quot; workspace
+ INSERT INTO Association VALUES ('at-association', 1, 1, 'a-ka-113', '', 't-ka-workspace', 1, 't-ka-logo', 1);
+ 
++--- default homepage link ---
++INSERT INTO Topic VALUES ('tt-webpage', 1, 1, 't-ka-website', 'Kiezatlas Website');
++INSERT INTO TopicProp VALUES ('t-ka-website', 1, 'Name', 'Kiezatlas Website');
++INSERT INTO TopicProp VALUES ('t-ka-website', 1, 'URL', '<A HREF="http://www.kiezatlas.de/">http://www.kiezatlas.de/</A>');
++-- assign to &quot;Kiez-Atlas&quot; workspace
++INSERT INTO Association VALUES ('at-ka-homepage-link', 1, 1, 'a-ka-116', '', 't-ka-workspace', 1, 't-ka-website', 1);
+ 
++--- default impressum link ---
++INSERT INTO Topic VALUES ('tt-webpage', 1, 1, 't-ka-impressum', 'Kiezatlas Impressum');
++INSERT INTO TopicProp VALUES ('t-ka-impressum', 1, 'Name', 'Kiezatlas Impressum');
++INSERT INTO TopicProp VALUES ('t-ka-impressum', 1, 'URL', '<A HREF="http://www.kiezatlas.de/impressum.html">http://www.kiezatlas.de/impressum.html</A>');
++-- assign to &quot;Kiez-Atlas&quot; workspace
++INSERT INTO Association VALUES ('at-ka-impressum-link', 1, 1, 'a-ka-117', '', 't-ka-workspace', 1, 't-ka-impressum', 1);
+ 
++
++
+ --- default stylesheet ---
+-INSERT INTO Topic VALUES ('tt-ka-stylesheet', 1, 1, 't-ka-default-stylesheet', 'Kiezatlas Standard-Stylesheet');
+-INSERT INTO TopicProp VALUES ('t-ka-default-stylesheet', 1, 'Name', 'Kiezatlas Standard-Stylesheet');
++INSERT INTO Topic VALUES ('tt-ka-stylesheet', 1, 1, 't-ka-default-stylesheet', 'Kiezatlas Stylesheet');
++INSERT INTO TopicProp VALUES ('t-ka-default-stylesheet', 1, 'Name', 'Kiezatlas Stylesheet');
+ -- assign to &quot;Kiez-Atlas&quot; workspace
+ INSERT INTO Association VALUES ('at-association', 1, 1, 'a-ka-110', '', 't-ka-workspace', 1, 't-ka-default-stylesheet', 1);
+ -- CSS
+@@ -82,23 +122,25 @@
+ \n
+ /* Kiezatlas: header area of right frame */\n
+ .header-area {\n
+-\twidth: 100%;\n
++\twidth: 95%;\n
+ \tbackground-color: #F3F3F3;\n
+ \tpadding: 8px;\n
+ }\n
+ \n
+ /* Kiezatlas: content area of right frame */\n
+ .content-area {\n
+-\twidth: 100%;\n
+-\tmargin-top: 2em;\n
+-\tpadding: 8px;\n
++\twidth: 95%;\n
++\tbackground-color: #FFFFFF;\n
++\tpadding-top: 30px;\n
++\tpadding-bottom: 40px;\n
++\tpadding-left: 8px;\n
++\tpadding-right: 8px;\n
+ }\n
+ \n
+ /* Kiezatlas: footer area of right frame */\n
+ .footer-area {\n
+-\twidth: 100%;\n
++\twidth: 95%;\n
+ \tbackground-color: #F3F3F3;\n
+-\tmargin-top: 4em;\n
+ \tpadding: 8px;\n
+ }\n
+ \n
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/docs/session.txt	2008-08-15 14:23:44 UTC (rev 54)
+@@ -27,6 +27,8 @@
+ 						searchMode=0,1,..: criteria name
+ stylesheet			CSS (String)
+ siteLogo			imagefile (String)
++homepageURL			String
++impressumURL		String
+ 
+ 
+ CityMap
+
+Modified: trunk/pages/CategoryList.jsp
+===================================================================
+--- trunk/pages/CategoryList.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/CategoryList.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -6,7 +6,6 @@
+ 	Vector cats = (Vector) session.getAttribute(&quot;categories&quot;);
+ 	Vector selCats = (Vector) session.getAttribute(&quot;selectedCats&quot;);
+ 	//
+-	out.println(&quot;&lt;p&gt;&quot; + html.topicSelector(cats, selCats,
+-		KiezAtlas.ACTION_SEARCH_BY_CATEGORY, KiezAtlas.ACTION_SELECT_CATEGORY));
++	out.println(html.topicSelector(cats, selCats, KiezAtlas.ACTION_SEARCH_BY_CATEGORY, KiezAtlas.ACTION_SELECT_CATEGORY));
+ %&gt;
+-&lt;% end(out); %&gt;
++&lt;% end(session, out); %&gt;
+
+Modified: trunk/pages/CommentForm.jsp
+===================================================================
+--- trunk/pages/CommentForm.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/CommentForm.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -39,4 +39,4 @@
+ 	%&gt;
+ 	&lt;br&gt;
+ 	&lt;p&gt;&lt;%= html.link(&quot;Zur&uuml;ck zu &quot; + inst.name, KiezAtlas.ACTION_SHOW_GEO_INFO, &quot;id=&quot; + inst.geoID) %&gt;&lt;/p&gt;
+-&lt;% end(out); %&gt;
++&lt;% end(session, out); %&gt;
+
+Modified: trunk/pages/GeoObjectForum.jsp
+===================================================================
+--- trunk/pages/GeoObjectForum.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/GeoObjectForum.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -19,4 +19,4 @@
+ 	%&gt;
+ 	&lt;br&gt;
+ 	&lt;p&gt;&lt;%= html.link(&quot;Zur&uuml;ck zu &quot; + geo.name, KiezAtlas.ACTION_SHOW_GEO_INFO, &quot;id=&quot; + geo.geoID) %&gt;&lt;/p&gt;
+-&lt;% end(out); %&gt;
++&lt;% end(session, out); %&gt;
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/GeoObjectInfo.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -15,7 +15,6 @@
+ 	topicBean.removeFieldsContaining(&quot;Web Alias&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Locked Geometry&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Description&quot;);
+-	out.println(&quot;&lt;div class=\&quot;content-area\&quot;&gt;&quot;);
+ 	// --- image ---
+ 	String imageFile = topicBean.getValue(&quot;Image / File&quot;);
+ 	if (!imageFile.equals(&quot;&quot;)) {
+@@ -58,7 +57,5 @@
+ 		out.println(&quot;&lt;p&gt;\r&lt;hr&gt;\rDas &quot; + html.link(&quot;Forum&quot;, KiezAtlas.ACTION_SHOW_GEO_FORUM) +
+ 			&quot; enth&auml;lt &quot;+ commentCount + &quot; Kommentare&lt;/p&gt;&quot;);
+ 	}
+-	//
+-	out.println(&quot;&lt;/div&gt;&quot;);
+ %&gt;
+-&lt;% end(out); %&gt;
++&lt;% end(session, out); %&gt;
+
+Modified: trunk/pages/GeoObjectList.jsp
+===================================================================
+--- trunk/pages/GeoObjectList.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/GeoObjectList.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -9,7 +9,6 @@
+ 	String searchMode = (String) session.getAttribute(&quot;searchMode&quot;);
+ 	String searchValue = (String) session.getAttribute(&quot;searchValue&quot;);
+ 	// --- heading ---
+-	out.println(&quot;&lt;p&gt;&quot;);
+ 	if (searchMode.equals(KiezAtlas.SEARCHMODE_BY_NAME)) {
+ 		out.println(&quot;Suchergebnis &quot;);
+ 	}
+@@ -40,4 +39,4 @@
+ 	out.println(&quot;&lt;/table&gt;&quot;);
+ 	
+ %&gt;
+-&lt;% end(out); %&gt;
++&lt;% end(session, out); %&gt;
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/KiezAtlas.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -24,6 +24,8 @@
+ &lt;%@ page import=&quot;java.awt.Point&quot; %&gt;
+ 
+ &lt;%!
++	// --- header area ---
++
+ 	// edit / list / upload
+ 	void begin(int servlet, HttpSession session, JspWriter out) throws IOException {
+ 		String title = &quot;Kiezatlas&quot;;
+@@ -36,10 +38,16 @@
+ 			title = title + &quot; - Listenzugang&quot;;
+ 			break;
+ 		}
+-		out.println(&quot;&lt;html&gt;\r&lt;head&gt;\r&lt;title&gt;&quot; + title + &quot;&lt;/title&gt;\r&quot; +
+-			&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;\r&lt;/head&gt;\r&lt;body&gt;\r&quot; +
+-			&quot;&lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/\">http://www.kiezatlas.de/\</A>&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/kiezatlas-logo.png\&quot; border=\&quot;0\&quot;&gt;&quot; +
+-			&quot;&lt;/a&gt;\r&lt;br&gt;&lt;br&gt;&quot;);
++		out.println(&quot;&lt;html&gt;\r&lt;head&gt;\r&lt;title&gt;&quot; + title + &quot;&lt;/title&gt;&quot;);
++		out.println(&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;&quot;);
++		out.println(&quot;&lt;/head&gt;&quot;);
++		out.println(&quot;&lt;body&gt;&quot;);
++		out.println();
++		out.println(&quot;&lt;div class=\&quot;header-area\&quot;&gt;&quot;); 		// --- begin header area
++		out.println(&quot;&lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/\">http://www.kiezatlas.de/\</A>&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;../images/kiezatlas-logo.png\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++		out.println(&quot;&lt;/div&gt;&quot;);								// --- end header area
++		out.println();
++		out.println(&quot;&lt;div class=\&quot;content-area\&quot;&gt;&quot;);		// --- begin content area
+ 	}
+ 
+ 	// browse
+@@ -50,15 +58,17 @@
+ 		String searchValue = (String) session.getAttribute(&quot;searchValue&quot;);
+ 		String stylesheet = (String) session.getAttribute(&quot;stylesheet&quot;);
+ 		String siteLogo = (String) session.getAttribute(&quot;siteLogo&quot;);
++		String homepageURL = (String) session.getAttribute(&quot;homepageURL&quot;);
+ 		out.println(&quot;&lt;html&gt;\r&lt;head&gt;\r&lt;title&gt;Kiezatlas&lt;/title&gt;\r&quot; +
+ 			&quot;&lt;style type=\&quot;text/css\&quot;&gt;\r&quot; + stylesheet + &quot;\r&lt;/style&gt;\r&quot; +
+ 			&quot;&lt;/head&gt;\r&quot; +
+ 			&quot;&lt;body&quot; + (refreshMap ? &quot; onLoad=\&quot;top.frames.left.location.href='controller?action=initFrame&amp;frame=&quot; +
+ 				KiezAtlas.FRAME_LEFT + &quot;'\&quot;&quot; : &quot;&quot;) + &quot;&gt;\r\r&quot;);
+-		// --- header area ---
+-		out.println(&quot;&lt;table class=\&quot;header-area\&quot; cellpadding=\&quot;0\&quot;&gt;&lt;tr valign=\&quot;top\&quot;&gt;&quot;);
++		//
++		out.println(&quot;&lt;div class=\&quot;header-area\&quot;&gt;&quot;);			// --- begin header area
++		out.println(&quot;&lt;table cellpadding=\&quot;0\&quot; width=\&quot;100%\&quot;&gt;&lt;tr valign=\&quot;top\&quot;&gt;&quot;);
+ 		out.println(&quot;&lt;td rowspan=\&quot;&quot; + (criterias.length + 1) + &quot;\&quot;&gt;&quot;);
+-		out.println(&quot;&lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/\">http://www.kiezatlas.de/\</A>&quot; target=\&quot;_top\&quot;&gt;&lt;img src=\&quot;&quot; + siteLogo + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++		out.println(&quot;&lt;a href=\&quot;&quot; + homepageURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;&lt;img src=\&quot;&quot; + siteLogo + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
+ 		out.println(&quot;&lt;div class=\&quot;citymap-name\&quot;&gt;&quot; + map.getName() + &quot;&lt;/div&gt;&quot;);
+ 		out.println(&quot;&lt;/td&gt;&quot;);
+ 		//
+@@ -73,14 +83,35 @@
+ 				&quot;&lt;a href=\&quot;controller?action=&quot; + KiezAtlas.ACTION_SHOW_CATEGORIES + &quot;&amp;critNr=&quot; + i + &quot;\&quot;&gt;&quot; + critName + &quot;&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&quot;);
+ 		}
+ 		out.println(&quot;&lt;/table&gt;&quot;);
++		out.println(&quot;&lt;/div&gt;&quot;);								// --- end header area
++		out.println();
++		out.println(&quot;&lt;div class=\&quot;content-area\&quot;&gt;&quot;);		// --- begin content area
+ 	}
+ 
++	// --- footer area ---
++
++	// edit / list / upload
+ 	void end(JspWriter out) throws IOException {
+-		// --- footer area ---
+-		out.println(&quot;&lt;table class=\&quot;footer-area\&quot;&gt;&lt;tr&gt;\r&quot; +
++		String impressumURL = &quot;<A HREF="http://www.kiezatlas.de/impressum.html">http://www.kiezatlas.de/impressum.html</A>&quot;;
++		out.println(footerArea(impressumURL));
++	}
++
++	// browse
++	void end(HttpSession session, JspWriter out) throws IOException {
++		String impressumURL = (String) session.getAttribute(&quot;impressumURL&quot;);
++		out.println(footerArea(impressumURL));
++	}
++
++	private String footerArea(String impressumURL) {
++		return &quot;&lt;/div&gt;\r&quot; +									// --- end content area
++			&quot;\r&quot; +
++			&quot;&lt;div class=\&quot;footer-area\&quot;&gt;\r&quot; +				// --- begin footer area
++			&quot;&lt;table width=\&quot;100%\&quot;&gt;&lt;tr&gt;\r&quot; +
+ 			&quot;&lt;td class=\&quot;secondary-text\&quot;&gt;Powered by&lt;br&gt;&lt;a href=\&quot;<A HREF="http://www.deepamehta.de/\">http://www.deepamehta.de/\</A>&quot; target=\&quot;_blank\&quot;&gt;&lt;b&gt;DeepaMehta&lt;/b&gt;&lt;/a&gt;&lt;/td&gt;\r&quot; +
+-			&quot;&lt;td class=\&quot;secondary-text\&quot; align=\&quot;right\&quot;&gt;&lt;a href=\&quot;<A HREF="http://www.kiezatlas.de/impressum.html\">http://www.kiezatlas.de/impressum.html\</A>&quot; target=\&quot;_top\&quot;&gt;Impressum +&lt;br&gt;Haftungshinweise&lt;/a&gt;&lt;/td&gt;\r&quot; +
+-			&quot;&lt;/tr&gt;&lt;/table&gt;\r\r&lt;/body&gt;\r&lt;/html&gt;&quot;);
++			&quot;&lt;td class=\&quot;secondary-text\&quot; align=\&quot;right\&quot;&gt;&lt;a href=\&quot;&quot; + impressumURL + &quot;\&quot; target=\&quot;_blank\&quot;&gt;Impressum +&lt;br&gt;Haftungshinweise&lt;/a&gt;&lt;/td&gt;\r&quot; +
++			&quot;&lt;/tr&gt;&lt;/table&gt;\r&quot; +
++			&quot;&lt;/div&gt;\r\r&quot; +									// --- begin footer area
++			&quot;&lt;/body&gt;\r&lt;/html&gt;\r&quot;;
+ 	}
+ 
+ 	// ---
+
+Modified: trunk/pages/frameset.jsp
+===================================================================
+--- trunk/pages/frameset.jsp	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/frameset.jsp	2008-08-15 14:23:44 UTC (rev 54)
+@@ -6,7 +6,7 @@
+ &lt;head&gt;
+ 	&lt;title&gt;Kiezatlas - &lt;%= map.getName() %&gt;&lt;/title&gt;
+ &lt;/head&gt;
+-&lt;frameset cols=&quot;*,350&quot;&gt;
++&lt;frameset cols=&quot;*,360&quot;&gt;
+ 	&lt;frame name=&quot;left&quot; src=&quot;../pages/blank.html&quot;&gt;
+ 	&lt;frame name=&quot;right&quot; src=&quot;controller?action=initFrame&amp;frame=&lt;%= KiezAtlas.FRAME_RIGHT %&gt;&quot;&gt;
+ &lt;/frameset&gt;
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/pages/kiezatlas.css	2008-08-15 14:23:44 UTC (rev 54)
+@@ -5,74 +5,105 @@
+ 
+ body {
+ 	background-color: #FFFFFF;
++	margin: 0px;
+ }
+ 
+-.header-box {
++/* Kiezatlas: header area of right frame */
++.header-area {
++	width: 95%;
+ 	background-color: #F3F3F3;
++	padding: 8px;
+ }
+ 
+-.footer-box {
++/* Kiezatlas: content area of right frame */
++.content-area {
++	width: 95%;
++	background-color: #FFFFFF;
++	padding-top: 30px;
++	padding-bottom: 40px;
++	padding-left: 8px;
++	padding-right: 8px;
++}
++
++/* Kiezatlas: footer area of right frame */
++.footer-area {
++	width: 95%;
+ 	background-color: #F3F3F3;
++	padding: 8px;
+ }
+ 
++/* Kiezatlas: the citymap name contained in the header */
+ .citymap-name {
+ 	font-size: 14px;
+ 	font-weight: bold;
+ }
+ 
+ .small {
++	font-size: 10px;
+ 	color: #666666;
++}
++
++.secondary-text {
+ 	font-size: 10px;
++	color: #666666;
+ }
+ 
++/* Kiezatlas (list interface): the heading citymap name */
+ .heading {
+ 	font-size: 18px;
+ 	font-weight: bold;
+ }
+-	
++
++/* DeepaMehta list generator: the highlighted row */
+ .list-highlight {
+ 	background-color: #FFE0E0;
+ }
+ 
++/* DeepaMehta list generator: an even row (use for zebra striping) */
+ .list-evenrow {
+ 	background-color: #E0E0FF;
+ }
+ 
++/* DeepaMehta list generator: an odd row (use for zebra striping) */
+ .list-oddrow {
+ 	background-color: #FFFFFF;
+ }
+ 
+-/* container for entire geo object info (public website and owner interface) */
++/* DeepaMehta info generator: outmost container for label/content pairs */
+ .info-container {
+ }
+ 
+-/* label of a single geo object info field (public website and owner interface) */
++/* DeepaMehta info generator: a label/content pair */
++.info {
++}
++
++/* DeepaMehta info generator: the label part of a label/content pair */
+ .info-label {
+ 	font-size: 10px;
+ 	font-weight: bold;
+ 	color: #666666;
+ }
+ 
+-/* content of a single geo object info field (public website and owner interface) */
++/* DeepaMehta info generator: the content part of a label/content pair */
+ .info-content {
+ }
+ 
+-/* container for a geo object multi-field, e.g. &quot;Telefon&quot; (public website and owner interface) */
+-.info-multibox {
+-}
+-
++/* Kiezatlas: outmost container for notifications */
+ .notification {
+ 	color: red;
+ }
+ 
++/* Kiezatlas: an &quot;info&quot; notifications */
+ .notification-info:before {
+ 	content: url(&quot;../images/notification-info.gif&quot;)&quot; &quot;;
+ }
+ 
++/* Kiezatlas: a &quot;warning&quot; notifications */
+ .notification-warning:before {
+ 	content: url(&quot;../images/notification-warning.gif&quot;)&quot; &quot;;
+ }
+ 
++/* Kiezatlas: an &quot;error&quot; notifications */
+ .notification-error:before {
+ 	content: url(&quot;../images/notification-error.gif&quot;)&quot; &quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-08-15 14:23:44 UTC (rev 54)
+@@ -35,7 +35,7 @@
+  * Kiezatlas 1.6.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 10.8.2008&lt;br&gt;
++ * Last change: 11.8.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -53,11 +53,14 @@
+ 				//
+ 				String alias = pathInfo.substring(1);
+ 				setCityMap(CityMapTopic.lookupCityMap(alias, true, as), session);	// throwIfNotFound=true
++				//
+ 				initInstitutaionType(session);	// relies on city map
+ 				initSearchCriterias(session);	// relies on city map
+ 				initShapeTypes(session);		// relies on city map
+ 				initStylesheet(session);		// relies on city map
+ 				initSiteLogo(session);			// relies on city map
++				initSiteLinks(session);			// relies on city map
++				//
+ 				updateShapes(session);			// relies on shape types;
+ 				return PAGE_FRAMESET;
+ 			} catch (DeepaMehtaException e) {
+@@ -355,19 +358,46 @@
+ 			session.setAttribute(&quot;stylesheet&quot;, as.getTopicProperty(stylesheet, PROPERTY_CSS));
+ 			System.out.println(&quot;&gt;&gt;&gt; \&quot;stylesheet\&quot; stored in session: \&quot;&quot; + stylesheet.getName() + &quot;\&quot;&quot;);
+ 		} else {
+-			// there is no stylesheet assigned to the Kiez-Atlas workspace
+ 			session.setAttribute(&quot;stylesheet&quot;, &quot;&quot;);
+-			System.out.println(&quot;*** NO STYLESHEET FOUND -- website is displayed without style&quot;);
++			System.out.println(&quot;*** NO STYLESHEET FOUND (there is no stylesheet topic assigned to the Kiez-Atlas workspace)&quot;);
+ 		}
+ 	}
+ 
+ 	private void initSiteLogo(Session session) {
+ 		BaseTopic siteLogo = ((CityMapTopic) as.getLiveTopic(getCityMap(session))).getSiteLogo();		// ### ugly
+-		String imagefile = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH + as.getTopicProperty(siteLogo, PROPERTY_FILE);
+-		session.setAttribute(&quot;siteLogo&quot;, imagefile);
+-		System.out.println(&quot;&gt;&gt;&gt; \&quot;siteLogo\&quot; stored in session: \&quot;&quot; + imagefile + &quot;\&quot;&quot;);
++		if (siteLogo != null) {
++			String imagefile = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH + as.getTopicProperty(siteLogo, PROPERTY_FILE);
++			session.setAttribute(&quot;siteLogo&quot;, imagefile);
++			System.out.println(&quot;&gt;&gt;&gt; \&quot;siteLogo\&quot; stored in session: \&quot;&quot; + imagefile + &quot;\&quot;&quot;);
++		} else {
++			// ### session.setAttribute(&quot;siteLogo&quot;, &quot;&quot;);
++			System.out.println(&quot;*** NO SITELOGO FOUND (there is no image topic assigned to the Kiez-Atlas workspace)&quot;);
++		}
+ 	}
+ 
++	private void initSiteLinks(Session session) {
++		// homepage link
++		BaseTopic homepageLink = ((CityMapTopic) as.getLiveTopic(getCityMap(session))).getHomapageLink();		// ### ugly
++		if (homepageLink != null) {
++			String homepageURL = as.getTopicProperty(homepageLink, PROPERTY_URL);
++			session.setAttribute(&quot;homepageURL&quot;, homepageURL);
++			System.out.println(&quot;&gt;&gt;&gt; \&quot;homepageURL\&quot; stored in session: \&quot;&quot; + homepageURL + &quot;\&quot;&quot;);
++		} else {
++			// ### session.setAttribute(&quot;homepageURL&quot;, &quot;&quot;);
++			System.out.println(&quot;*** NO HOMEPAGE LINK FOUND (there is no webpage topic assigned to the Kiez-Atlas workspace)&quot;);
++		}
++		// impressum link
++		BaseTopic impressumLink = ((CityMapTopic) as.getLiveTopic(getCityMap(session))).getImpressumLink();		// ### ugly
++		if (impressumLink != null) {
++			String impressumURL = as.getTopicProperty(impressumLink, PROPERTY_URL);
++			session.setAttribute(&quot;impressumURL&quot;, impressumURL);
++			System.out.println(&quot;&gt;&gt;&gt; \&quot;impressumURL\&quot; stored in session: \&quot;&quot; + impressumURL + &quot;\&quot;&quot;);
++		} else {
++			// ### session.setAttribute(&quot;impressumLink&quot;, &quot;&quot;);
++			System.out.println(&quot;*** NO IMPRESSUM LINK FOUND (there is no webpage topic assigned to the Kiez-Atlas workspace)&quot;);
++		}
++	}
++
+ 	private void setSelectedGeo(String geoID, Session session) {
+ 		GeoObject geo = geoID != null ? new GeoObject(geoID, getCriterias(session), as) : null;
+ 		session.setAttribute(&quot;selectedGeo&quot;, geo);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-08-15 14:23:44 UTC (rev 54)
+@@ -8,7 +8,7 @@
+  * Kiezatlas 1.6.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 10.8.2008&lt;br&gt;
++ * Last change: 11.8.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -70,6 +70,8 @@
+ 
+ 
+ 	static final String ASSOCTYPE_OUTLINE = &quot;at-ka-outline&quot;;
++	static final String ASSOCTYPE_HOMEPAGE_LINK = &quot;at-ka-homepage-link&quot;;
++	static final String ASSOCTYPE_IMPRESSUM_LINK = &quot;at-ka-impressum-link&quot;;
+ 
+ 
+ 
+@@ -97,6 +99,12 @@
+ 	// direction is from workspace to image
+ 	static final String SEMANTIC_WORKSPACE_SITELOGO = ASSOCTYPE_ASSOCIATION;
+ 
++	// direction is from workspace to webpage
++	static final String SEMANTIC_WORKSPACE_HOMEPAGELINK = ASSOCTYPE_HOMEPAGE_LINK;
++
++	// direction is from workspace to webpage
++	static final String SEMANTIC_WORKSPACE_IMPRESSUMLINK = ASSOCTYPE_IMPRESSUM_LINK;
++
+ 	// direction is arbitrary
+ 	static final String SEMANTIC_SHAPE_OUTLINE = ASSOCTYPE_OUTLINE;
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-08-11 11:14:24 UTC (rev 53)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-08-15 14:23:44 UTC (rev 54)
+@@ -7,6 +7,7 @@
+ import de.deepamehta.PresentableTopic;
+ import de.deepamehta.DeepaMehtaConstants;
+ import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.AmbiguousSemanticException;
+ import de.deepamehta.service.ApplicationService;
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.CorporateCommands;
+@@ -24,7 +25,7 @@
+  * Kiezatlas 1.6.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 10.8.2008&lt;br&gt;
++ * Last change: 11.8.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>
+  */
+@@ -235,40 +236,47 @@
+ 		return shapeTypes;
+ 	}
+ 
++	// ---
++
+ 	public BaseTopic getStylesheet() {
+-		String workspaceID = as.getTopicmapOwner(getID()).getID();
+-		BaseTopic stylesheet = getStylesheet(workspaceID);
+-		// if there is no custom stylesheet use the default one
+-		if (stylesheet == null &amp;&amp; !workspaceID.equals(WORKSPACE_KIEZATLAS)) {
+-			// the default stylesheet is that assigned to the &quot;Kiez-Atlas&quot; workspace
+-			stylesheet = getStylesheet(WORKSPACE_KIEZATLAS);
+-		}
+-		//
+-		return stylesheet;
++		return getWorkspacePreference(TOPICTYPE_STYLESHEET, SEMANTIC_WORKSPACE_STYLESHEET);
+ 	}
+ 
+ 	public BaseTopic getSiteLogo() {
+-		String workspaceID = as.getTopicmapOwner(getID()).getID();
+-		BaseTopic siteLogo = getSiteLogo(workspaceID);
+-		// if there is no custom site logo use the default one
+-		if (siteLogo == null &amp;&amp; !workspaceID.equals(WORKSPACE_KIEZATLAS)) {
+-			// the default site logo is that assigned to the &quot;Kiez-Atlas&quot; workspace
+-			siteLogo = getSiteLogo(WORKSPACE_KIEZATLAS);
+-		}
+-		//
+-		return siteLogo;
++		return getWorkspacePreference(TOPICTYPE_IMAGE, SEMANTIC_WORKSPACE_SITELOGO);
+ 	}
+ 
+-	public BaseTopic getStylesheet(String workspaceID) {
+-		return as.getRelatedTopic(workspaceID, SEMANTIC_WORKSPACE_STYLESHEET, TOPICTYPE_STYLESHEET, 2, true);	// emptyAllowed=true
++	public BaseTopic getHomapageLink() {
++		return getWorkspacePreference(TOPICTYPE_WEBPAGE, SEMANTIC_WORKSPACE_HOMEPAGELINK);
+ 	}
+ 
+-	public BaseTopic getSiteLogo(String workspaceID) {
+-		return as.getRelatedTopic(workspaceID, SEMANTIC_WORKSPACE_SITELOGO, TOPICTYPE_IMAGE, 2, true);	// emptyAllowed=true
++	public BaseTopic getImpressumLink() {
++		return getWorkspacePreference(TOPICTYPE_WEBPAGE, SEMANTIC_WORKSPACE_IMPRESSUMLINK);
+ 	}
+ 
+ 	// ---
+ 
++	/**
++	 * Preference overriding mechanism.
++	 */
++	private BaseTopic getWorkspacePreference(String topicTypeID, String semantic) {
++		try {
++			String workspaceID = as.getTopicmapOwner(getID()).getID();
++			BaseTopic preference = as.getRelatedTopic(workspaceID, semantic, topicTypeID, 2, true);		// emptyAllowed=true
++			// if there is no custom preference use the default one
++			if (preference == null &amp;&amp; !workspaceID.equals(WORKSPACE_KIEZATLAS)) {
++				// the default preference is that assigned to the &quot;Kiez-Atlas&quot; workspace
++				preference = as.getRelatedTopic(WORKSPACE_KIEZATLAS, semantic, topicTypeID, 2, true);		// emptyAllowed=true
++			}
++			return preference;
++		} catch (AmbiguousSemanticException e) {
++			System.out.println(&quot;*** CityMapTopic.getWorkspacePreference(): &quot; +  e);
++			return e.getDefaultTopic();
++		}
++	}
++
++	// ---
++
+ 	public boolean isYADEOn() {
+ 		return getYADERefPoints().size() == 2;
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#43">[ date ]</a>
+              <a href="thread.html#43">[ thread ]</a>
+              <a href="subject.html#43">[ subject ]</a>
+              <a href="author.html#43">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,737 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r45 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r45%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200805280237.m4S2bLJ6027300%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000036.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r45 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r45%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200805280237.m4S2bLJ6027300%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r45 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Wed May 28 04:37:21 CEST 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000036.html">[Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37">[ date ]</a>
+              <a href="thread.html#37">[ thread ]</a>
+              <a href="subject.html#37">[ subject ]</a>
+              <a href="author.html#37">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-05-28 04:37:15 +0200 (Wed, 28 May 2008)
+New Revision: 45
+
+Added:
+   trunk/pages/GeoObjectEmptyForm.jsp
+Modified:
+   trunk/pages/GeoObjectAdminForm.jsp
+   trunk/pages/GeoObjectForm.jsp
+   trunk/pages/List.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+1) List-page extended (ListServlet):
+1a) new link: &quot;Alle Stadtplaene anzeigen&quot; (goes back to start page)
+1b) new link: &quot;Neues Objekt eingeben&quot; (form appears but is not yet funtional)
+1c) last edited institution is highlighted
+1d) makes use of zebra striping
+2) Forum feature (BrowseServlet): notification emails re-enabled (was disabled by maltito)
+3) CSS stylesheet polished
+IMPORTANT: Requires DeepaMehta revision 327 or later
+
+
+Modified: trunk/pages/GeoObjectAdminForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectAdminForm.jsp	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/pages/GeoObjectAdminForm.jsp	2008-05-28 02:37:15 UTC (rev 45)
+@@ -14,7 +14,6 @@
+ 	//
+ 	// institution form
+ 	out.println(&quot;&lt;H2&gt;&quot; + geo.getName() + &quot;&lt;/H2&gt;&quot;);
+-	out.println(&quot;&lt;H3&gt;Administrator &Auml;nderungsformular&lt;/H3&gt;&quot;);
+ 	out.println(html.form(geo.getType(), KiezAtlas.ACTION_UPDATE_GEO,
+ 						  geo.getID(), hiddenProps, true));
+ %&gt;
+
+Added: trunk/pages/GeoObjectEmptyForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectEmptyForm.jsp	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/pages/GeoObjectEmptyForm.jsp	2008-05-28 02:37:15 UTC (rev 45)
+@@ -0,0 +1,19 @@
++&lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
++
++&lt;% begin(session, out); %&gt;
++&lt;%!
++	static String[] hiddenProps = {
++		KiezAtlas.PROPERTY_DESCRIPTION,
++		KiezAtlas.PROPERTY_ICON,
++		&quot;Title&quot;, &quot;Content&quot;,
++		&quot;Width&quot;, &quot;Height&quot;};
++%&gt;
++&lt;%
++	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
++	String instTypeID = (String) session.getAttribute(&quot;instTypeID&quot;);
++	//
++	// institution form
++	out.println(&quot;&lt;H2&gt;Neues Objekt eingeben&lt;/H2&gt;&quot;);
++	out.println(html.form(instTypeID, KiezAtlas.ACTION_CREATE_GEO, hiddenProps, true));
++%&gt;
++&lt;% end(out); %&gt;
+
+Modified: trunk/pages/GeoObjectForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectForm.jsp	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/pages/GeoObjectForm.jsp	2008-05-28 02:37:15 UTC (rev 45)
+@@ -19,7 +19,6 @@
+ 	//
+ 	// institution form
+ 	out.println(&quot;&lt;H2&gt;&quot; + geo.getName() + &quot;&lt;/H2&gt;&quot;);
+-	out.println(&quot;&lt;H3&gt;&Auml;nderungsformular&lt;/H3&gt;&quot;);
+ 	out.println(html.form(geo.getType(), KiezAtlas.ACTION_UPDATE_GEO,
+ 						  geo.getID(), hiddenProps, true));
+ %&gt;
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/pages/List.jsp	2008-05-28 02:37:15 UTC (rev 45)
+@@ -11,9 +11,16 @@
+ 	HTMLGenerator html = (HTMLGenerator) session.getAttribute(&quot;html&quot;);
+ 	BaseTopic cityMap = (BaseTopic) session.getAttribute(&quot;cityMap&quot;);
+ 	Vector topics = (Vector) session.getAttribute(&quot;topics&quot;);
++	BaseTopic geo = (BaseTopic) session.getAttribute(&quot;geo&quot;);
++	//
++	out.println(&quot;&lt;p&gt;&lt;span class=\&quot;heading\&quot;&gt;&quot; + cityMap.getName() + &quot;&lt;/span&gt;&quot; +
++		&quot;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&quot; +
++		html.link(&quot;Alle Stadtpl&auml;ne anzeigen&quot;, KiezAtlas.ACTION_GO_HOME) + &quot;&lt;/p&gt;&quot;);
++	out.println(&quot;&lt;p&gt;&quot; + topics.size() + &quot; Objekte&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&quot; +
++		html.link(&quot;Neues Objekt eingeben&quot;, KiezAtlas.ACTION_SHOW_EMPTY_GEO_FORM) + &quot;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;&quot;);	
+ 	// --- list of institutions ---
+-	out.println(&quot;&lt;h2&gt;&quot; + cityMap.getName() + &quot;&lt;/h2&gt;&quot;);
+-	out.println(topics.size() + &quot; Objekte&lt;br&gt;&lt;br&gt;&lt;br&gt;&quot;);
+-	out.println(html.list(topics, hiddenProps, true, KiezAtlas.ACTION_SHOW_GEO_FORM));	// hideSel=true
++	String selectedID = geo != null ? geo.getID() : null;
++	out.println(html.list(topics, selectedID, hiddenProps, true, KiezAtlas.ACTION_SHOW_GEO_FORM, true));
++														// hideSel=true, doZebraStriping=true
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/pages/kiezatlas.css	2008-05-28 02:37:15 UTC (rev 45)
+@@ -16,56 +16,47 @@
+ 	color: #666666;
+ 	font-size: 10px;
+ }
++
++.heading {
++	font-size: 18px;
++	font-weight: bold;
++}
+ 	
+-.evenrow {
+-	background-color: #F0F0FF;
++.list-highlight {
++	background-color: #FFE0E0;
+ }
+ 
+-.oddrow {
++.list-evenrow {
++	background-color: #E0E0FF;
++}
++
++.list-oddrow {
+ 	background-color: #FFFFFF;
+ }
+ 
+ /* used to display the label/key/name of the property */
+ .label {
+-	font-family: Verdana, Arial, Lucida Sans;
+ 	font-size: 10px;
+-	color: #666;
+ 	font-weight: bold;
++	color: #666666;
+ }
+ 
+ /* used to display the value of the property for every layout mostly typo */
+ .content {
+-	font-color: #000;
+-	font-family: Verdana, Arial, Lucida Sans;
+-	font-size: 12px;
+ }
+ 
+ /* used in the Flow and Box Layout as the background for the one big div container instead of table, starts below the image and fahrplan link */
+-
+ .infoContainer {
+-	align: left;
+ 	width: 95%;
+-	text-align: left;
+-	white-space: normal;
+-	background-color: #EEE;
+ 	padding: 10px;
++	background-color: #EEEEEE;
+   	border: 1px dashed silver;
+ }
+ 
+ /* used in the Box Layout as a container for Fields  */
+ .multiBox {
+-	position: relative;
+-	color: #000;
+-	font-family: Verdana, Arial, Lucida Sans;
+-	font-size: 12px;
+-	#padding-left: 20px; 
+-	padding: 10px;
+-	align: left;
+ 	width: 97%;
+-	text-align: left;
+-	white-space: pre-wrap;
+-	background-color: #FFF;
+ 	padding: 5px;
++	background-color: #FFFFFF;
+   	border: 1px dashed silver;
+ }
+-	
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-05-28 02:37:15 UTC (rev 45)
+@@ -21,20 +21,22 @@
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+ import de.deepamehta.service.web.WebSession;
++import de.deepamehta.topics.EmailTopic;
+ import de.deepamehta.topics.TypeTopic;
+ import de.deepamehta.util.DeepaMehtaUtils;
++
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ 
+ 
+ 
+ /**
+- * Kiez-Atlas 1.5&lt;br&gt;
++ * Kiez-Atlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 15.11.2007&lt;br&gt;
+- * Malte Rei&szlig;ig&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
++ * Last change: 27.5.2008&lt;br&gt;
++ * J&ouml;rg Richter&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+ public class BrowseServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
+@@ -160,8 +162,6 @@
+ 				TopicBean topicBean = as.createTopicBean(geoID, 1);
+ 				session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 				String imagePath = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH;
+-				System.out.println(&quot;***imagePath: &quot;+imagePath);
+-				
+ 				session.setAttribute(&quot;imagePath&quot;, imagePath);
+ 				GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(geoID, 1);
+ 				boolean isForumActivated = geo.isForumActivated();
+@@ -189,7 +189,7 @@
+ 			String assocID = as.getNewAssociationID();
+ 			cm.createAssociation(assocID, 1, SEMANTIC_FORUM_COMMENTS, 1, forumID, 1, commentID, 1);
+ 			// send notification email
+-			// sendNotificationEmail(inst.getID(), commentID);
++			sendNotificationEmail(geo.getID(), commentID);
+ 			//
+ 			return PAGE_GEO_FORUM;
+ 		// shape display
+@@ -198,9 +198,6 @@
+ 			toggleShapeDisplay(shapeTypeID, session);
+ 			updateShapes(session);
+ 			return PAGE_CITY_MAP;
+-		} else if (action.equals(ACTION_SHOW_GEO_FORM)) {
+-			//should this  be possible from the browseServlet, if so the action has to redirect to edit/GeoLogin or am i wrong? 
+-			return PAGE_GEO_FORM;
+ 		} else {
+ 			return super.performAction(action, params, session);
+ 		}
+@@ -287,49 +284,49 @@
+ 
+ 	// ---
+ 
+-//	private void sendNotificationEmail(String instID, String commentID) {
+-//		try {
+-//			GeoObjectTopic inst = (GeoObjectTopic) as.getLiveTopic(instID, 1);
+-//			// &quot;from&quot;
+-//			String from = as.getEmailAddress(&quot;t-rootuser&quot;);		// ###
+-//			if (from == null || from.equals(&quot;&quot;)) {
+-//				throw new DeepaMehtaException(&quot;email address of root user is unknown&quot;);
+-//			}
+-//			// &quot;to&quot;
+-//			BaseTopic email = inst.getEmail();
+-//			if (email == null || email.getName().equals(&quot;&quot;)) {
+-//				throw new DeepaMehtaException(&quot;email address of \&quot;&quot; + inst.getName() + &quot;\&quot; is unknown&quot;);
+-//			}
+-//			String to = email.getName();
+-//			// &quot;subject&quot;
+-//			String subject = &quot;Kiezatlas: neuer Forumsbeitrag f&#252;r \&quot;&quot; + inst.getName() + &quot;\&quot;&quot;;
+-//			// &quot;body&quot;
+-//			Hashtable comment = cm.getTopicData(commentID, 1);
+-//			String body = &quot;Dies ist eine automatische Benachrichtigung von www.kiezatlas.de\r\r&quot; +
+-//				&quot;Im Forum der Einrichtung \&quot;&quot; + inst.getName() + &quot;\&quot; wurde ein neuer Kommentar eingetragen:\r\r&quot; +
+-//				&quot;------------------------------\r&quot; +
+-//				comment.get(PROPERTY_TEXT) + &quot;\r\r&quot; +
+-//				&quot;Autor: &quot; + comment.get(PROPERTY_COMMENT_AUTHOR) + &quot;\r&quot; +
+-//				&quot;Email: &quot; + comment.get(PROPERTY_EMAIL_ADDRESS) + &quot;\r&quot; +
+-//				&quot;Datum: &quot; + comment.get(PROPERTY_COMMENT_DATE) + &quot;\r&quot; +
+-//				&quot;Uhrzeit: &quot; + comment.get(PROPERTY_COMMENT_TIME) + &quot;\r&quot; +
+-//				&quot;------------------------------\r\r&quot; +
+-//				&quot;Im Falle des Mi&#223;brauchs: In der \&quot;Forum Administration\&quot; ihres pers&#246;nlichen Kiezatlas-Zugangs haben &quot; +
+-//				&quot;Sie die M&#246;glichkeit, einzelne Kommentare zu l&#246;schen, bzw. das Forum ganz zu deaktivieren.\r&quot; +
+-//				&quot;www.kiezatlas.de:8080/edit/&quot; + inst.getWebAlias() + &quot;\r\r&quot; +
+-//				&quot;Mit freundlichen Gr&#252;&#223;en\r&quot; +
+-//				&quot;ihr Kiezatlas-Team&quot;;
+-//			//
+-//			System.out.println(&quot;&gt;&gt;&gt; send notification email&quot;);
+-//			System.out.println(&quot;  &gt; SMTP server: \&quot;&quot; + as.getSMTPServer() + &quot;\&quot;&quot;);	// as.getSMTPServer() throws DME
+-//			System.out.println(&quot;  &gt; from: \&quot;&quot; + from + &quot;\&quot;&quot;);
+-//			System.out.println(&quot;  &gt; to: \&quot;&quot; + to + &quot;\&quot;&quot;);
+-//			// send email
+-//			EmailTopic.sendMail(as.getSMTPServer(), from, to, subject, body);		// EmailTopic.sendMail() throws DME
+-//		} catch (Exception e) {
+-//			System.out.println(&quot;*** notification email not send (&quot; + e + &quot;)&quot;);
+-//		}
+-//	}
++	private void sendNotificationEmail(String instID, String commentID) {
++		try {
++			GeoObjectTopic inst = (GeoObjectTopic) as.getLiveTopic(instID, 1);
++			// &quot;from&quot;
++			String from = as.getEmailAddress(&quot;t-rootuser&quot;);		// ###
++			if (from == null || from.equals(&quot;&quot;)) {
++				throw new DeepaMehtaException(&quot;email address of root user is unknown&quot;);
++			}
++			// &quot;to&quot;
++			BaseTopic email = inst.getEmail();
++			if (email == null || email.getName().equals(&quot;&quot;)) {
++				throw new DeepaMehtaException(&quot;email address of \&quot;&quot; + inst.getName() + &quot;\&quot; is unknown&quot;);
++			}
++			String to = email.getName();
++			// &quot;subject&quot;
++			String subject = &quot;Kiezatlas: neuer Forumsbeitrag f&#252;r \&quot;&quot; + inst.getName() + &quot;\&quot;&quot;;
++			// &quot;body&quot;
++			Hashtable comment = cm.getTopicData(commentID, 1);
++			String body = &quot;Dies ist eine automatische Benachrichtigung von www.kiezatlas.de\r\r&quot; +
++				&quot;Im Forum der Einrichtung \&quot;&quot; + inst.getName() + &quot;\&quot; wurde ein neuer Kommentar eingetragen:\r\r&quot; +
++				&quot;------------------------------\r&quot; +
++				comment.get(PROPERTY_TEXT) + &quot;\r\r&quot; +
++				&quot;Autor: &quot; + comment.get(PROPERTY_COMMENT_AUTHOR) + &quot;\r&quot; +
++				&quot;Email: &quot; + comment.get(PROPERTY_EMAIL_ADDRESS) + &quot;\r&quot; +
++				&quot;Datum: &quot; + comment.get(PROPERTY_COMMENT_DATE) + &quot;\r&quot; +
++				&quot;Uhrzeit: &quot; + comment.get(PROPERTY_COMMENT_TIME) + &quot;\r&quot; +
++				&quot;------------------------------\r\r&quot; +
++				&quot;Im Falle des Mi&#223;brauchs: In der \&quot;Forum Administration\&quot; ihres pers&#246;nlichen Kiezatlas-Zugangs haben &quot; +
++				&quot;Sie die M&#246;glichkeit, einzelne Kommentare zu l&#246;schen, bzw. das Forum ganz zu deaktivieren.\r&quot; +
++				&quot;www.kiezatlas.de:8080/edit/&quot; + inst.getWebAlias() + &quot;\r\r&quot; +
++				&quot;Mit freundlichen Gr&#252;&#223;en\r&quot; +
++				&quot;ihr Kiezatlas-Team&quot;;
++			//
++			System.out.println(&quot;&gt;&gt;&gt; send notification email&quot;);
++			System.out.println(&quot;  &gt; SMTP server: \&quot;&quot; + as.getSMTPServer() + &quot;\&quot;&quot;);	// as.getSMTPServer() throws DME
++			System.out.println(&quot;  &gt; from: \&quot;&quot; + from + &quot;\&quot;&quot;);
++			System.out.println(&quot;  &gt; to: \&quot;&quot; + to + &quot;\&quot;&quot;);
++			// send email
++			EmailTopic.sendMail(as.getSMTPServer(), from, to, subject, body);		// EmailTopic.sendMail() throws DME
++		} catch (Exception e) {
++			System.out.println(&quot;*** notification email not send (&quot; + e + &quot;)&quot;);
++		}
++	}
+ 
+ 
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-05-28 02:37:15 UTC (rev 45)
+@@ -8,7 +8,7 @@
+  * Kiez-Atlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last change: 26.5.2008&lt;br&gt;
++ * Last change: 27.5.2008&lt;br&gt;
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -188,13 +188,15 @@
+ 	public static final String ACTION_TRY_LOGIN = &quot;tryLogin&quot;;				// also used for list servlet
+ 	public static final String ACTION_SHOW_GEO_FORM = &quot;showGeoObjectForm&quot;;	// also used for list servlet
+ 	public static final String ACTION_UPDATE_GEO = &quot;updateGeo&quot;;				// also used for list servlet
++	public static final String ACTION_GO_HOME = &quot;goHome&quot;;					// also used for list servlet
+ 	public static final String ACTION_SHOW_FORUM_ADMINISTRATION = &quot;showForumAdmin&quot;;
+ 	public static final String ACTION_ACTIVATE_FORUM = &quot;activateForum&quot;;
+ 	public static final String ACTION_DEACTIVATE_FORUM = &quot;deactivateForum&quot;;
+ 	public static final String ACTION_DELETE_COMMENT = &quot;deleteComment&quot;;
+-	public static final String ACTION_GO_HOME = &quot;goHome&quot;;
+ 	// list servlet
+ 	public static final String ACTION_SHOW_INSTITUTIONS = &quot;showInstitutions&quot;;
++	public static final String ACTION_SHOW_EMPTY_GEO_FORM = &quot;showEmptyGeoObjectForm&quot;;
++	public static final String ACTION_CREATE_GEO = &quot;createGeo&quot;;
+ 
+ 
+ 
+@@ -244,6 +246,7 @@
+     static final String PAGE_LIST_HOME = &quot;ListHome&quot;;
+     static final String PAGE_LIST = &quot;List&quot;;
+     static final String PAGE_GEO_ADMIN_FORM = &quot;GeoObjectAdminForm&quot;;
++    static final String PAGE_GEO_EMPTY_FORM = &quot;GeoObjectEmptyForm&quot;;
+ 	// error
+     static final String PAGE_ERROR = &quot;error&quot;;
+ }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-05-28 02:37:15 UTC (rev 45)
+@@ -19,10 +19,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.5&lt;br&gt;
++ * Kiez-Atlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last functional change: 26.5.2008&lt;br&gt;
++ * Last functional change: 27.5.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -58,6 +58,12 @@
+ 				as.setTopicProperty(geo.getImage(), PROPERTY_FILE, newFilename);
+ 			}
+ 			return PAGE_LIST;
++		} else if (action.equals(ACTION_SHOW_EMPTY_GEO_FORM)) {
++			return PAGE_GEO_EMPTY_FORM;
++		} else if (action.equals(ACTION_CREATE_GEO)) {
++			return PAGE_LIST;
++		} else if (action.equals(ACTION_GO_HOME)) {
++			return PAGE_LIST_HOME;
+ 		}
+ 		//
+ 		return super.performAction(action, params, session);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-05-28 02:37:15 UTC (rev 45)
+@@ -21,7 +21,7 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.5&lt;br&gt;
++ * Kiez-Atlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+  * Last change: 29.1.2008&lt;br&gt;
+@@ -32,7 +32,7 @@
+ 
+ 
+ 
+-	static final String VERSION = &quot;1.5&quot;;
++	static final String VERSION = &quot;1.5.1&quot;;
+ 	static {
+ 		System.out.println(&quot;&gt;&gt;&gt; Kiez-Atlas &quot; + VERSION);
+ 	}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-05-27 01:49:09 UTC (rev 44)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-05-28 02:37:15 UTC (rev 45)
+@@ -1,11 +1,7 @@
+ package de.kiezatlas.deepamehta.topics;
+ 
+-import java.awt.Point;
+-import java.awt.geom.Point2D;
+-import java.util.Enumeration;
+-import java.util.Hashtable;
+-import java.util.StringTokenizer;
+-import java.util.Vector;
++import de.kiezatlas.deepamehta.Comment;
++import de.kiezatlas.deepamehta.KiezAtlas;
+ 
+ import de.deepamehta.AmbiguousSemanticException;
+ import de.deepamehta.BaseTopic;
+@@ -19,37 +15,46 @@
+ import de.deepamehta.topics.LiveTopic;
+ import de.deepamehta.topics.TopicTypeTopic;
+ import de.deepamehta.topics.TypeTopic;
+-import de.kiezatlas.deepamehta.Comment;
+-import de.kiezatlas.deepamehta.KiezAtlas;
+ 
++import java.awt.Point;
++import java.awt.geom.Point2D;
++import java.util.Enumeration;
++import java.util.Hashtable;
++import java.util.StringTokenizer;
++import java.util.Vector;
++
++
++
+ /**
+- * 
+- * Kiez-Atlas 1.5&lt;br&gt;
++ * Kiez-Atlas 1.5.1&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 25.3.2008&lt;br&gt;
+- * Malte Rei&#223;ig&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+- * 
++ * Last change: 27.5.2008&lt;br&gt;
++ * J&ouml;rg Richter&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+ public class GeoObjectTopic extends LiveTopic implements KiezAtlas{
+ 
+-	/**
+-	 * 
+-	 */
++
++
++	// *****************
++	// *** Constants ***
++	// *****************
++
++
++
+ 	static final String DEFAULT_PASSWORD = &quot;geheim&quot;;
+-	
+-	
+-	
+-	// ------------------
+-	// --- Constructor ---
+-	// ------------------
+-	
+-	
+-	
++
++
++
++	// *******************
++	// *** Constructor ***
++	// *******************
++
++
++
+ 	public GeoObjectTopic(BaseTopic topic, ApplicationService as) {
+ 		super(topic, as);
+-		// TODO Auto-generated constructor stub
+ 	}
+ 
+ 
+@@ -120,9 +125,9 @@
+ 		}
+ 		return directives;
+ 	}
+-		
+ 
+ 
++
+ 	// ------------------------------------------
+ 	// --- Reacting upon dedicated situations ---
+ 	// ------------------------------------------
+@@ -149,7 +154,7 @@
+ 	}
+ 
+ 
+-	
++
+ 	// ---------------------------
+ 	// --- Handling Properties ---
+ 	// ---------------------------
+@@ -259,9 +264,9 @@
+ 		}
+ 		return LiveTopic.propertyLabel(propDef, relTopicTypeID, as);
+ 	}
+-	
+-	
+-	
++
++
++
+ 	// ------------------------
+ 	// --- Topic Type Hooks ---
+ 	// ------------------------
+@@ -269,22 +274,22 @@
+ 
+ 
+ 	/**
+-	 * @return  the ID of the search type
++	 * @return	the ID of the search type
+ 	 *
+-	 * @see     TopicTypeTopic#createSearchType
++	 * @see		TopicTypeTopic#createSearchType
+ 	 */
+ 	public static String getSearchTypeID() {
+ 		return TOPICTYPE_KIEZ_GEO_SEARCH;
+ 	}
+-	
+-	
+-	
++
++
++
+ 	// **********************
+ 	// *** Custom Methods ***
+ 	// **********************
+ 
+-	
+-	
++
++
+ 	public static BaseTopic lookupInstitution(String alias, ApplicationService as) throws DeepaMehtaException {
+ 		Vector typeIDs = as.type(TOPICTYPE_KIEZ_GEO, 1).getSubtypeIDs();
+ 		Hashtable props = new Hashtable();
+@@ -301,9 +306,9 @@
+ 		BaseTopic inst = (BaseTopic) institutions.firstElement();
+ 		return inst;
+ 	}
+-	
++
+ 	// ---
+-	
++
+ 	public BaseTopic getAddress() {
+ 		try {
+ 			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
+@@ -311,8 +316,8 @@
+ 			System.out.println(&quot;*** GeoObjectTopic.getAddress(): &quot; + e);
+ 			return e.getDefaultTopic();
+ 		}
+-	}	
+-	
++	}
++
+ 	public String getCity() {
+ 		// if a geoobject has a stadt property, take it and return it
+ 		// else if a geoobject has an addressTopic assigned, check if there is a city, if so return this city
+@@ -327,7 +332,7 @@
+ 				if (town != null) {
+ 					city = town.getName();
+ 					return city;
+-				}				
++				}
+ 			}
+ 			return &quot;&quot;;
+ 		} catch (AmbiguousSemanticException aex) {
+@@ -335,11 +340,28 @@
+ 			return aex.getDefaultTopic().getName();
+ 		}
+ 	}
+-	
++
++	public BaseTopic getEmail() {
++		try {
++			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_EMAIL_ADDRESS, 2, true);		// emptyAllowed=true
++		} catch (AmbiguousSemanticException e) {
++			System.out.println(&quot;*** GeoObjectTopic.getEmail(): &quot; + e);
++			return e.getDefaultTopic();
++		}
++	}
++
++	public String getWebAlias() {
++		return getProperty(PROPERTY_WEB_ALIAS);
++	}
++
++	// ---
++
+ 	public Vector getCategories(String critTypeID) {
+ 		return as.getRelatedTopics(getID(), ASSOCTYPE_ASSOCIATION, critTypeID, 2);
+ 	}
+-	
++
++	// ---
++
+ 	public BaseTopic getImage() {
+ 		try {
+ 			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_IMAGE, 2, true);		// emptyAllowed=true
+@@ -349,8 +371,8 @@
+ 		}
+ 	}
+ 
++	// ---
+ 
+-	
+ 	/**
+ 	 * Converts the YADE-coordinate of this institution into a screen coordinate.
+ 	 *
+@@ -428,7 +450,9 @@
+ 				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#252;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 	}
+-	
++
++	// ---
++
+ 	public boolean isForumActivated() {
+ 		BaseTopic forum = getForum();
+ 		if (forum == null) {
+@@ -436,7 +460,7 @@
+ 		}
+ 		return as.getTopicProperty(forum, PROPERTY_FORUM_ACTIVITION).equals(SWITCH_ON);
+ 	}
+-	
++
+ 	public Vector getComments() {
+ 		BaseTopic forum = getForum();
+ 		if (forum == null) {
+@@ -445,7 +469,7 @@
+ 		String[] sortProps = {PROPERTY_COMMENT_DATE, PROPERTY_COMMENT_TIME};
+ 		return cm.getRelatedTopics(forum.getID(), SEMANTIC_FORUM_COMMENTS, TOPICTYPE_COMMENT, 2, sortProps, true);	// descending=true
+ 	}
+-	
++
+ 	public BaseTopic getForum() {
+ 		try {
+ 			return as.getRelatedTopic(getID(), SEMANTIC_INSTITUTION_FORUM, TOPICTYPE_FORUM, 2, true);		// emptyAllowed=true
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000036.html">[Kiezatlas-svn] r44 - in trunk: config/default db/patches docs	pages src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#37">[ date ]</a>
+              <a href="thread.html#37">[ thread ]</a>
+              <a href="subject.html#37">[ subject ]</a>
+              <a href="author.html#37">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

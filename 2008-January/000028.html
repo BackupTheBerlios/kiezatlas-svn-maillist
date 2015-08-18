@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r36 - trunk/config/default
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r36%20-%20trunk/config/default&In-Reply-To=%3C200801081830.m08IUsRH031495%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000027.html">
+   <LINK REL="Next"  HREF="000030.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r36 - trunk/config/default</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r36%20-%20trunk/config/default&In-Reply-To=%3C200801081830.m08IUsRH031495%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r36 - trunk/config/default">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue Jan  8 19:30:54 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000027.html">[Kiezatlas-svn] r35 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+        <LI>Next message: <A HREF="000030.html">[Kiezatlas-svn] r37 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28">[ date ]</a>
+              <a href="thread.html#28">[ thread ]</a>
+              <a href="subject.html#28">[ subject ]</a>
+              <a href="author.html#28">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-01-08 19:30:49 +0100 (Tue, 08 Jan 2008)
+New Revision: 36
+
+Modified:
+   trunk/config/default/web.xml
+Log:
+1) inserted the correct production instance name in web.xml
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2008-01-08 16:12:36 UTC (rev 35)
++++ trunk/config/default/web.xml	2008-01-08 18:30:49 UTC (rev 36)
+@@ -21,7 +21,7 @@
+ 
+     &lt;context-param&gt;
+       &lt;param-name&gt;service&lt;/param-name&gt;
+-      &lt;param-value&gt;katest&lt;/param-value&gt;
++      &lt;param-value&gt;kiezatlas&lt;/param-value&gt;
+       &lt;description&gt;
+         Selects a DeepaMehta service.
+         If this parameter is not set the &quot;default&quot; service will be used.
+@@ -38,15 +38,6 @@
+       &lt;/description&gt;
+     &lt;/context-param&gt;
+ 
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;stylesheet&lt;/param-name&gt;
+-      &lt;param-value&gt;../../client/stylesheets/deepaMehtaWeb.css&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Sets the stylesheet for the XSL transformation.
+-		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+     &lt;!-- Servlet definitions for the servlets that make up
+          the web application.
+     --&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000027.html">[Kiezatlas-svn] r35 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+	<LI>Next message: <A HREF="000030.html">[Kiezatlas-svn] r37 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28">[ date ]</a>
+              <a href="thread.html#28">[ thread ]</a>
+              <a href="subject.html#28">[ subject ]</a>
+              <a href="author.html#28">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

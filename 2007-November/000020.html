@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r28 - trunk/pages
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r28%20-%20trunk/pages&In-Reply-To=%3C200711261621.lAQGLv7L022001%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000019.html">
+   <LINK REL="Next"  HREF="000021.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r28 - trunk/pages</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r28%20-%20trunk/pages&In-Reply-To=%3C200711261621.lAQGLv7L022001%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r28 - trunk/pages">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Nov 26 17:21:57 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000019.html">[Kiezatlas-svn] r27 - trunk/pages
+</A></li>
+        <LI>Next message: <A HREF="000021.html">[Kiezatlas-svn] r29 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20">[ date ]</a>
+              <a href="thread.html#20">[ thread ]</a>
+              <a href="subject.html#20">[ subject ]</a>
+              <a href="author.html#20">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-26 17:21:51 +0100 (Mon, 26 Nov 2007)
+New Revision: 28
+
+Modified:
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/KiezAtlas.jsp
+Log:
+1) ueberarbeitetes adress &amp; maplink rendering
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2007-11-26 14:55:02 UTC (rev 27)
++++ trunk/pages/GeoObjectInfo.jsp	2007-11-26 16:21:51 UTC (rev 28)
+@@ -34,37 +34,24 @@
+ 	
+ 	//Print Adress if available on this Topic includind directlink to bvg
+ 	try { 
+-		if (topicBean.getValue(&quot;Address / Street&quot;) != null) {
+-			// first comes the property and as second the possible related address topic 
+-			String city = topicBean.getValue(&quot;Stadt&quot;);
+-			if (city == null) {
+-				Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+-				if (tmp != null) {
+-					if (tmp.size() &gt; 0){
+-						city = ((BaseTopic) tmp.elementAt(0)).getName();
+-					} else {
+-						// yes, this case exists
+-						city = &quot; &quot;;
+-					}						
++		// first comes the property and as second the possible related address topic 
++		String city = topicBean.getValue(&quot;Stadt&quot;);
++		if (city == null) {
++			Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
++			if (tmp != null) {
++				if (tmp.size() &gt; 0){
++					city = ((BaseTopic) tmp.elementAt(0)).getName();
+ 				} else {
+-					city = &quot; &quot;;
+-				}
++					city = &quot;&quot;;
++				}						
++			} else {
++				city = &quot;&quot;;
+ 			}
+-			
+-			String street = topicBean.getValue(&quot;Address / Street&quot;);
+-			String postalCode = topicBean.getValue(&quot;Address / Postal Code&quot;);
+-			if (postalCode == null)	postalCode = &quot;&quot;;
+-			// fetch maplink block
+-			out.println(mapLink(street, postalCode, city));
+-		} else {
+-			// Trotzdem die Stadt rausschreiben wenn keine adresse da ist..
+-			String city = topicBean.getValue(&quot;Stadt&quot;);
+-			Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+-			if (city == null &amp;&amp; tmp.size() &gt; 0) {
+-				city = ((BaseTopic) tmp.elementAt(0)).getName();
+-			}
+-			out.println(city);
+-		}
++		}			
++		String street = topicBean.getValue(&quot;Address / Street&quot;);
++		String postalCode = topicBean.getValue(&quot;Address / Postal Code&quot;);
++		// fetch maplink block
++		out.println(mapLink(street, postalCode, city));
+ 	} catch (DeepaMehtaException ex){
+ 		out.println(&quot;Bitte Entschuldigung Sie, es ist ein Fehler aufgetreten: &quot; + ex);	
+ 	}
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2007-11-26 14:55:02 UTC (rev 27)
++++ trunk/pages/KiezAtlas.jsp	2007-11-26 16:21:51 UTC (rev 28)
+@@ -135,11 +135,43 @@
+ 			//assemble the html block with streetname, postal code and city with the fahrplan img as a link in a block
+ 			String mapURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=">http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=</A>&quot; + postalCode + &quot;&amp;adr_street=&quot; + streetname + &quot;&amp;adr_house=&quot; + hnr;
+ 			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;fahrinfo\&quot;&gt;&lt;img src=\&quot;../images/fahrinfo.gif\&quot; border=\&quot;0\&quot; hspace=\&quot;20\&quot;&gt;&lt;/a&gt;&quot;;
+-			String blockString = street + &quot; &quot; + imageLink + &quot;&lt;/br&gt;&quot; + postalCode + &quot; &quot; + city;			
+-			return blockString;
++			StringBuffer blockString = new StringBuffer(&quot;&quot;);
++			
++			if (street == null) {
++				//wenn street null dann nur stadt und postalCode zur&#252;ckgeben
++				if (postalCode == null){
++					// strasse und plz gleich null, dann nur Berlin schreiben
++					return city;	
++				} else {
++					// ansonsten plz und berlin schreiben ohne mapLink
++					return postalCode + &quot; &quot; + city;
++				}				 
++			} else {
++				// wenn stra&#223;e vorhanden, dann maplink schreiben, auch ohne plz
++				if (postalCode != null) {
++					// mit plz
++					blockString.append(street + imageLink + &quot;&lt;/br&gt;&quot; + postalCode + &quot; &quot; + city);	
++				} else {
++					// ohne plz
++					blockString.append(street + imageLink + &quot;&lt;/br&gt;&quot; + city);
++				}
++				return blockString.toString();
++			}	
++			
++			//String blockString = street + &quot; &quot; + imageLink + &quot;&lt;/br&gt;&quot; + postalCode + &quot; &quot; + city;
++			//return blockString.toString();
+ 		} else {
+-			String blockString = street + &quot;&lt;/br&gt;&quot; +  postalCode + &quot; &quot; +city;
+-			return blockString;
++			StringBuffer blockString = new StringBuffer(&quot;&quot;);
++			if (street != null) {
++				blockString.append(street + &quot;&lt;/br&gt;&quot;); 
++			} 
++			if (postalCode != null) {
++				blockString.append(postalCode + &quot; &quot;);	
++			}
++			if (city != null) {
++				blockString.append(city);
++			}
++			return blockString.toString();
+ 		}
+ 	}
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000019.html">[Kiezatlas-svn] r27 - trunk/pages
+</A></li>
+	<LI>Next message: <A HREF="000021.html">[Kiezatlas-svn] r29 - trunk/pages
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20">[ date ]</a>
+              <a href="thread.html#20">[ thread ]</a>
+              <a href="subject.html#20">[ subject ]</a>
+              <a href="author.html#20">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

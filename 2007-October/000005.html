@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r13 - trunk/src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r13%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200710011511.l91FBa8U010676%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000006.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r13 - trunk/src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r13%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200710011511.l91FBa8U010676%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r13 - trunk/src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Mon Oct  1 17:11:36 CEST 2007</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000006.html">[Kiezatlas-svn] r14 - tags
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5">[ date ]</a>
+              <a href="thread.html#5">[ thread ]</a>
+              <a href="subject.html#5">[ subject ]</a>
+              <a href="author.html#5">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2007-10-01 17:11:21 +0200 (Mon, 01 Oct 2007)
+New Revision: 13
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java
+Log:
+Adapted to latest DeepaMehta version (see Rev 191: bar | character is used to separate commands from their parameters)
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-07-04 11:25:38 UTC (rev 12)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-10-01 15:11:21 UTC (rev 13)
+@@ -22,9 +22,9 @@
+ 
+ /**
+  * Kiez-Atlas 1.4.1&lt;br&gt;
+- * Requires DeepaMehta 2.0b7-post1
++ * Requires DeepaMehta 2.0b8-pre2
+  * &lt;p&gt;
+- * Last change: 16.3.2007&lt;br&gt;
++ * Last change: 11.9.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -111,7 +111,7 @@
+ 	public CorporateDirectives executeCommand(String command, Session session, String topicmapID, String viewmode) {
+ 		CorporateDirectives directives = new CorporateDirectives();
+ 		//
+-		StringTokenizer st = new StringTokenizer(command, &quot;:&quot;);
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_REPOSITION_ALL)) {
+ 			repositionAllInstitutions(directives);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java	2007-07-04 11:25:38 UTC (rev 12)
++++ trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java	2007-10-01 15:11:21 UTC (rev 13)
+@@ -127,7 +127,7 @@
+ 			     				String topicmapID, String viewmode) {
+ 		CorporateDirectives directives = new CorporateDirectives();
+ 		//
+-		StringTokenizer st = new StringTokenizer(command, &quot;:&quot;);
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_IMPORT_FILE)) {
+ 			// Hier wir der Import angestossen
+@@ -278,7 +278,7 @@
+ 	public CorporateDirectives executeChainedCommand(String command,
+ 								String result, String topicmapID, String viewmode,
+ 								Session session) {
+-		StringTokenizer st = new StringTokenizer(command, &quot;:&quot;);
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_ASSIGN_FILE)) {	// ### to be dropped
+ 			CorporateDirectives directives = new CorporateDirectives();
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java	2007-07-04 11:25:38 UTC (rev 12)
++++ trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java	2007-10-01 15:11:21 UTC (rev 13)
+@@ -23,10 +23,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.2&lt;br&gt;
+- * Requires DeepaMehta 2.0b6-post3
++ * Kiez-Atlas 1.4.1&lt;br&gt;
++ * Requires DeepaMehta 2.0b8-pre2
+  * &lt;p&gt;
+- * Last change: 20.5.2006&lt;br&gt;
++ * Last change: 11.9.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -112,7 +112,7 @@
+ 
+ 	public CorporateDirectives executeCommand(String command, Session session, String topicmapID, String viewmode) {
+ 		CorporateDirectives directives = new CorporateDirectives();
+-		StringTokenizer st = new StringTokenizer(command, &quot;:&quot;);
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_LOCK_GEOMETRY) || cmd.equals(CMD_UNLOCK_GEOMETRY)) {
+ 			String value = cmd.equals(CMD_LOCK_GEOMETRY) ? SWITCH_ON : SWITCH_OFF;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2007-07-04 11:25:38 UTC (rev 12)
++++ trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2007-10-01 15:11:21 UTC (rev 13)
+@@ -26,10 +26,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.3.3.&lt;br&gt;
+- * Requires DeepaMehta 2.0b6-post3.
++ * Kiez-Atlas 1.4.1.&lt;br&gt;
++ * Requires DeepaMehta 2.0b8-pre2.
+  * &lt;p&gt;
+- * Last functional change: 29.5.2006&lt;br&gt;
++ * Last functional change: 11.9.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -96,7 +96,7 @@
+ 
+ 	public CorporateDirectives executeCommand(String command, Session session, String topicmapID, String viewmode) {
+ 		CorporateDirectives directives = new CorporateDirectives();
+-		StringTokenizer st = new StringTokenizer(command, &quot;:&quot;);
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+ 		String cmd = st.nextToken();
+ 		//
+ 		if (cmd.equals(CMD_MAKE_SHAPE)) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java	2007-07-04 11:25:38 UTC (rev 12)
++++ trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java	2007-10-01 15:11:21 UTC (rev 13)
+@@ -22,10 +22,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.2.1.&lt;br&gt;
+- * Requires DeepaMehta 2.0b4.
++ * Kiez-Atlas 1.4.1&lt;br&gt;
++ * Requires DeepaMehta 2.0b8-pre2
+  * &lt;p&gt;
+- * Last functional change: 1.1.2005&lt;br&gt;
++ * Last functional change: 11.9.2007&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -100,7 +100,7 @@
+ 
+ 	public CorporateDirectives executeCommand(String command, Session session, String topicmapID, String viewmode) {
+ 		CorporateDirectives directives = new CorporateDirectives();
+-		StringTokenizer st = new StringTokenizer(command, &quot;:&quot;);
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+ 		String cmd = st.nextToken();
+ 		if (cmd.equals(CMD_LOCK_GEOMETRY) || cmd.equals(CMD_UNLOCK_GEOMETRY)) {
+ 			String value = cmd.equals(CMD_LOCK_GEOMETRY) ? SWITCH_ON : SWITCH_OFF;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000006.html">[Kiezatlas-svn] r14 - tags
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5">[ date ]</a>
+              <a href="thread.html#5">[ thread ]</a>
+              <a href="subject.html#5">[ subject ]</a>
+              <a href="author.html#5">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

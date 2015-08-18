@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r34 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-December/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r34%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200712171741.lBHHf8Dv028201%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000025.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r34 - in trunk: docs pages	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r34%20-%20in%20trunk%3A%20docs%20pages%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C200712171741.lBHHf8Dv028201%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r34 - in trunk: docs pages	src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Dec 17 18:41:08 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000025.html">[Kiezatlas-svn] r33 - in trunk: . config/default pages src/de	src/de/swers src/de/swers/kiezatlas src/de/swers/kiezatlas/tools
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26">[ date ]</a>
+              <a href="thread.html#26">[ thread ]</a>
+              <a href="subject.html#26">[ subject ]</a>
+              <a href="author.html#26">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-12-17 18:40:57 +0100 (Mon, 17 Dec 2007)
+New Revision: 34
+
+Added:
+   trunk/src/de/kiezatlas/deepamehta/Cluster.java
+Modified:
+   trunk/docs/session.txt
+   trunk/pages/CityMap.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+Log:
+Added ClusterObject
+
+Changes:
+1) Objects with the same x,y Point, can now be selected in the Webinterface over a contextMenu
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2007-12-06 13:16:04 UTC (rev 33)
++++ trunk/docs/session.txt	2007-12-17 17:40:57 UTC (rev 34)
+@@ -33,6 +33,7 @@
+ 						vector 2:
+ 							element 0     : icon url
+ 							element 1,2,..: PresentableTopic
++cluster				Vector of Clusters
+ selectedGeo			GeoObject
+ 
+ 
+@@ -72,7 +73,6 @@
+ selectedGeo			GeoObject
+ instComments		Vector of Comment
+ 
+-
+ error
+ -----
+ 
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2007-12-06 13:16:04 UTC (rev 33)
++++ trunk/pages/CityMap.jsp	2007-12-17 17:40:57 UTC (rev 34)
+@@ -7,6 +7,24 @@
+ 	&lt;!--[if lt IE 7]&gt;
+ 	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/pngfix.js&quot;&gt;&lt;/script&gt;
+ 	&lt;![endif]--&gt;
++	&lt;script type=&quot;text/javascript&quot;&gt;
++		var hidden = true;
++		function showMenu(id) {
++			var currentMenu = &quot;clusterMenu&quot;+id;
++			if (hidden) {
++				if (document.getElementById) {
++					document.getElementById(currentMenu).style.visibility = 'visible';
++					hidden=false;
++				}
++			} else {
++				if (document.getElementById) {
++					document.getElementById(currentMenu).style.visibility = 'hidden';
++					hidden=true;
++				}
++			}
++			
++		}
++	&lt;/script&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+ 	&lt;%
+@@ -14,6 +32,7 @@
+ 		Vector hotspots = (Vector) session.getAttribute(&quot;hotspots&quot;);
+ 		Vector shapeTypes = (Vector) session.getAttribute(&quot;shapeTypes&quot;);
+ 		Vector shapes = (Vector) session.getAttribute(&quot;shapes&quot;);
++		Vector cluster = (Vector) session.getAttribute(&quot;cluster&quot;);
+ 		GeoObject selectedInst = (GeoObject) session.getAttribute(&quot;selectedGeo&quot;);
+ 	%&gt;
+ 	&lt;img src=&quot;&lt;%= mapImage %&gt;&quot; style=&quot;position:absolute; top:0px; left:0px;&quot;&gt;
+@@ -42,17 +61,38 @@
+ 				PresentableTopic inst = (PresentableTopic) e2.nextElement();
+ 				Point p = inst.getGeometry();
+ 				// marker
++				// marker and hotspot can't overlap exactly, caus of the new icons don't fit in the old convention of 20x20px
+ 				if (selectedInst != null &amp;&amp; selectedInst.geoID.equals(inst.getID())) {
+ 					out.println(&quot;&lt;img src=\&quot;../images/marker.gif\&quot; style=\&quot;position:absolute; top:&quot; +
+-						(p.y - 20) + &quot;px; left:&quot; + (p.x - 20) + &quot;px;\&quot;&gt;&quot;);
++						(p.y - 18) + &quot;px; left:&quot; + (p.x - 18) + &quot;px;\&quot;&gt;&quot;);
+ 				}
+ 				// hotspot
+ 				out.println(&quot;&lt;a href=\&quot;javascript:top.frames.right.location.href='controller?action=&quot; +
+ 					KiezAtlas.ACTION_SHOW_GEO_INFO + &quot;&amp;id=&quot; + inst.getID() + &quot;'\&quot;&gt;&quot; +
+-					&quot;&lt;img src=\&quot;&quot; + icon + &quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 10) + &quot;px; left:&quot; +
+-					(p.x - 10) + &quot;px;\&quot; alt=\&quot;&quot; + inst.getName() + &quot;\&quot; title=\&quot;&quot; + inst.getName() + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++					&quot;&lt;img src=\&quot;&quot; + icon + &quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 7) + &quot;px; left:&quot; +
++					(p.x - 7) + &quot;px;\&quot; alt=\&quot;&quot; + inst.getName() + &quot;\&quot; title=\&quot;&quot; + inst.getName() + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
+ 			}
+ 		}
++		//cluster
++		e = cluster.elements();
++		while (e.hasMoreElements()) {
++			//entered vector of cluster
++			Cluster myCluster = (Cluster) e.nextElement();
++			Point p = myCluster.getPoint();
++			Vector presentables = myCluster.getPresentables();
++			Enumeration e2 = presentables.elements();
++			String iconPath = myCluster.getIcon();
++			out.println(&quot;&lt;span onMouseOver=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot;&gt;&lt;img src=\&quot;&quot;+iconPath+&quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 10) + &quot;px; left:&quot; + (p.x - 10) + &quot;px;\&quot; alt=\&quot;Cluster\&quot; border=\&quot;0\&quot;&gt;&lt;/span&gt;&quot;);
++			out.println(&quot;&lt;div id=\&quot;clusterMenu&quot;+p.x+&quot;.&quot;+p.y+&quot;\&quot; onMouseOut=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot; style=\&quot;position:fixed; visibility:hidden; border:1px; dashed black; padding:5px; top:&quot;+ (p.y -10) + &quot;px; left:&quot; + (p.x + 10)+ &quot;px; overflow:visible; background-color:#b0b0ea;\&quot;&gt;&quot;);
++			while(e2.hasMoreElements()) {
++				PresentableTopic currentTopic = (PresentableTopic) e2.nextElement();
++				out.println(&quot;&lt;a href=\&quot;javascript:top.frames.right.location.href='controller?action=&quot; +
++						KiezAtlas.ACTION_SHOW_GEO_INFO + &quot;&amp;id=&quot; + currentTopic.getID() + &quot;'\&quot; font-color=\&quot;black\&quot; font-style=\&quot;none\&quot; font-size=\&quot;10px\&quot;&gt;&quot;+currentTopic.getName()+&quot;&lt;/a&gt;&lt;/br&gt;&quot;);
++			}
++			out.println(&quot;&lt;/div&gt;&quot;);
++				
++		}
++
+ 		// --- shape display switches ---
+ 		if (shapeTypes.size() &gt; 0) {
+ 			out.println(&quot;&lt;form style=\&quot;position:fixed; left:0px; bottom:0px; width:300px\&quot;&gt;&quot;);
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2007-12-06 13:16:04 UTC (rev 33)
++++ trunk/pages/KiezAtlas.jsp	2007-12-17 17:40:57 UTC (rev 34)
+@@ -6,7 +6,9 @@
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.ShapeType&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.Shape&quot; %&gt;
+ &lt;%@ page import=&quot;de.kiezatlas.deepamehta.Comment&quot; %&gt;
++&lt;%@ page import=&quot;de.kiezatlas.deepamehta.Cluster&quot; %&gt;
+ 
++
+ &lt;%@ page import=&quot;de.deepamehta.BaseTopic&quot; %&gt;
+ &lt;%@ page import=&quot;de.deepamehta.BaseAssociation&quot; %&gt;
+ &lt;%@ page import=&quot;de.deepamehta.DeepaMehtaException&quot; %&gt;
+@@ -37,7 +39,8 @@
+ 		String searchMode = (String) session.getAttribute(&quot;searchMode&quot;);
+ 		String searchValue = (String) session.getAttribute(&quot;searchValue&quot;);
+ 		out.println(&quot;&lt;html&gt;\r&lt;head&gt;\r&lt;title&gt;Kiezatlas&lt;/title&gt;\r&quot; +
+-			&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;\r&lt;/head&gt;\r&quot; +
++			&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;\r&quot;+
++			&quot;&lt;/head&gt;\r&quot; +
+ 			&quot;&lt;body&quot; + (refreshMap ? &quot; onLoad=\&quot;top.frames.left.location.href='controller?action=initFrame&amp;frame=&quot; +
+ 				KiezAtlas.FRAME_LEFT + &quot;'\&quot;&quot; : &quot;&quot;) + &quot;&gt;\r&quot;);
+ 		//
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-12-06 13:16:04 UTC (rev 33)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-12-17 17:40:57 UTC (rev 34)
+@@ -7,13 +7,13 @@
+ import java.net.URL;
+ import java.util.Enumeration;
+ import java.util.Hashtable;
++import java.util.Iterator;
+ import java.util.Vector;
+ 
+ import javax.servlet.ServletException;
+ import javax.swing.ImageIcon;
+ 
+ import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaConstants;
+ import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.PresentableTopic;
+ import de.deepamehta.service.Session;
+@@ -59,6 +59,8 @@
+ 					session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 					setCityMap(CityMapTopic.lookupCityMap(kiez, true, as), session);	// throwIfNotFound=true
+ 				} else {
++					//
++					
+ 					session.setAttribute(&quot;topicBean&quot;, null);
+ 					setCityMap(CityMapTopic.lookupCityMap(alias, true, as), session);	// throwIfNotFound=true
+ 				}
+@@ -398,6 +400,7 @@
+ 		Vector selCats = getSelectedCats(session);
+ 		//
+ 		Vector hotspots = new Vector();
++		Vector cluster = new Vector();
+ 		Enumeration e = selCats.elements();
+ 		while (e.hasMoreElements()) {
+ 			String catID = (String) e.nextElement();
+@@ -414,6 +417,8 @@
+ 			presentables.insertElementAt(as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH + icon, 0);
+ 			hotspots.addElement(presentables);
+ 		}
++		makeCluster(hotspots, cluster);
++		session.setAttribute(&quot;cluster&quot;, cluster);
+ 		session.setAttribute(&quot;hotspots&quot;, hotspots);
+ 		System.out.println(&quot;&gt; \&quot;hotspots\&quot; stored in session: institutions for &quot; + selCats.size() + &quot; categories&quot;);
+ 	}
+@@ -425,14 +430,85 @@
+ 	 */
+ 	private void setHotspots(Vector topics, String icon, Session session) {
+ 		Vector hotspots = new Vector();
++		Vector cluster = new Vector();
+ 		Vector presentables = new Vector(topics);
+ 		presentables.insertElementAt(as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH + icon, 0);
+ 		hotspots.addElement(presentables);
++		//System.out.println(&quot;Have to handle clusters in here&quot;);
++		makeCluster(hotspots, cluster);
++		session.setAttribute(&quot;cluster&quot;, cluster);
+ 		session.setAttribute(&quot;hotspots&quot;, hotspots);
+ 		System.out.println(&quot;&gt; \&quot;hotspots\&quot; stored in session: &quot; + topics.size() + &quot; institutions&quot;);
+ 	}
+ 
+ 	// ---
++	
++	/**
++	 * @param	hotspots should be a vector of vector of PresentableTopics
++	 * @param	cluster is first an empty vector, afterwards it should be a vector of clusters
++	 */
++	public void makeCluster(Vector hotspots, Vector clusters) {
++		Iterator vectorOfHotspots = hotspots.iterator();
++		while ( vectorOfHotspots.hasNext() ) {
++			//for size of hotspot vectors in vector hotspot
++			Vector currentHotspots = (Vector) vectorOfHotspots.next();
++			Iterator presentableTopics = currentHotspots.iterator();
++			//System.out.println(&quot;size of current Hotspot &quot; + currentHotspots.toString() +&quot; : &quot;+ currentHotspots.size());
++			//jump over the string, and make sure something is there as first item in our vector
++			if (presentableTopics.hasNext()) presentableTopics.next();
++			while( presentableTopics.hasNext() ) {
++				// the first element is always the icon path of the following hotspots
++				PresentableTopic currentPT = (PresentableTopic) presentableTopics.next();
++				Cluster foundCluster = findAndCheckClusters(currentPT, clusters);
++				if (foundCluster != null)  {
++					//System.out.println(&quot;added &quot; + currentPT.getID() + &quot; into &quot; + foundCluster.getPoint());
++					//addPresentable, checks for doubles
++					foundCluster.addPresentable(currentPT);
++				} else {	
++					// es gibt noch kein cluster oder es wurde kein passendes gefunden also suchen, nach dem ersten auftreten von dem gleichen Point in allen hotspots
++					PresentableTopic foundPT = findPT(currentPT, hotspots);
++					if ( foundPT != null ){
++						// create Cluster, with two points
++						clusters.add(new Cluster(currentPT, foundPT));
++					}
++				}
++			}
++			System.out.println(&quot;fetched &quot;+clusters.size()+&quot; Clusters &quot;+ clusters.toString());
++		}
++	}
++	
++	private Cluster findAndCheckClusters(PresentableTopic currentPT, Vector clusters){
++			for (int c=0; c &lt; clusters.size(); c++) {	
++				//checking each cluster for point of current pt
++				Cluster currentCluster = (Cluster) clusters.get(c);
++				//System.out.println(currentCluster.presentables.size() + &quot; topics in current Cluster&quot; + currentCluster.getPoint());
++				//System.out.println(&quot;point to Check &quot; + currentPT.getName() +&quot;, &quot;+ currentPT.getGeometry());
++				if (currentCluster.getPoint().equals(currentPT.getGeometry())) {
++					//System.out.println(&quot;found cluster to return for adding pt&quot;);
++					return currentCluster;
++				}
++			}
++			return null;
++	}
++	
++	private PresentableTopic findPT(PresentableTopic pt, Vector hotspots) {
++		for(int p=0; p &lt; hotspots.size(); p++){
++			Vector scnd = (Vector)hotspots.get(p);
++			for(int o=1; o &lt; scnd.size(); o++){
++				PresentableTopic toCheck = (PresentableTopic) scnd.get(o);
++				//System.out.println(&quot;searching for the dubs with: &quot; + pt.getGeometry() + &quot; toCheck: &quot; + toCheck.getGeometry());
++				if (toCheck.getGeometry().equals(pt.getGeometry()) &amp; toCheck.getID() != pt.getID()){
++					// System.out.println(&quot;found pts for creating new cluster: &quot; + toCheck.getName() + &quot;:&quot; + pt.getName());
++					// the folowing line, removes the new found topic in the hotspot vector
++					// System.out.println(&quot;removed: &quot;+((PresentableTopic)scnd.remove(o)).getName());
++					return toCheck;
++				} 			
++			}			
++		}		
++		return null;
++	}
++	
++	// ---
+ 
+ 	private void toggleShapeDisplay(String shapeTypeID, Session session) {
+ 		Vector shapeTypes = getShapeTypes(session);
+
+Added: trunk/src/de/kiezatlas/deepamehta/Cluster.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Cluster.java	2007-12-06 13:16:04 UTC (rev 33)
++++ trunk/src/de/kiezatlas/deepamehta/Cluster.java	2007-12-17 17:40:57 UTC (rev 34)
+@@ -0,0 +1,50 @@
++package de.kiezatlas.deepamehta;
++
++import java.awt.Point;
++import java.util.Vector;
++
++import de.deepamehta.PresentableTopic;
++
++public class Cluster {
++	
++	private Point p;
++	private String icon;
++	private Vector presentables = new Vector();
++	
++	public Cluster (PresentableTopic presentableOne, PresentableTopic presentableTwo) {
++		
++		// first object is the point of this cluster
++		p = presentableOne.getGeometry();
++		icon = &quot;../../dm-images/icons/application.gif&quot;;
++		presentables.add(presentableOne);
++		presentables.add(presentableTwo);
++				
++	}
++	
++	//Override
++	public String toString() {
++		return &quot;:: &quot; +this.presentables.toString()+&quot; :: &quot;;
++	}
++	
++	public void addPresentable(PresentableTopic presentable) {
++		if (!presentables.contains(presentable)) {
++			presentables.add(presentable);
++		}
++		// else {
++//			//System.out.println(&quot;Object already present in Cluster, omitting ... &quot;);
++//		}
++	}
++	
++	public String getIcon() {
++		return icon;
++	}
++	
++	public Vector getPresentables(){
++		return this.presentables;
++	}
++	
++	public Point getPoint() {
++		return this.p;
++	}
++
++}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000025.html">[Kiezatlas-svn] r33 - in trunk: . config/default pages src/de	src/de/swers src/de/swers/kiezatlas src/de/swers/kiezatlas/tools
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26">[ date ]</a>
+              <a href="thread.html#26">[ thread ]</a>
+              <a href="subject.html#26">[ subject ]</a>
+              <a href="author.html#26">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

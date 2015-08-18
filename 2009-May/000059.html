@@ -1,0 +1,744 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r71%20-%20in%20trunk%3A%20libs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200905120036.n4C0aKFL002188%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000063.html">
+   <LINK REL="Next"  HREF="000060.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r71%20-%20in%20trunk%3A%20libs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200905120036.n4C0aKFL002188%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue May 12 02:36:20 CEST 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000063.html">[Kiezatlas-svn] r70 - in trunk: . db/patches libs	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+        <LI>Next message: <A HREF="000060.html">[Kiezatlas-svn] r72 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59">[ date ]</a>
+              <a href="thread.html#59">[ thread ]</a>
+              <a href="subject.html#59">[ subject ]</a>
+              <a href="author.html#59">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-05-12 02:36:15 +0200 (Tue, 12 May 2009)
+New Revision: 71
+
+Removed:
+   trunk/libs/geoGoogle-1.5.0.jar
+Modified:
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/List.jsp
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+KiezAtlas 1.6.3 (RPC Servlet &amp; GPS Converter)
+_RPCa
+* switched reporting in json to error=&quot;message&quot;
+* serializing line-feeds, carriage-returns and tabs correctly
+* no result is rep. wether through null or an empty array []
+
+_GPSTransformation
+* List Servlet -&gt; createNewGeoObject looks up the resp. gps data for address
+(updateGeo -&gt; should check if address has changed, then lookup gps again)
+* Better Reports &amp; Notifications
+* Refactoring for GeoObjectTopic, has now setGPSCoordinates Method
+
+removed google lib
+
+Deleted: trunk/libs/geoGoogle-1.5.0.jar
+===================================================================
+(Binary files differ)
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2009-05-06 18:12:21 UTC (rev 70)
++++ trunk/pages/GeoObjectInfo.jsp	2009-05-12 00:36:15 UTC (rev 71)
+@@ -18,6 +18,8 @@
+ 	topicBean.removeFieldsContaining(&quot;Birthday&quot;);
+ 	topicBean.removeFieldsContaining(&quot;Gender&quot;);
+ 	topicBean.removeField(&quot;Person / Mobile Number&quot;);
++    topicBean.removeField(&quot;LONG&quot;);
++    topicBean.removeField(&quot;LAT&quot;);
+ 	topicBean.removeField(&quot;Person / Fax Number&quot;);
+ 	topicBean.removeField(&quot;Person / Phone Number&quot;);
+ 	topicBean.removeField(&quot;Person / Webpage&quot;);
+@@ -30,7 +32,7 @@
+ 	// --- name ---
+ 	out.println(&quot;&lt;b&gt;&quot; + topicBean.getValue(&quot;Name&quot;) + &quot;&lt;/b&gt;&lt;br&gt;&quot;);
+ 	// --- address ---
+-	// a &quot;Stadt&quot; property precedes a &quot;City&quot; topic (assigned to an &quot;Address&quot; topic)
++	// a &quot;Stadt&quot; property is preferred compared to a &quot;City&quot; topic (assigned to an &quot;Address&quot; topic)
+ 	String city = topicBean.getValue(&quot;Stadt&quot;);
+ 	if (city == null) {
+ 		Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2009-05-06 18:12:21 UTC (rev 70)
++++ trunk/pages/List.jsp	2009-05-12 00:36:15 UTC (rev 71)
+@@ -7,7 +7,7 @@
+ 		&quot;Image / File&quot;,  &quot;Image / Name&quot;, &quot;Width&quot;, &quot;Height&quot;,
+ 		&quot;Address / Name&quot;, &quot;Person / Birthday&quot;}; // &quot;Address / City&quot; can not be removed for the listtopicBean generator, due to round letter feature
+ 	static String[] hiddenPropsContaining = { &quot;Owner&quot;, &quot;Locked Geometry&quot;, KiezAtlas.PROPERTY_DESCRIPTION, KiezAtlas.PROPERTY_ICON, &quot;Person / Address&quot; };
+-	static String[] hiddenPropsContainingAffiliated = { &quot;Owner&quot;, &quot;Locked Geometry&quot;, KiezAtlas.PROPERTY_DESCRIPTION, KiezAtlas.PROPERTY_ICON, &quot;Person / Address&quot;,&quot;YADE&quot;, &quot;Alias&quot;, &quot;Password&quot;};
++	static String[] hiddenPropsContainingAffiliated = { &quot;Owner&quot;, &quot;Locked Geometry&quot;, KiezAtlas.PROPERTY_DESCRIPTION, KiezAtlas.PROPERTY_ICON, &quot;Person / Address&quot;,&quot;YADE&quot;, &quot;Alias&quot;, &quot;Password&quot;, &quot;LAT&quot;, &quot;LONG&quot;};
+ %&gt;
+ &lt;%
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-05-06 18:12:21 UTC (rev 70)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-05-12 00:36:15 UTC (rev 71)
+@@ -1,15 +1,9 @@
+ package de.kiezatlas.deepamehta;
+ 
+-import de.deepamehta.AmbiguousSemanticException;
+ import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.service.*;
+ import de.deepamehta.service.web.JSONRPCServlet;
+-import de.deepamehta.topics.TopicTypeTopic;
+ import de.deepamehta.topics.TypeTopic;
+-import java.text.CharacterIterator;
+-import java.text.StringCharacterIterator;
+-import java.util.Enumeration;
+ import java.util.Hashtable;
+ import java.util.Vector;
+ 
+@@ -35,28 +29,6 @@
+ 
+     protected String performAction(String topicId, String params, Session session, CorporateDirectives directives)
+     {
+-//        TopicBean bean = as.createTopicBean(topicId, 1);
+-//        TypeTopic geoType = as.type(bean.typeID, 1);
+-//        BaseTopic workspace;
+-//        try
+-//        {
+-//            workspace = as.getRelatedTopic(geoType.getID(), ASSOCTYPE_USES, 1);
+-//        }
+-//        catch(AmbiguousSemanticException ex)
+-//        {
+-//            workspace = ex.getDefaultTopic();
+-//        }
+-//        Vector criterias = getKiezCriteriaTypes(workspace.getID());
+-//        String crits[] = new String[criterias.size()];
+-//        for(int i = 0; i &lt; crits.length; i++)
+-//            crits[i] = ((BaseTopic)criterias.get(i)).getID();
+-//
+-//        session.setAttribute(&quot;topicBean&quot;, bean);
+-//        session.setAttribute(&quot;imagePath&quot;, &quot;&quot;);
+-//        session.setAttribute(&quot;criterias&quot;, crits);
+-//        session.setAttribute(&quot;instType&quot;, geoType);
+-//        System.out.println(&quot;&gt;&gt;&gt;&gt; created TopicBean for &quot; + topicId);
+-//        return KiezAtlas.PAGE_GEO_INFO;
+         return topicId;
+     }
+ 
+@@ -72,16 +44,10 @@
+         System.out.println(&quot;&gt;&gt;&gt; getGeoObjectInfo(&quot; + params + &quot;)&quot;);
+         String parameters[] = params.split(&quot;:&quot;);
+         String topicId = parameters[0];
+-        StringBuffer messages = new StringBuffer(&quot;\&quot;My GeoObject Notification\&quot;&quot;);
++        StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+         String geoObjectString = createGeoObjectBean(cm.getTopic(topicId, 1), messages);
+-        if (geoObjectString.equals(&quot;&quot;)) {
+-            System.out.println(&quot;TopicBean for GeoObject is empty &quot; + cm.getTopic(topicId, 1).getName());
+-            geoObjectString = &quot;\&quot;\&quot;&quot;;
+-        } else {
+-            // System.out.println(&quot;TopicBean for GeoObjectEmpty &quot; + geoObjectString);
+-            result.append(geoObjectString);
+-        }
++        result.append(geoObjectString);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         // System.out.println(&quot;result: &quot;+ result.toString());
+         return result.toString();
+@@ -99,16 +65,10 @@
+         System.out.println(&quot;&gt;&gt;&gt; getWorkspaceCriterias(&quot; + params + &quot;)&quot;);
+         String parameters[] = params.split(&quot;:&quot;);
+         String workspaceId = parameters[0];
+-        StringBuffer messages = new StringBuffer(&quot;\&quot;My Workspace Criteria Notification\&quot;&quot;);
++        StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+         String criteriaList = createListOfCategorizations(workspaceId);
+-        if (criteriaList.equals(&quot;&quot;)) {
+-            //System.out.println(&quot;*** listOfCategorizations is Empty: &quot; + criteriaList);
+-            result.append(&quot;\&quot;\&quot;&quot;);
+-        } else {
+-            //System.out.println(&quot;*** listOfCategorizations is : &quot; + criteriaList);
+-            result.append(criteriaList);
+-        }
++        result.append(criteriaList);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         return result.toString();
+     }
+@@ -164,7 +124,7 @@
+         String parameters[] = params.split(&quot;:&quot;);
+         String mapId = parameters[0];
+         String workspaceId = parameters[1];
+-        StringBuffer messages = new StringBuffer(&quot;\&quot;My GeoMapTopic Notification\&quot;&quot;);
++        StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+         StringBuffer mapTopics = new StringBuffer(&quot;{ \&quot;map\&quot;: \&quot;&quot; + mapId + &quot;\&quot;, \&quot;topics\&quot;: [&quot;);
+         // 
+@@ -178,9 +138,9 @@
+             BaseTopic topic = (BaseTopic) allTopics.get(i);
+             // System.out.println(&quot;    e: &quot; + topic.getName());
+             String geo  = createSlimGeoObject(topic, criterias, messages);
+-            System.out.println(&quot;geo: &quot; + geo);
++            // System.out.println(&quot;geo: &quot; + geo);
+             mapTopics.append(geo);
+-            mapTopics.append(&quot;}&quot;);
++            // mapTopics.append(&quot;}&quot;);
+             if(allTopics.indexOf(topic) != allTopics.size() - 1) {
+                 mapTopics.append(&quot;,&quot;);
+             }
+@@ -247,7 +207,7 @@
+                 if(hasQuotationMarks(value))
+                     // preparing java string for json
+                     value = convertHTMLForJSON(value);
+-                    value = removeControlChars(value, field.name);
++                    value = removeControlChars(value);
+                 bean.append(&quot;\&quot;value\&quot;:  \&quot;&quot; + value + &quot;\&quot;&quot;);
+             } else {
+                 Vector relatedFields = field.values;
+@@ -347,7 +307,7 @@
+                 objectList.append(&quot;{&quot;);
+                 objectList.append(&quot;\&quot;catId\&quot;:&quot;);
+                 BaseTopic cat = (BaseTopic)categories.get(c);
+-                System.out.println(&quot;&gt;&gt;&gt;&gt; category(&quot; + cat.getName() +&quot; icon: &quot;+ as.getLiveTopic(cat).getIconfile());
++                // System.out.println(&quot;&gt;&gt;&gt;&gt; category(&quot; + cat.getName() +&quot; icon: &quot;+ as.getLiveTopic(cat).getIconfile());
+                 objectList.append(&quot;\&quot;&quot; + cat.getID() + &quot;\&quot;, &quot;);
+                 objectList.append(&quot;\&quot;catName\&quot;:&quot;);
+                 objectList.append(&quot;\&quot;&quot; + cat.getName() + &quot;\&quot;, &quot;);
+@@ -438,24 +398,14 @@
+         return value.indexOf(&quot;\&quot;&quot;) != -1;
+     }
+ 
+-    private String removeControlChars(String value, String name) {
+-        StringCharacterIterator iterator = new StringCharacterIterator(value);
+-        StringBuffer result = new StringBuffer();
+-        char character = iterator.current();
+-        while( character != CharacterIterator.DONE) // character = iterator.next())
+-        {
+-            if (Character.isISOControl(character)) {
+-                //System.out.println(&quot;*** skipping control character in &quot; + name + &quot;&quot; +
+-                 //       &quot;: &quot; + Character.getNumericValue(character));
+-            } else {
+-                result.append(character);
+-            }
+-            character = iterator.next();
+-        }
+-        //value.replaceAll(&quot;\r&quot;, &quot;\\\\r&quot;);
+-        //value.replaceAll(&quot;\n&quot;, &quot;\\\\n&quot;);
+-        //value.replaceAll(&quot;\&quot;);
+-        return result.toString();
++    private String removeControlChars(String value) {
++        // html uses carriage-return, line-feed and horizontal tab
++        value = value.replaceAll(&quot;\r&quot;, &quot;\\\\r&quot;);
++        value = value.replaceAll(&quot;\n&quot;, &quot;\\\\n&quot;);
++        value = value.replaceAll(&quot;\t&quot;, &quot;\\\\t&quot;);
++        //value = value.replaceAll(&quot;\&quot;&quot;, &quot;\\\\\&quot;&quot;);
++        //System.out.println(&quot;replaced value is : &quot; + value);
++        return value;
+     }
+ 
+     private String convertHTMLForJSON(String html)
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-05-06 18:12:21 UTC (rev 70)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-05-12 00:36:15 UTC (rev 71)
+@@ -1,5 +1,6 @@
+ package de.kiezatlas.deepamehta;
+ 
++import de.deepamehta.AmbiguousSemanticException;
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ //
+@@ -10,13 +11,15 @@
+ import de.deepamehta.service.TopicBeanField;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+-import de.deepamehta.topics.PersonSearchTopic;
++import java.io.BufferedReader;
+ import java.io.File;
+ import java.io.FileOutputStream;
+ import java.io.FileWriter;
+ import java.io.IOException;
+-import java.io.OutputStream;
++import java.io.InputStreamReader;
+ import java.io.OutputStreamWriter;
++import java.net.URL;
++import java.net.URLConnection;
+ import java.util.Collections;
+ import java.util.Comparator;
+ import javax.servlet.ServletException;
+@@ -79,6 +82,7 @@
+ 			// --- update geo object ---
+ 			// Note: the timestamp is updated through geo object's propertiesChanged() hook
+ 			updateTopic(geo.getType(), params, session, directives, cityMap.getID(), VIEWMODE_USE);
++            // setGPSCoordinates(geo, directives); ### should load coordinates if address was changed
+ 			// --- store image / files---
+ 			for (int a = 0; a &lt; params.getUploads().size(); a++) {
+ 				FileItem f = (FileItem) params.getUploads().get(a);
+@@ -107,7 +111,8 @@
+ 			// --- get geo object ---
+ 			setGeoObject(cm.getTopic(geoObjectID, 1), session);
+ 			GeoObjectTopic geo = getGeoObject(session);
+-			// --- store image ---
++			setGPSCoordinates(geo, directives);
++            // --- store image ---
+ 			EditServlet.writeFiles(params.getUploads(), geo.getImage(), as);
+ 			setUseCache(Boolean.FALSE, session);	// re-filtering and -sorting is handled in preparePage with fresh topics now
+ 			return PAGE_LIST;
+@@ -236,8 +241,18 @@
+ 		}
+ 	}
+ 
++    /**
++     * Connects to Google's GeoCoder and gets for the Ojbects resp. Address
++     * the GPS Coordinates and saves them into the Corporate Memory
++     *
++     * @param geo
++     * @param directives
++     */
++    private void setGPSCoordinates(GeoObjectTopic geo, CorporateDirectives directives) {
++        geo.setGPSCoordinates(directives);
++    }
++
+ 	
+-
+ 	// **********************
+ 	// *** Custom Methods ***
+ 	// **********************
+@@ -364,7 +379,7 @@
+ 		while (e.hasMoreElements()) {
+ 			TopicBean bean = (TopicBean) e.nextElement();
+ 			// get related Address
+-			String address = getAddress(bean);
++			String address = getTabbedAddress(bean);
+ 			String mailbox = getMailbox(bean);
+ 			if (mailbox.equals(&quot;&quot;) &amp;&amp; address == null) {
+ 				entry = &quot;&quot;;
+@@ -442,7 +457,7 @@
+ 	 * @param bean
+ 	 * @return &lt;Code&gt;null&lt;Code&gt; if no street and zip code could be found
+ 	 */
+-	public String getAddress(TopicBean bean) {
++	private String getTabbedAddress(TopicBean bean) {
+ 		String address = &quot;&quot;;
+ 		// get Street &amp; Postal Code
+ 		String street = bean.getValue(&quot;Address / Street&quot;);
+@@ -587,7 +602,7 @@
+ 	}
+ 
+ 
+-
++    
+ 	// *************************
+ 	// *** Session Utilities ***
+ 	// *************************
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-05-06 18:12:21 UTC (rev 70)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-05-12 00:36:15 UTC (rev 71)
+@@ -4,7 +4,6 @@
+ import de.kiezatlas.deepamehta.KiezAtlas;
+ //
+ import de.deepamehta.BaseTopic;
+-import de.deepamehta.Directive;
+ import de.deepamehta.service.ApplicationService;
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.CorporateCommands;
+@@ -99,12 +98,12 @@
+ 		if (cmd.equals(CMD_START_GEOCODING)) {
+             Vector workspaces = getAssignedWorkspaces();
+             StringBuffer htmlReport = new StringBuffer(&quot;&lt;html&gt;&lt;head&gt;&lt;title&gt;GPS Transform Report&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&quot;);
+-                htmlReport.append(&quot;&lt;h4&gt;GPS Transform Report for &quot;+workspaces.size()+&quot; workspace/s&lt;h4/&gt;&quot;);
++                htmlReport.append(&quot;&lt;h3&gt;GPS Transform Report for &quot;+workspaces.size()+&quot; workspace/s&lt;/h3&gt;&quot;);
+             for (int i = 0; i&lt;workspaces.size(); i++) {
+                 // for each workspace assigned to the GPSConverterTopic
+                 BaseTopic workspace = (BaseTopic) workspaces.get(i);
+                 htmlReport.append(&quot;&lt;hr&gt;&quot;);
+-                htmlReport.append(&quot;Im Workspace: &lt;b&gt;&quot; + workspace.getName() + &quot;&lt;b/&gt;&lt;br/&gt;&quot;);
++                htmlReport.append(&quot;Im Workspace: &lt;b&gt;&quot; + workspace.getName() + &quot;&lt;/b&gt;&lt;br/&gt;&quot;);
+                 System.out.println(&quot;    searching on workspace (&quot;+i+&quot;/&quot;+workspaces.size()+&quot;): &quot; + workspace.getName() + &quot;:&quot; + workspace.getID());
+                 BaseTopic geotype = getWorkspaceGeoType(workspace.getID());
+                 if (geotype == null) {
+@@ -118,6 +117,7 @@
+                     as.setTopicProperty(this, PROPERTY_DESCRIPTION, htmlReport.toString());
+                     int runs = 0;
+                     geos = updateAllGeoCoordinates(geos);
++                    // re-try as long as geoObjects are returned, max. 10 times
+                     scenarioloop:
+                     while (!geos.isEmpty()) {
+                         if (runs == 10) {
+@@ -126,12 +126,12 @@
+                             htmlReport.append(&quot;&lt;ul&gt;&quot;);
+                             for(int a = 0; a &lt; geos.size(); a++) {
+                                 BaseTopic geo = (BaseTopic) geos.get(a);
+-                                htmlReport.append(&quot;&lt;li&gt;Adressangabe: &quot; + getAddress(geo.getID()) +&quot;, &quot;+ geo.getName() + &quot;(&quot;+geo.getID()+&quot;)&lt;li/&gt;&quot;);
++                                htmlReport.append(&quot;&lt;li&gt;&quot; + getAddressURL(geo.getID()) +&quot;, &quot;+ geo.getName() + &quot;(&quot;+geo.getID()+&quot;)&lt;/li&gt;&quot;);
+                                 //directives.add(DIRECTIVE_SHOW_MESSAGE,
+                                 //        &quot;Die globalen Koordinaten zu folgendem Objekt konnten nicht aufgel&#246;st werden: &quot;
+                                 //        + geo.getName() + &quot;:&quot;+ getAddress(geo.getID()) + &quot;. &quot; +
+                                 //        &quot;Damit auch dieses Objekt Koordinaten enth&#228;lt, korrigieren Sie bitte die Anschrift und starten Sie den Konverter erneut.&quot;, new Integer(NOTIFICATION_WARNING));
+-                                System.out.println(&quot;*** Fail with: &quot; + geo.getName() + &quot;(&quot;+geo.getID()+&quot;), Adressangabe: &quot;+ getAddress(geo.getID()));
++                                System.out.println(&quot;*** Fail with: &quot; + geo.getName() + &quot;(&quot;+geo.getID()+&quot;), Adressangabe: &quot;+ getAddressURL(geo.getID()));
+                             }
+                             htmlReport.append(&quot;&lt;/ul&gt;&quot;);
+                             htmlReport.append(&quot;&lt;br/&gt;Auch nach mehrmaligen Anfragen sind folgende Adressen nicht automatisch in GPS Koordinaten aufzul&#246;sen. Bitte &#252;berpr&#252;fen Sie die Schreibweise bzw. Korrektheit der Adressangaben im einzelnen.&quot;);
+@@ -142,7 +142,6 @@
+                         }
+                         runs++;
+                     }
+-                    htmlReport.append(&quot;&lt;br&gt; Insgesamt &quot; + geos.size() + &quot; konvertiert.&quot;);
+                 }
+ 
+             }
+@@ -208,29 +207,36 @@
+ 
+     // ---
+ 
+-	private String getAddress(String topicID) {
++    public String removeSpaces(String s) {
++        StringTokenizer st = new StringTokenizer(s,&quot; &quot;,false);
++        String t=&quot;&quot;;
++        while (st.hasMoreElements()) {
++            t += st.nextElement();
++        }
++        return t;
++    }
++
++
++	private String getAddressURL(String topicID) {
+ 		StringBuffer address = new StringBuffer();
+         try {
+             // Related Address Topic
+             BaseTopic add = as.getRelatedTopic(topicID, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);     // emptyAllowed=true
+             if (add != null) {
+-                // Streetname and Housenumber
++                // Streetname and Housenumber (can contain whitespaces)
+                 address.append(add.getName());
+             } else {
+                 return &quot;&quot;;
+             }
+             // Postal Code of Address
+-            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
+-            // Get Old City Property
+-            String cityProp = as.getTopicProperty(topicID, 1, PROPERTY_CITY);
+-            // Related City
+-            BaseTopic city = as.getRelatedTopic(add.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
+-            if (city != null) {
+-                address.append(&quot; &quot; + city.getName());
+-            } else if (cityProp != null &amp;&amp; !cityProp.equals(&quot;&quot;)) {
+-                address.append(&quot; &quot; + cityProp);
+-                //System.out.println(&quot;    # FallBack to Old City Prop: &quot; + address );
+-            }
++            String plz = as.getTopicProperty(add, PROPERTY_POSTAL_CODE);
++            plz = removeSpaces(plz);
++            address.append(&quot;, &quot; + plz);
++            // city
++            GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(topicID, 1);
++            String city = geo.getCity();
++            city = removeSpaces(city);
++            address.append(&quot; &quot; + city);
+             return address.toString();
+ 			// as.getRelatedTopic(id, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
+ 		} catch (AmbiguousSemanticException e) {
+@@ -243,17 +249,14 @@
+                 return &quot;&quot;;
+             }
+             // Postal Code of Address
+-            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
+-            // Get Old City Property
+-            String cityProp = as.getTopicProperty(topicID, 1, PROPERTY_CITY);
+-            // Related City
+-            BaseTopic city = as.getRelatedTopic(add.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
+-            if (city != null) {
+-                address.append(&quot; &quot; + city.getName());
+-            } else if (cityProp != null &amp;&amp; !cityProp.equals(&quot;&quot;)) {
+-                address.append(&quot; &quot; + cityProp);
+-                //System.out.println(&quot;    # FallBack to Old City Prop: &quot; + address );
+-            }
++            String plz = as.getTopicProperty(add, PROPERTY_POSTAL_CODE);
++            plz = removeSpaces(plz);
++            address.append(&quot;, &quot; + plz);
++            // city
++            GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(topicID, 1);
++            String city = geo.getCity();
++            city = removeSpaces(city);
++            address.append(&quot; &quot; + city);
+             System.out.println(&quot;*** GPSConverterTopic.getAddress(): AmbigiousSemanticExc. took &quot; + address.toString());
+             return address.toString();
+ 		}
+@@ -269,9 +272,7 @@
+         for (i = 0; i &lt; geoObjects.size(); i++) {
+             StringBuffer requestUrl = new StringBuffer(&quot;<A HREF="http://maps.google.com/maps/geo?">http://maps.google.com/maps/geo?</A>&quot;);
+             BaseTopic geoObject = (BaseTopic) geoObjects.get(i);
+-            String address =  getAddress(geoObject.getID());
+-            // System.out.println(&quot;    took &quot; + cityProp + &quot; as city for address&quot;);
+-            
++            String address =  getAddressURL(geoObject.getID());
+             if (address.equals(&quot;&quot;)) {
+                 System.out.println(&quot;*** missing address for GeoObject: &quot; + geoObject.getName());
+                 if (!faultyObjects.contains(geoObject)) {
+@@ -291,7 +292,10 @@
+                 // System.out.println(&quot;cachedCoords: &quot; + cachedCoords);
+                 if(cachedCoords != null &amp;&amp; !cachedCoords.equals(&quot;&quot;)) {
+                     // skipping requests to already known address
+-                    // System.out.println(&quot;*** &quot; +cachedCoords +&quot; known for: &quot; + address +&quot;, skipping&quot;);
++                    String[] points = cachedCoords.split(&quot;:&quot;);
++                    System.out.println(&quot;*** &quot; + points[0] +&quot;,&quot;+points[1]+&quot; known for: &quot; + address +&quot;, skipping request but SAVING DATA&quot;);
++                    as.setTopicProperty(geoObject, PROPERTY_GPS_LAT, points[0]);
++                    as.setTopicProperty(geoObject, PROPERTY_GPS_LONG, points[1]);
+                 } else {
+                     URL url = new URL(requestUrl.toString());
+                     URLConnection con = url.openConnection();
+@@ -318,7 +322,8 @@
+                     in.close();
+                 }
+             } catch (IOException e) {
+-                e.printStackTrace();
++                // e.printStackTrace();
++                System.out.println(&quot;*** service could not connect, &quot; + e.getMessage());
+                 if (!faultyObjects.contains(geoObject)) {
+                     faultyObjects.add(geoObject);
+                 }
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-05-06 18:12:21 UTC (rev 70)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-05-12 00:36:15 UTC (rev 71)
+@@ -78,7 +78,6 @@
+ 
+ 
+ 	public CorporateDirectives evoke(Session session, String topicmapID, String viewmode) {
+-        setGPSCoordinates();
+ 		setProperty(PROPERTY_LOCKED_GEOMETRY, SWITCH_ON);
+ 		setProperty(PROPERTY_PASSWORD, DEFAULT_PASSWORD);
+ 		setProperty(PROPERTY_LAST_MODIFIED, DeepaMehtaUtils.getDate());
+@@ -333,51 +332,24 @@
+ 
+ 	// ---
+ 
+-    	private String getStringAddress(String topicID) {
+-		StringBuffer address = new StringBuffer();
+-        try {
+-            // Related Address Topic
+-            BaseTopic add = as.getRelatedTopic(topicID, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);     // emptyAllowed=true
+-            if (add != null) {
+-                // Streetname and Housenumber
+-                address.append(add.getName());
+-            } else {
+-                return &quot;&quot;;
+-            }
+-            // Postal Code of Address
+-            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
+-            // Get Old City Property
+-            String cityProp = as.getTopicProperty(topicID, 1, PROPERTY_CITY);
+-            // Related City
+-            BaseTopic city = as.getRelatedTopic(add.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
+-            if (city != null) {
+-                address.append(&quot; &quot; + city.getName());
+-            } else if (cityProp != null &amp;&amp; !cityProp.equals(&quot;&quot;)) {
+-                address.append(&quot; &quot; + cityProp);
+-                System.out.println(&quot;    # FallBack to Old City Prop: &quot; + address );
+-            }
+-            return address.toString();
+-			// as.getRelatedTopic(id, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
+-		} catch (AmbiguousSemanticException e) {
+-			// Related Address Topic
+-            BaseTopic add = e.getDefaultTopic();
+-            if (add != null) {
+-                // Streetname and Housenumber
+-                address.append(add.getName());
+-            } else {
+-                return &quot;&quot;;
+-            }
+-            // Postal Code of Address
+-            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
+-            // and City
+-            address.append(&quot; &quot; + getCity());
+-            System.out.println(&quot;*** GPSConverterTopic.getAddress(): AmbigiousSemanticExc. took &quot; + address.toString());
+-            return address.toString();
+-
+-		}
++    private String getAddressString() {
++        StringBuffer address = new StringBuffer();
++        // Related Address Topic
++        BaseTopic add = getAddress();
++        if (add != null) {
++            // Streetname and Housenumber
++            address.append(add.getName());
++        } else {
++            return &quot;&quot;;
++        }
++        // Postal Code of Address
++        address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
++        // City
++        address.append(&quot; &quot; + getCity());
++        return address.toString();
+ 	}
+ 
+-	public BaseTopic getAddress() {
++    public BaseTopic getAddress() {
+ 		try {
+ 			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
+ 		} catch (AmbiguousSemanticException e) {
+@@ -386,6 +358,12 @@
+ 		}
+ 	}
+ 
++    /**
++     * Encapsulates the logic for backward compatibility after GeoObject's
++     * new Address / City Relation
++     *
++     * @return
++     */
+ 	public String getCity() {
+ 		// if a geoobject has a stadt property, take it and return it
+ 		// else if a geoobject has an addressTopic assigned, check if there is a city, if so return this city
+@@ -566,40 +544,40 @@
+ 		return commentBeans;
+ 	}
+ 
+-    private String[] getGPSCoordinates(String givenAdress) {
++    public String[] loadGPSCoordinates(CorporateDirectives directives) {
+         //
++        String givenAddress = getAddressString();
+         StringBuffer requestUrl = new StringBuffer(&quot;<A HREF="http://maps.google.com/maps/geo?">http://maps.google.com/maps/geo?</A>&quot;);
+         requestUrl.append(&quot;q=&quot;);
+-        requestUrl.append(convertAddressForRequest(givenAdress));
++        requestUrl.append(convertAddressForRequest(givenAddress));
+         // requested. put and remove address
+         requestUrl.append(&quot;&amp;output=csv&amp;oe=utf8&amp;sensor=false&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&amp;gl=de&quot;);
+-        try {
+-            URL url = new URL(requestUrl.toString());
+-            URLConnection con = url.openConnection();
+-            BufferedReader in = new BufferedReader(
+-                                new InputStreamReader(
+-                                con.getInputStream()));
+-            String inputLine;
+-            while ((inputLine = in.readLine()) != null) {
+-                //System.out.println(inputLine);
+-                String[] points = inputLine.split(&quot;,&quot;);
+-                if (points[2].equals(&quot;0&quot;) &amp;&amp; points[3].equals(&quot;0&quot;)) {
+-                    //faultyObjects.add(geoObject);
+-                    // ### exception thrown
+-                    System.out.println(&quot;    geoCoder is lazy, could not evoke GeoObject (&quot;+this.getID()+&quot;) with coordinates: &quot;);
+-                } else {
+-                    // requested.put(address, points[2] +&quot;:&quot;+points[3]);
+-                    //System.out.println(&quot;    caching coordinates: &quot; + requested.get(address) + &quot; for: &quot;+ address);
+-                    return points;
++        for (int i = 0; i &lt; 3; i++) {
++            try {
++                URL url = new URL(requestUrl.toString());
++                URLConnection con = url.openConnection();
++                BufferedReader in = new BufferedReader(
++                                    new InputStreamReader(
++                                    con.getInputStream()));
++                String inputLine;
++                while ((inputLine = in.readLine()) != null) {
++                    //System.out.println(inputLine);
++                    String[] points = inputLine.split(&quot;,&quot;);
++                    if (points[2].equals(&quot;0&quot;) &amp;&amp; points[3].equals(&quot;0&quot;)) {
++                        System.out.println(&quot;    geoCoder is lazy, could not locate GeoObjects (&quot;+this.getAddressString()+&quot;) G coordinates, trying again &quot; + i);
++                    } else {
++                        return points;
++                    }
+                 }
++                in.close();
++            } catch (IOException e) {
++                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;The Google GeoCoder could not be connected. This GeoObject has no GPS Coordinates.&quot;, new Integer(NOTIFICATION_ERROR));
++                e.printStackTrace();
++                return new String[4];
+             }
+-            in.close();
+-        } catch (IOException e) {
+-            e.printStackTrace();
+-            return new String[2];
+         }
+-        // never returned
+-        return null;
++        System.out.println(&quot;    GeoObjectTopic (&quot;+this.getID()+&quot;) was not able to load coordinates for &quot;+convertAddressForRequest(givenAddress)+&quot; !&quot;);
++        return new String[4];
+     }
+ 
+     public String toJSONString() {
+@@ -608,15 +586,21 @@
+         return object.toString();
+     }
+ 
+-    private void setGPSCoordinates() {
+-        String address = getStringAddress(this.getID());
++    public void setGPSCoordinates(CorporateDirectives directives) {
+         // ### alternatively fetch city property
+-        String[] point = getGPSCoordinates(address);
+-        // if addres already known, take the cache
+-        // if points are empty, geocoder was lazy
+-        as.setTopicProperty(this, PROPERTY_GPS_LAT, point[0]);
+-        as.setTopicProperty(this, PROPERTY_GPS_LONG, point[1]);
+-        System.out.println(&quot;GeoObjectTopic.setGPSCoordinates(): successfull to &quot; + point[0].toString() +&quot;,&quot; + point[1].toString() +&quot; for address:&quot; + address);
++        String[] point = loadGPSCoordinates(directives);
++        if(point[2] != null &amp;&amp; point[3] != null) {
++            if (!point[2].equals(&quot;&quot;) &amp;&amp; !point[3].equals(&quot;&quot;)) {
++                as.setTopicProperty(this, PROPERTY_GPS_LAT, point[2]);
++                as.setTopicProperty(this, PROPERTY_GPS_LONG, point[3]);
++                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Die Adresse hat &quot;+point[2]+&quot;,&quot;+point[3]+&quot; als GPS Koordinaten zugewiesen bekommen.&quot;, new Integer(NOTIFICATION_DEFAULT));
++                System.out.println(&quot;GeoObjectTopic.setGPSCoordinates(): successful to &quot; + point[2] +&quot;,&quot; + point[3] +&quot; for address:&quot; + getAddressString());
++            } else {
++                directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates.&quot;, new Integer(NOTIFICATION_ERROR));
++            }
++        } else {
++            directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Address could not be resolved to GPS coordinates.&quot;, new Integer(NOTIFICATION_ERROR));
++        }
+     }
+ 
+     private String convertAddressForRequest(String address) {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000063.html">[Kiezatlas-svn] r70 - in trunk: . db/patches libs	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+	<LI>Next message: <A HREF="000060.html">[Kiezatlas-svn] r72 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59">[ date ]</a>
+              <a href="thread.html#59">[ thread ]</a>
+              <a href="subject.html#59">[ subject ]</a>
+              <a href="author.html#59">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

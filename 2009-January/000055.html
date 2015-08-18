@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r66 - in trunk: . config/default pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r66%20-%20in%20trunk%3A%20.%20config/default%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200901240105.n0O15RSx016026%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r66 - in trunk: . config/default pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r66%20-%20in%20trunk%3A%20.%20config/default%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200901240105.n0O15RSx016026%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r66 - in trunk: . config/default pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Sat Jan 24 02:05:27 CET 2009</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55">[ date ]</a>
+              <a href="thread.html#55">[ thread ]</a>
+              <a href="subject.html#55">[ subject ]</a>
+              <a href="author.html#55">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-01-24 02:05:21 +0100 (Sat, 24 Jan 2009)
+New Revision: 66
+
+Added:
+   trunk/pages/util.js
+Modified:
+   trunk/README.txt
+   trunk/config/default/web.xml
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/List.jsp
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+Log:
+Extendend and corrected Listings
+1) Delete Action for entries of a Listing
+2) YADE Coordinates are visible and sortable again
+3) Introduced a util.js for a confirmDelete() function
+
+The &quot;Reposition All&quot; command is nice to entries without YADE X, Y
+
+Modified: trunk/README.txt
+===================================================================
+--- trunk/README.txt	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/README.txt	2009-01-24 01:05:21 UTC (rev 66)
+@@ -1,18 +1,18 @@
+ 
+-Kiezatlas 1.4.1                                                               J&#246;rg Richter
+-===============                                                                  11.9.2007
++Kiezatlas 1.6.2                                                  Malte Rei&#223;ig &amp; J&#246;rg Richter
++===============                                                                   21.11.2008
+ 
+ 
+ Kiezatlas is an application for the DeepaMehta platform.
+-Kiezatlas relies on a DeepaMehta installation.
++Kiezatlas relies on a DeepaMehta installation, at the moment it depends on the revision 357
+ 
+ 
+ Install Kiezatlas:
+ 
+-1) unzip kiezatlas-1.4.1.zip
+-2) apply 11 database patches from db/, begin with kiezatlas.sql
++1) unzip kiezatlas-1.6.2.zip
++2) apply all database patches from db/, begin with kiezatlas.sql
+ 3) copy 2 .war files to tomcat/webapps
+-4) copy kiezatlas.jar file to tomcat/shared/libs
++4) copy kiezatlas.jar file to tomcat/shared/libs or to a resp. local web-inf/lib
+ 5) copy content of icons/ to deepamehta/install/client/icons
+ 6) copy content of backgrounds/ to deepamehta/install/client/backgrounds
+ 
+@@ -26,4 +26,4 @@
+ More Information:
+ 
+ www.kiezatlas.de
+-www.deepamehta.de/docs/kiezatlas.html
++www.deepamehta.de/docs/kiezatlas.html
+\ No newline at end of file
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/config/default/web.xml	2009-01-24 01:05:21 UTC (rev 66)
+@@ -1,17 +1,12 @@
+-&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+-&lt;!DOCTYPE web-app 
+-	PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
+-	&quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+-
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;!DOCTYPE web-app PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+ &lt;web-app&gt;
+ 
+ 	&lt;!-- General description of the web application --&gt;
+ 
+ 	&lt;display-name&gt;Kiezatlas&lt;/display-name&gt;
+-	&lt;description&gt;
+-		Version 1.5
+-		Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>)
+-	&lt;/description&gt;
++	&lt;description&gt;Version 1.6.2
++		Written by J&#246;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at deepamehta.de</A>)&lt;/description&gt;
+ 
+ 	&lt;!-- Context initialization parameters that define shared
+ 		 String constants used within your application, which
+@@ -21,13 +16,12 @@
+ 
+ 	&lt;context-param&gt;
+ 		&lt;param-name&gt;service&lt;/param-name&gt;
+-		&lt;!-- &lt;param-value&gt;mysql5&lt;/param-value&gt; --&gt;	&lt;!-- jri's default instance --&gt;
+-		&lt;param-value&gt;kiezatlas&lt;/param-value&gt;		&lt;!-- www.kiezatlas.de production instance --&gt;
+-		&lt;description&gt;
+-			Selects a DeepaMehta service.
++		&lt;!-- &lt;param-value&gt;kiezbox&lt;/param-value&gt; --&gt; &lt;!-- mre's local kiezatlas instance --&gt;
++		&lt;!-- &lt;param-value&gt;mysql5&lt;/param-value&gt; --&gt; &lt;!-- jri's default instance --&gt;
++		&lt;param-value&gt;kiezbox&lt;/param-value&gt; &lt;!-- www.kiezatlas.de production instance--&gt;
++		&lt;description&gt;Selects a DeepaMehta service.
+ 			If this parameter is not set the &quot;default&quot; service will be used.
+-			To configure DeepaMehta services see the file install/client/dms.rc
+-		&lt;/description&gt;
++			To configure DeepaMehta services see the file install/client/dms.rc&lt;/description&gt;
+ 	&lt;/context-param&gt;
+ 
+ 	&lt;context-param&gt;
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/pages/KiezAtlas.jsp	2009-01-24 01:05:21 UTC (rev 66)
+@@ -46,6 +46,7 @@
+ 			&quot;&lt;meta http-equiv=\&quot;content-type\&quot; content=\&quot;text/html; charset=iso-8859-1\&quot;&gt;&quot; +
+ 			&quot;\r&lt;title&gt;&quot; + title + &quot;&lt;/title&gt;&quot;);
+ 		out.println(&quot;&lt;link href=\&quot;../pages/kiezatlas.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot;&gt;&quot;);
++		out.println(&quot;&lt;script src=\&quot;../pages/util.js\&quot; type=\&quot;text/javascript\&quot;&gt;&lt;/script&gt;&quot;);
+ 		out.println(&quot;&lt;/head&gt;&quot;);
+ 		out.println(&quot;&lt;body&gt;&quot;);
+ 		out.println();
+
+Modified: trunk/pages/List.jsp
+===================================================================
+--- trunk/pages/List.jsp	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/pages/List.jsp	2009-01-24 01:05:21 UTC (rev 66)
+@@ -6,7 +6,7 @@
+ 		&quot;Image&quot;, &quot;Image / Height&quot;, &quot;Image / Width&quot;, 
+ 		&quot;Image / File&quot;,  &quot;Image / Name&quot;, &quot;Width&quot;, &quot;Height&quot;,
+ 		&quot;Address / Name&quot;, &quot;Person / Birthday&quot;}; // &quot;Address / City&quot; can not be removed for the listtopicBean generator, due to round letter feature
+-	static String[] hiddenPropsContaining= {&quot;YADE&quot;, &quot;Owner&quot;, &quot;Locked Geometry&quot;, KiezAtlas.PROPERTY_DESCRIPTION, KiezAtlas.PROPERTY_ICON, &quot;Person / Address&quot; };
++	static String[] hiddenPropsContaining= { &quot;Owner&quot;, &quot;Locked Geometry&quot;, KiezAtlas.PROPERTY_DESCRIPTION, KiezAtlas.PROPERTY_ICON, &quot;Person / Address&quot; };
+ %&gt;
+ &lt;%
+ 
+@@ -61,10 +61,10 @@
+ 	// --- list of institutions ---
+ 	String selectedID = geo != null ? geo.getID() : null;
+ 	if (sortField == null) {
+-	    out.println(html.listTopicBeans(topics, selectedID, hiddenProps, hiddenPropsContaining, true, KiezAtlas.ACTION_SHOW_GEO_FORM, KiezAtlas.ACTION_SORT_BY, true, null));
++	    out.println(html.listTopicBeans(topics, selectedID, hiddenProps, hiddenPropsContaining, true, KiezAtlas.ACTION_SHOW_GEO_FORM, KiezAtlas.ACTION_SORT_BY, &quot;deleteEntry&quot;, true, null));
+ 	} else {
+ 	    System.out.println(&quot;&gt;&gt;&gt; highlight Column: &quot; + sortField);
+-	    out.println(html.listTopicBeans(topics, selectedID, hiddenProps, hiddenPropsContaining, true, KiezAtlas.ACTION_SHOW_GEO_FORM, KiezAtlas.ACTION_SORT_BY, true, sortField));
++	    out.println(html.listTopicBeans(topics, selectedID, hiddenProps, hiddenPropsContaining, true, KiezAtlas.ACTION_SHOW_GEO_FORM, KiezAtlas.ACTION_SORT_BY, &quot;deleteEntry&quot;, true, sortField));
+ 	}
+ 	//
+ 	out.println(&quot;&lt;p&gt;&quot;);
+
+Added: trunk/pages/util.js
+===================================================================
+--- trunk/pages/util.js	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/pages/util.js	2009-01-24 01:05:21 UTC (rev 66)
+@@ -0,0 +1,14 @@
++/* 
++ * Malte Rei&szlig;ig, 15.January 2009 (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>)
++ * This is a small little helper for the List Page
++ * It checks wether the delete action should be forwarded to the server or 
++ * the request should is cancelled by the user
++ */
++
++function confirmDelete () {
++  if (confirm('Wollen Sie den Eintrag wirklich ganz entfernen ?')) {
++    return true;
++  } else  {
++    return false;
++  }
++}
+\ No newline at end of file
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-01-24 01:05:21 UTC (rev 66)
+@@ -233,6 +233,7 @@
+ 	public static final String ACTION_FILTER =&quot;filter&quot;;
+ 	public static final String ACTION_CLEAR_FILTER =&quot;clearFilter&quot;;
+ 	public static final String ACTION_CREATE_FORM_LETTER =&quot;createFormLetter&quot;;
++	public static final String ACTION_DELETE_ENTRY =&quot;deleteEntry&quot;;
+ 	
+ 	
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-01-24 01:05:21 UTC (rev 66)
+@@ -162,6 +162,13 @@
+ 			System.out.println(&quot;&gt;&gt;&gt; created Form Letter&quot;);
+ 			session.setAttribute(&quot;formLetter&quot;, link);
+ 			return PAGE_LINK_PAGE;
++		} else if (action.equals(ACTION_DELETE_ENTRY)){
++			String topicId = params.getParameter(&quot;id&quot;);
++			System.out.println(&quot;	deleteAction from listServlet, deleting entry with id: &quot; + topicId);
++			deleteTopic(topicId);
++            System.out.println(&quot;    &quot; + topicId + &quot; deleted successful from corporate memory&quot;);
++			setUseCache(Boolean.FALSE, session);
++			return PAGE_LIST;
+ 		}
+ 		//
+ 		return super.performAction(action, params, session, directives);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2008-12-07 16:58:01 UTC (rev 65)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2009-01-24 01:05:21 UTC (rev 66)
+@@ -321,20 +321,20 @@
+ 				Point p = inst.getPoint(getID());	// throws DME
+ 				// Note: if YADE is &quot;off&quot; p is null
+ 				if (p == null) {
+-					String txt = &quot;Die Einrichtungen konnten nicht neupositioniert werden. &quot; +
++					String txt = &quot;Die Einrichtung konnten nicht neupositioniert werden. &quot; +
+ 						&quot;Es m&#252;ssen erst 2 YADE-Referenzpunkte gesetzt werden.&quot;;
+ 					directives.add(DIRECTIVE_SHOW_MESSAGE, txt, new Integer(NOTIFICATION_WARNING));
+ 					System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + txt);
+-					return;
++					// do not return; go on
+ 				}
+ 				// reposition
+ 				directives.add(DIRECTIVE_SET_TOPIC_GEOMETRY, inst.getID(), p, getID());
+ 				System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + inst + &quot; -&gt; moved to &quot; + p.x + &quot; &quot; + p.y);
+ 			} catch (DeepaMehtaException dme) {
+-				String txt = &quot;Die Neupositionierung der Einrichtungen wurde abgebrochen (&quot; + dme.getMessage() + &quot;)&quot;;
++				String txt = &quot;Hinweis: &quot; + dme.getMessage();
+ 				directives.add(DIRECTIVE_SHOW_MESSAGE, txt, new Integer(NOTIFICATION_WARNING));
+ 				System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + txt);
+-				return;
++				// do not return; go on
+ 			}
+ 		}
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#55">[ date ]</a>
+              <a href="thread.html#55">[ thread ]</a>
+              <a href="subject.html#55">[ subject ]</a>
+              <a href="author.html#55">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

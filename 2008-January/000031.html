@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r39 - trunk/src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r39%20-%20trunk/src/de/kiezatlas/deepamehta&In-Reply-To=%3C200801211300.m0LD0Zn0010434%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000029.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r39 - trunk/src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r39%20-%20trunk/src/de/kiezatlas/deepamehta&In-Reply-To=%3C200801211300.m0LD0Zn0010434%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r39 - trunk/src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Jan 21 14:00:35 CET 2008</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000029.html">[Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31">[ date ]</a>
+              <a href="thread.html#31">[ thread ]</a>
+              <a href="subject.html#31">[ subject ]</a>
+              <a href="author.html#31">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-01-21 13:58:59 +0100 (Mon, 21 Jan 2008)
+New Revision: 39
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/Cluster.java
+Log:
+No doubled Topic Entries in Clusters anymore.
+1) implemented a wrong String Comparison Issue in rev. 34 findPT
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-01-15 17:19:51 UTC (rev 38)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-01-21 12:58:59 UTC (rev 39)
+@@ -460,15 +460,16 @@
+ 				// the first element is always the icon path of the following hotspots
+ 				PresentableTopic currentPT = (PresentableTopic) presentableTopics.next();
+ 				Cluster foundCluster = findAndCheckClusters(currentPT, clusters);
+-				if (foundCluster != null)  {
+-					//System.out.println(&quot;added &quot; + currentPT.getID() + &quot; into &quot; + foundCluster.getPoint());
++				if (foundCluster != null) {
+ 					//addPresentable, checks for doubles
+ 					foundCluster.addPresentable(currentPT);
+-				} else {	
+-					// es gibt noch kein cluster oder es wurde kein passendes gefunden also suchen, nach dem ersten auftreten von dem gleichen Point in allen hotspots
++				} else {
++					// es gibt noch kein cluster oder es wurde kein passendes gefunden also suchen, 
++					// nach dem ersten auftreten von dem gleichen Point in allen hotspots
+ 					PresentableTopic foundPT = findPT(currentPT, hotspots);
+-					if ( foundPT != null ){
+-						// create Cluster, with two points, and the respective dm server icon path
++					if ( foundPT != null ) {
++						// create Cluster, with two points, if they don't have the same ID add the respective dm server icon path
++						// System.out.println(&quot;created new cluster with &quot; + currentPT.getID() + &quot; and &quot; + foundPT.getID());
+ 						clusters.add(new Cluster(currentPT, foundPT, as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH));
+ 					}
+ 				}
+@@ -496,11 +497,8 @@
+ 			Vector scnd = (Vector)hotspots.get(p);
+ 			for(int o=1; o &lt; scnd.size(); o++){
+ 				PresentableTopic toCheck = (PresentableTopic) scnd.get(o);
+-				//System.out.println(&quot;searching for the dubs with: &quot; + pt.getGeometry() + &quot; toCheck: &quot; + toCheck.getGeometry());
+-				if (toCheck.getGeometry().equals(pt.getGeometry()) &amp; toCheck.getID() != pt.getID()){
+-					// System.out.println(&quot;found pts for creating new cluster: &quot; + toCheck.getName() + &quot;:&quot; + pt.getName());
+-					// the folowing line, removes the new found topic in the hotspot vector
+-					// System.out.println(&quot;removed: &quot;+((PresentableTopic)scnd.remove(o)).getName());
++				if (toCheck.getGeometry().equals(pt.getGeometry()) &amp; (!toCheck.getID().equals(pt.getID()))) {
++					// if the topics don't have the same id but have the same point, they belong together
+ 					return toCheck;
+ 				} 			
+ 			}			
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Cluster.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-01-15 17:19:51 UTC (rev 38)
++++ trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-01-21 12:58:59 UTC (rev 39)
+@@ -28,6 +28,7 @@
+ 	
+ 	public void addPresentable(PresentableTopic presentable) {
+ 		if (!presentables.contains(presentable)) {
++			//System.out.println(&quot;added &quot;+ presentable.getID()+&quot; into &quot; + this.p);
+ 			presentables.add(presentable);
+ 		}
+ 		// else {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000029.html">[Kiezatlas-svn] r38 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31">[ date ]</a>
+              <a href="thread.html#31">[ thread ]</a>
+              <a href="subject.html#31">[ subject ]</a>
+              <a href="author.html#31">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

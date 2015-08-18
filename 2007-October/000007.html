@@ -1,0 +1,2186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r15 - in trunk: . config/default config/test db	db/patches docs icons pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-October/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r15%20-%20in%20trunk%3A%20.%20config/default%20config/test%20db%0A%09db/patches%20docs%20icons%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200710082204.l98M4OdQ023998%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000006.html">
+   <LINK REL="Next"  HREF="000008.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r15 - in trunk: . config/default config/test db	db/patches docs icons pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r15%20-%20in%20trunk%3A%20.%20config/default%20config/test%20db%0A%09db/patches%20docs%20icons%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200710082204.l98M4OdQ023998%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r15 - in trunk: . config/default config/test db	db/patches docs icons pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Tue Oct  9 00:04:24 CEST 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000006.html">[Kiezatlas-svn] r14 - tags
+</A></li>
+        <LI>Next message: <A HREF="000008.html">[Kiezatlas-svn] r16 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7">[ date ]</a>
+              <a href="thread.html#7">[ thread ]</a>
+              <a href="subject.html#7">[ subject ]</a>
+              <a href="author.html#7">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2007-10-09 00:03:49 +0200 (Tue, 09 Oct 2007)
+New Revision: 15
+
+Added:
+   trunk/db/patches/ka-1.4.1.sql
+   trunk/icons/redball-middle.gif
+Removed:
+   trunk/icons/color-0000ff.png
+   trunk/icons/color-00ff00.png
+   trunk/icons/color-00ffff.png
+   trunk/icons/color-ff0000.png
+   trunk/icons/color-ff00ff.png
+   trunk/icons/color-ffff00.png
+   trunk/src/de/kiezatlas/deepamehta/topics/ColorTopic.java
+Modified:
+   trunk/README.txt
+   trunk/build.xml
+   trunk/config/default/web.xml
+   trunk/config/test/web.xml
+   trunk/db/kiezatlas.sql
+   trunk/db/patches/ka-1.1.sql
+   trunk/db/patches/ka-1.3.4.sql
+   trunk/db/patches/ka-1.4.sql
+   trunk/docs/session.txt
+   trunk/pages/CityMap.jsp
+   trunk/pages/pngfix.js
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+Log:
+1) Patch added: ka-1.4.1.sql
+2) Missing icon added: redball-middle.gif
+3) Unrequired icons deleted: color-*.png
+4) Unrequired class deleted: ColorTopic.java
+5) build.xml adapted for new build-system
+6) Assured all text files are UTF-8 encoded
+
+
+Modified: trunk/README.txt
+===================================================================
+--- trunk/README.txt	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/README.txt	2007-10-08 22:03:49 UTC (rev 15)
+@@ -1,6 +1,6 @@
+ 
+-Kiezatlas 1.3.4                                                              Joerg Richter
+-===============                                                                  31.8.2006
++Kiezatlas 1.4.1                                                               J&#195;&#182;rg Richter
++===============                                                                  11.9.2007
+ 
+ 
+ Kiezatlas is an application for the DeepaMehta platform.
+@@ -9,8 +9,8 @@
+ 
+ Install Kiezatlas:
+ 
+-1) unzip kiezatlas-1.3.3.zip
+-2) apply 9 database patches from db/, begin with kiezatlas.sql
++1) unzip kiezatlas-1.4.1.zip
++2) apply 11 database patches from db/, begin with kiezatlas.sql
+ 3) copy 2 .war files to tomcat/webapps
+ 4) copy kiezatlas.jar file to tomcat/shared/libs
+ 5) copy content of icons/ to deepamehta/install/client/icons
+
+Modified: trunk/build.xml
+===================================================================
+--- trunk/build.xml	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/build.xml	2007-10-08 22:03:49 UTC (rev 15)
+@@ -10,7 +10,8 @@
+ 	&lt;property name=&quot;war-test&quot; value=&quot;${project.name}-test.war&quot;/&gt;
+ 	&lt;property name=&quot;build&quot; location=&quot;build&quot;/&gt;
+ 
+-	&lt;import file=&quot;../../DeepaMehta/trunk/config.xml&quot;/&gt;
++	&lt;property name=&quot;dm.base-dir&quot; location=&quot;../../DeepaMehta/trunk&quot;/&gt;
++	&lt;import file=&quot;${dm.base-dir}/config.xml&quot; /&gt;
+ 
+ 	&lt;target name=&quot;init&quot; description=&quot;create build directory&quot;&gt;
+ 		&lt;mkdir dir=&quot;${build}&quot;/&gt;
+
+Modified: trunk/config/default/web.xml
+===================================================================
+--- trunk/config/default/web.xml	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/config/default/web.xml	2007-10-08 22:03:49 UTC (rev 15)
+@@ -1,99 +1,100 @@
+-&lt;!DOCTYPE web-app 
+-    PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
+-    &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+-
+-&lt;web-app&gt;
+-
+-    &lt;!-- General description of the web application --&gt;
+-
+-    &lt;display-name&gt;Kiez-Atlas&lt;/display-name&gt;
+-    &lt;description&gt;
+-      Version 1.0b1.
+-      Written by J\u0x9arg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>)
+-    &lt;/description&gt;
+-
+-    &lt;!-- Context initialization parameters that define shared
+-         String constants used within your application, which
+-         can be customized by the system administrator who is
+-         installing your application.
+-    --&gt;
+-
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;service&lt;/param-name&gt;
+-      &lt;param-value&gt;default&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects a DeepaMehta service.
+-        If this parameter is not set the &quot;default&quot; service will be used.
+-        To configure DeepaMehta services see the file install/client/dms.rc
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;generator&lt;/param-name&gt;
+-      &lt;param-value&gt;jsp&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects the HTML generator method.
+-        Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;stylesheet&lt;/param-name&gt;
+-      &lt;param-value&gt;browser/browser.xsl&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Sets the stylesheet for the XSL transformation.
+-		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+-    &lt;!-- Servlet definitions for the servlets that make up
+-         the web application.
+-    --&gt;
+-
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Browse Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+-
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Edit Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+-
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;List Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+-
+-    &lt;!-- Define mappings that are used by the servlet container to
+-         translate a particular request URI (context-relative) to a
+-         particular servlet.
+-    --&gt;
+-
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-
+-    &lt;!-- Define the default session timeout for your application,
+-         in minutes.
+-    --&gt;
+-
+-    &lt;session-config&gt;
+-      &lt;session-timeout&gt;60&lt;/session-timeout&gt;
+-    &lt;/session-config&gt;
+-
+-&lt;/web-app&gt;
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
++&lt;!DOCTYPE web-app 
++    PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
++    &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
++
++&lt;web-app&gt;
++
++    &lt;!-- General description of the web application --&gt;
++
++    &lt;display-name&gt;Kiez-Atlas&lt;/display-name&gt;
++    &lt;description&gt;
++      Version 1.0b1.
++      Written by J&#195;&#182;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>)
++    &lt;/description&gt;
++
++    &lt;!-- Context initialization parameters that define shared
++         String constants used within your application, which
++         can be customized by the system administrator who is
++         installing your application.
++    --&gt;
++
++    &lt;context-param&gt;
++      &lt;param-name&gt;service&lt;/param-name&gt;
++      &lt;param-value&gt;default&lt;/param-value&gt;
++      &lt;description&gt;
++        Selects a DeepaMehta service.
++        If this parameter is not set the &quot;default&quot; service will be used.
++        To configure DeepaMehta services see the file install/client/dms.rc
++      &lt;/description&gt;
++    &lt;/context-param&gt;
++
++    &lt;context-param&gt;
++      &lt;param-name&gt;generator&lt;/param-name&gt;
++      &lt;param-value&gt;jsp&lt;/param-value&gt;
++      &lt;description&gt;
++        Selects the HTML generator method.
++        Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
++      &lt;/description&gt;
++    &lt;/context-param&gt;
++
++    &lt;context-param&gt;
++      &lt;param-name&gt;stylesheet&lt;/param-name&gt;
++      &lt;param-value&gt;browser/browser.xsl&lt;/param-value&gt;
++      &lt;description&gt;
++        Sets the stylesheet for the XSL transformation.
++		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
++      &lt;/description&gt;
++    &lt;/context-param&gt;
++
++    &lt;!-- Servlet definitions for the servlets that make up
++         the web application.
++    --&gt;
++
++    &lt;servlet&gt;
++      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++      &lt;description&gt;Browse Servlet Controller&lt;/description&gt;
++      &lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
++
++    &lt;servlet&gt;
++      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++      &lt;description&gt;Edit Servlet Controller&lt;/description&gt;
++      &lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
++
++    &lt;servlet&gt;
++      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++      &lt;description&gt;List Servlet Controller&lt;/description&gt;
++      &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
++
++    &lt;!-- Define mappings that are used by the servlet container to
++         translate a particular request URI (context-relative) to a
++         particular servlet.
++    --&gt;
++
++    &lt;servlet-mapping&gt;
++      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++      &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++
++    &lt;servlet-mapping&gt;
++      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++      &lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++
++    &lt;servlet-mapping&gt;
++      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++      &lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++
++    &lt;!-- Define the default session timeout for your application,
++         in minutes.
++    --&gt;
++
++    &lt;session-config&gt;
++      &lt;session-timeout&gt;60&lt;/session-timeout&gt;
++    &lt;/session-config&gt;
++
++&lt;/web-app&gt;
+
+Modified: trunk/config/test/web.xml
+===================================================================
+--- trunk/config/test/web.xml	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/config/test/web.xml	2007-10-08 22:03:49 UTC (rev 15)
+@@ -1,99 +1,100 @@
+-&lt;!DOCTYPE web-app 
+-    PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
+-    &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
+-
+-&lt;web-app&gt;
+-
+-    &lt;!-- General description of the web application --&gt;
+-
+-    &lt;display-name&gt;Kiez-Atlas&lt;/display-name&gt;
+-    &lt;description&gt;
+-      Version 1.0b1.
+-      Written by J\u0x9arg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>)
+-    &lt;/description&gt;
+-
+-    &lt;!-- Context initialization parameters that define shared
+-         String constants used within your application, which
+-         can be customized by the system administrator who is
+-         installing your application.
+-    --&gt;
+-
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;service&lt;/param-name&gt;
+-      &lt;param-value&gt;test&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects a DeepaMehta service.
+-        If this parameter is not set the &quot;default&quot; service will be used.
+-        To configure DeepaMehta services see the file install/client/dms.rc
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;generator&lt;/param-name&gt;
+-      &lt;param-value&gt;jsp&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Selects the HTML generator method.
+-        Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+-    &lt;context-param&gt;
+-      &lt;param-name&gt;stylesheet&lt;/param-name&gt;
+-      &lt;param-value&gt;browser/browser.xsl&lt;/param-value&gt;
+-      &lt;description&gt;
+-        Sets the stylesheet for the XSL transformation.
+-		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
+-      &lt;/description&gt;
+-    &lt;/context-param&gt;
+-
+-    &lt;!-- Servlet definitions for the servlets that make up
+-         the web application.
+-    --&gt;
+-
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Browse Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+-
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;Edit Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+-
+-    &lt;servlet&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;description&gt;List Servlet Controller&lt;/description&gt;
+-      &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
+-    &lt;/servlet&gt;
+-
+-    &lt;!-- Define mappings that are used by the servlet container to
+-         translate a particular request URI (context-relative) to a
+-         particular servlet.
+-    --&gt;
+-
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-
+-    &lt;servlet-mapping&gt;
+-      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
+-      &lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
+-    &lt;/servlet-mapping&gt;
+-
+-    &lt;!-- Define the default session timeout for your application,
+-         in minutes.
+-    --&gt;
+-
+-    &lt;session-config&gt;
+-      &lt;session-timeout&gt;60&lt;/session-timeout&gt;
+-    &lt;/session-config&gt;
+-
+-&lt;/web-app&gt;
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
++&lt;!DOCTYPE web-app 
++    PUBLIC &quot;-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN&quot; 
++    &quot;<A HREF="http://java.sun.com/dtd/web-app_2_3.dtd">http://java.sun.com/dtd/web-app_2_3.dtd</A>&quot;&gt;
++
++&lt;web-app&gt;
++
++    &lt;!-- General description of the web application --&gt;
++
++    &lt;display-name&gt;Kiez-Atlas&lt;/display-name&gt;
++    &lt;description&gt;
++      Version 1.0b1.
++      Written by J&#195;&#182;rg Richter (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>)
++    &lt;/description&gt;
++
++    &lt;!-- Context initialization parameters that define shared
++         String constants used within your application, which
++         can be customized by the system administrator who is
++         installing your application.
++    --&gt;
++
++    &lt;context-param&gt;
++      &lt;param-name&gt;service&lt;/param-name&gt;
++      &lt;param-value&gt;test&lt;/param-value&gt;
++      &lt;description&gt;
++        Selects a DeepaMehta service.
++        If this parameter is not set the &quot;default&quot; service will be used.
++        To configure DeepaMehta services see the file install/client/dms.rc
++      &lt;/description&gt;
++    &lt;/context-param&gt;
++
++    &lt;context-param&gt;
++      &lt;param-name&gt;generator&lt;/param-name&gt;
++      &lt;param-value&gt;jsp&lt;/param-value&gt;
++      &lt;description&gt;
++        Selects the HTML generator method.
++        Supported values are &quot;jsp&quot; (default) and &quot;xslt&quot; (experimental)
++      &lt;/description&gt;
++    &lt;/context-param&gt;
++
++    &lt;context-param&gt;
++      &lt;param-name&gt;stylesheet&lt;/param-name&gt;
++      &lt;param-value&gt;browser/browser.xsl&lt;/param-value&gt;
++      &lt;description&gt;
++        Sets the stylesheet for the XSL transformation.
++		This parameter is required if the XSLT generator method is used, see parameter &quot;generator&quot;
++      &lt;/description&gt;
++    &lt;/context-param&gt;
++
++    &lt;!-- Servlet definitions for the servlets that make up
++         the web application.
++    --&gt;
++
++    &lt;servlet&gt;
++      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++      &lt;description&gt;Browse Servlet Controller&lt;/description&gt;
++      &lt;servlet-class&gt;de.kiezatlas.deepamehta.BrowseServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
++
++    &lt;servlet&gt;
++      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++      &lt;description&gt;Edit Servlet Controller&lt;/description&gt;
++      &lt;servlet-class&gt;de.kiezatlas.deepamehta.EditServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
++
++    &lt;servlet&gt;
++      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++      &lt;description&gt;List Servlet Controller&lt;/description&gt;
++      &lt;servlet-class&gt;de.kiezatlas.deepamehta.ListServlet&lt;/servlet-class&gt;
++    &lt;/servlet&gt;
++
++    &lt;!-- Define mappings that are used by the servlet container to
++         translate a particular request URI (context-relative) to a
++         particular servlet.
++    --&gt;
++
++    &lt;servlet-mapping&gt;
++      &lt;servlet-name&gt;Edit Servlet&lt;/servlet-name&gt;
++      &lt;url-pattern&gt;/edit/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++
++    &lt;servlet-mapping&gt;
++      &lt;servlet-name&gt;Browse Servlet&lt;/servlet-name&gt;
++      &lt;url-pattern&gt;/browse/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++
++    &lt;servlet-mapping&gt;
++      &lt;servlet-name&gt;List Servlet&lt;/servlet-name&gt;
++      &lt;url-pattern&gt;/list/*&lt;/url-pattern&gt;
++    &lt;/servlet-mapping&gt;
++
++    &lt;!-- Define the default session timeout for your application,
++         in minutes.
++    --&gt;
++
++    &lt;session-config&gt;
++      &lt;session-timeout&gt;60&lt;/session-timeout&gt;
++    &lt;/session-config&gt;
++
++&lt;/web-app&gt;
+
+Modified: trunk/db/kiezatlas.sql
+===================================================================
+--- trunk/db/kiezatlas.sql	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/db/kiezatlas.sql	2007-10-08 22:03:49 UTC (rev 15)
+@@ -51,7 +51,7 @@
+ --- &quot;Stadtplan&quot; ---
+ INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-stadtplan', 'Stadtplan');
+ INSERT INTO TopicProp VALUES ('tt-ka-stadtplan', 1, 'Name', 'Stadtplan');
+-INSERT INTO TopicProp VALUES ('tt-ka-stadtplan', 1, 'Plural Name', 'Stadtpl&#228;ne');
++INSERT INTO TopicProp VALUES ('tt-ka-stadtplan', 1, 'Plural Name', 'Stadtpl&#195;&#164;ne');
+ INSERT INTO TopicProp VALUES ('tt-ka-stadtplan', 1, 'Description', '&lt;html&gt;&lt;body&gt;&lt;p&gt;Ein &lt;i&gt;Stadtplan&lt;/i&gt; ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;');
+ INSERT INTO TopicProp VALUES ('tt-ka-stadtplan', 1, 'Description Query', 'Was ist ein Stadtplan?');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-stadtplan', 1, 'Icon', 'Kompetenzstern.gif');
+@@ -113,7 +113,7 @@
+ INSERT INTO AssociationProp VALUES ('a-ka-34', 1, 'Web Info', 'Related Topic Name');
+ INSERT INTO AssociationProp VALUES ('a-ka-34', 1, 'Web Form', 'Related Form');
+ INSERT INTO AssociationProp VALUES ('a-ka-34', 1, 'Ordinal Number', '155');
+--- relation to &quot;Tr&#228;ger&quot;
++-- relation to &quot;Tr&#195;&#164;ger&quot;
+ INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-ka-19', '', 'tt-ka-einrichtung', 1, 'tt-ka-traeger', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-19', 1, 'Cardinality', 'many');
+ INSERT INTO AssociationProp VALUES ('a-ka-19', 1, 'Association Type ID', 'at-association');
+@@ -158,12 +158,12 @@
+ UPDATE Association SET Name='E-mail' WHERE ID='a-406';
+ UPDATE Association SET Name='Website' WHERE ID='a-417';
+ 
+---- &quot;Tr&#228;ger&quot; ---
+-INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-traeger', 'Tr&#228;ger');
+-INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Name', 'Tr&#228;ger');
+--- INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Plural Name', 'Tr&#228;ger');
++--- &quot;Tr&#195;&#164;ger&quot; ---
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-traeger', 'Tr&#195;&#164;ger');
++INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Name', 'Tr&#195;&#164;ger');
++-- INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Plural Name', 'Tr&#195;&#164;ger');
+ INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Description', '&lt;html&gt;&lt;body&gt;&lt;p&gt;Ein &lt;i&gt;Tr&auml;ger&lt;/i&gt; ist ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;');
+-INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Description Query', 'Was ist ein Tr&#228;ger?');
++INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Description Query', 'Was ist ein Tr&#195;&#164;ger?');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Icon', 'Kompetenzstern.gif');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Creation Icon', 'createKompetenzstern.gif');
+ INSERT INTO TopicProp VALUES ('tt-ka-traeger', 1, 'Unique Topic Names', 'on');
+@@ -174,8 +174,8 @@
+ -- super type
+ INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-14', '', 'tt-institution', 1, 'tt-ka-traeger', 1);
+ -- container type
+-INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-traegersuche', 'Tr&#228;ger-Suche');
+-INSERT INTO TopicProp VALUES ('tt-ka-traegersuche', 1, 'Name', 'Tr&#228;ger-Suche');
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-traegersuche', 'Tr&#195;&#164;ger-Suche');
++INSERT INTO TopicProp VALUES ('tt-ka-traegersuche', 1, 'Name', 'Tr&#195;&#164;ger-Suche');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-traegersuche', 1, 'Icon', 'KompetenzsternContainer.gif');
+ -- derive container type
+ INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-15', '', 'tt-topiccontainer', 1, 'tt-ka-traegersuche', 1);
+@@ -263,9 +263,9 @@
+ 
+ 
+ 
+---- &quot;&#214;ffnungszeiten&quot; (Einrichtung) ---
+-INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-oeffnungszeiten', '&#214;ffnungszeiten');
+-INSERT INTO TopicProp VALUES ('pp-ka-oeffnungszeiten', 1, 'Name', '&#214;ffnungszeiten');
++--- &quot;&#195;&#150;ffnungszeiten&quot; (Einrichtung) ---
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-oeffnungszeiten', '&#195;&#150;ffnungszeiten');
++INSERT INTO TopicProp VALUES ('pp-ka-oeffnungszeiten', 1, 'Name', '&#195;&#150;ffnungszeiten');
+ INSERT INTO TopicProp VALUES ('pp-ka-oeffnungszeiten', 1, 'Visualization', 'Multiline Input Field');
+ 
+ --- &quot;Sonstiges&quot; (Einrichtung) ---
+@@ -273,7 +273,7 @@
+ INSERT INTO TopicProp VALUES ('pp-ka-sonstiges', 1, 'Name', 'Sonstiges');
+ INSERT INTO TopicProp VALUES ('pp-ka-sonstiges', 1, 'Visualization', 'Multiline Input Field');
+ 
+---- &quot;Art&quot; (Tr&#138;ger) ---
++--- &quot;Art&quot; (Tr&#194;&#138;ger) ---
+ INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-kind', 'Art');
+ INSERT INTO TopicProp VALUES ('pp-ka-kind', 1, 'Name', 'Art');
+ INSERT INTO TopicProp VALUES ('pp-ka-kind', 1, 'Visualization', 'Option Buttons');
+@@ -390,17 +390,17 @@
+ INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang6', 'Qualifizierung / Aus- /Weiterbildung');
+ INSERT INTO TopicProp VALUES ('t-ka-ang6', 1, 'Name', 'Qualifizierung / Aus- /Weiterbildung');
+ 
+-INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang7', 'R&#228;ume / Freiraumnutzung');
+-INSERT INTO TopicProp VALUES ('t-ka-ang7', 1, 'Name', 'R&#228;ume / Freiraumnutzung');
++INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang7', 'R&#195;&#164;ume / Freiraumnutzung');
++INSERT INTO TopicProp VALUES ('t-ka-ang7', 1, 'Name', 'R&#195;&#164;ume / Freiraumnutzung');
+ 
+-INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang8', 'Spielzeug / Sportger&#228;te / Spiel- /Sportplatz');
+-INSERT INTO TopicProp VALUES ('t-ka-ang8', 1, 'Name', 'Spielzeug / Sportger&#228;te / Spiel- /Sportplatz');
++INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang8', 'Spielzeug / Sportger&#195;&#164;te / Spiel- /Sportplatz');
++INSERT INTO TopicProp VALUES ('t-ka-ang8', 1, 'Name', 'Spielzeug / Sportger&#195;&#164;te / Spiel- /Sportplatz');
+ 
+-INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang9', 'Technische Ger&#228;te / Werkzeuge / Werkst&#228;tten');
+-INSERT INTO TopicProp VALUES ('t-ka-ang9', 1, 'Name', 'Technische Ger&#228;te / Werkzeuge / Werkst&#228;tten');
++INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang9', 'Technische Ger&#195;&#164;te / Werkzeuge / Werkst&#195;&#164;tten');
++INSERT INTO TopicProp VALUES ('t-ka-ang9', 1, 'Name', 'Technische Ger&#195;&#164;te / Werkzeuge / Werkst&#195;&#164;tten');
+ 
+-INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang10', 'Transportm&#246;glichkeiten');
+-INSERT INTO TopicProp VALUES ('t-ka-ang10', 1, 'Name', 'Transportm&#246;glichkeiten');
++INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang10', 'Transportm&#195;&#182;glichkeiten');
++INSERT INTO TopicProp VALUES ('t-ka-ang10', 1, 'Name', 'Transportm&#195;&#182;glichkeiten');
+ 
+ INSERT INTO Topic VALUES ('tt-ka-angebot', 1, 1, 't-ka-ang11', 'Unterhaltung');
+ INSERT INTO TopicProp VALUES ('t-ka-ang11', 1, 'Name', 'Unterhaltung');
+@@ -419,8 +419,8 @@
+ 
+ 
+ 
+-INSERT INTO Topic VALUES ('tt-ka-altersgruppe', 1, 1, 't-ka-alt1', 'Familien/Alleinerziehende mit S&#228;uglingen');
+-INSERT INTO TopicProp VALUES ('t-ka-alt1', 1, 'Name', 'Familien/Alleinerziehende mit S&#228;uglingen');
++INSERT INTO Topic VALUES ('tt-ka-altersgruppe', 1, 1, 't-ka-alt1', 'Familien/Alleinerziehende mit S&#195;&#164;uglingen');
++INSERT INTO TopicProp VALUES ('t-ka-alt1', 1, 'Name', 'Familien/Alleinerziehende mit S&#195;&#164;uglingen');
+ 
+ INSERT INTO Topic VALUES ('tt-ka-altersgruppe', 1, 1, 't-ka-alt2', 'Familien/Alleinerziehende mit Kleinkindern');
+ INSERT INTO TopicProp VALUES ('t-ka-alt2', 1, 'Name', 'Familien/Alleinerziehende mit Kleinkindern');
+@@ -460,9 +460,9 @@
+ 
+ 
+ 
+--- &quot;Sch&#154;neberg-Nord&quot;
+-INSERT INTO Topic VALUES ('tt-ka-stadtplan', 1, 1, 't-ka-schoeneberg', 'Sch&#246;neberg-Nord');
+-INSERT INTO TopicProp VALUES ('t-ka-schoeneberg', 1, 'Name', 'Sch&#246;neberg-Nord');
++-- &quot;Sch&#194;&#154;neberg-Nord&quot;
++INSERT INTO Topic VALUES ('tt-ka-stadtplan', 1, 1, 't-ka-schoeneberg', 'Sch&#195;&#182;neberg-Nord');
++INSERT INTO TopicProp VALUES ('t-ka-schoeneberg', 1, 'Name', 'Sch&#195;&#182;neberg-Nord');
+ INSERT INTO TopicProp VALUES ('t-ka-schoeneberg', 1, 'Background Image', 'kartepur.jpg');
+ INSERT INTO TopicProp VALUES ('t-ka-schoeneberg', 1, 'Web Alias', 'schoeneberg-nord');
+ INSERT INTO ViewTopic VALUES ('t-ka-workmap', 1, 't-ka-schoeneberg', 1, 120, 80);
+
+Modified: trunk/db/patches/ka-1.1.sql
+===================================================================
+--- trunk/db/patches/ka-1.1.sql	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/db/patches/ka-1.1.sql	2007-10-08 22:03:49 UTC (rev 15)
+@@ -71,7 +71,7 @@
+ UPDATE Association SET TopicID1='tt-ka-kriterium' WHERE ID='a-ka-20';
+ UPDATE Association SET TopicID1='tt-ka-kriterium' WHERE ID='a-ka-27';
+ 
+--- set &quot;Soziale Einrichtung&quot; as new origin of relations to &quot;Kategorie&quot;, &quot;Angebot&quot;, &quot;Altersgruppe&quot; und &quot;Tr&#138;ger&quot;
++-- set &quot;Soziale Einrichtung&quot; as new origin of relations to &quot;Kategorie&quot;, &quot;Angebot&quot;, &quot;Altersgruppe&quot; und &quot;Tr&#195;&#164;ger&quot;
+ DELETE FROM ViewAssociation WHERE AssociationID='a-ka-23';
+ DELETE FROM ViewAssociation WHERE AssociationID='a-ka-32';
+ DELETE FROM ViewAssociation WHERE AssociationID='a-ka-33';
+
+Modified: trunk/db/patches/ka-1.3.4.sql
+===================================================================
+--- trunk/db/patches/ka-1.3.4.sql	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/db/patches/ka-1.3.4.sql	2007-10-08 22:03:49 UTC (rev 15)
+@@ -2,12 +2,12 @@
+ --- New Topic Types ---
+ -----------------------
+ 
+---- &quot;Fl&#228;che&quot; ---
+-INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-shape', 'Fl&#228;che');
+-INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Name', 'Fl&#228;che');
+-INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Plural Name', 'Fl&#228;chen');
++--- &quot;Fl&#195;&#164;che&quot; ---
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-shape', 'Fl&#195;&#164;che');
++INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Name', 'Fl&#195;&#164;che');
++INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Plural Name', 'Fl&#195;&#164;chen');
+ INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Description', '&lt;html&gt;&lt;body&gt;&lt;p&gt;Eine &lt;i&gt;Fl&auml;che&lt;/i&gt; ist ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;');
+-INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Description Query', 'Was ist eine Fl&#228;che?');
++INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Description Query', 'Was ist eine Fl&#195;&#164;che?');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Icon', 'shape.gif');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Creation Icon', 'createKompetenzstern.gif');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-shape', 1, 'Unique Topic Names', 'on');
+@@ -18,8 +18,8 @@
+ -- super type
+ INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-79', '', 'tt-generic', 1, 'tt-ka-shape', 1);
+ -- search type
+-INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-shape-search', 'Fl&#228;chen Suche');
+-INSERT INTO TopicProp VALUES ('tt-ka-shape-search', 1, 'Name', 'Fl&#228;chen Suche');
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-shape-search', 'Fl&#195;&#164;chen Suche');
++INSERT INTO TopicProp VALUES ('tt-ka-shape-search', 1, 'Name', 'Fl&#195;&#164;chen Suche');
+ -- INSERT INTO TopicProp VALUES ('tt-ka-shape-search', 1, 'Icon', 'KompetenzsternContainer.gif');
+ -- derive search type
+ INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-80', '', 'tt-topiccontainer', 1, 'tt-ka-shape-search', 1);
+
+Added: trunk/db/patches/ka-1.4.1.sql
+===================================================================
+--- trunk/db/patches/ka-1.4.1.sql	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/db/patches/ka-1.4.1.sql	2007-10-08 22:03:49 UTC (rev 15)
+@@ -0,0 +1,2 @@
++DELETE from TopicProp where PropName='Alias';
++DELETE from TopicProp where PropName='Original Background Image';
+
+Modified: trunk/db/patches/ka-1.4.sql
+===================================================================
+--- trunk/db/patches/ka-1.4.sql	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/db/patches/ka-1.4.sql	2007-10-08 22:03:49 UTC (rev 15)
+@@ -14,6 +14,6 @@
+ INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-target-webalias', 'Target Web Alias');
+ INSERT INTO TopicProp VALUES ('pp-ka-target-webalias', 1, 'Name', 'Target Web Alias');
+ INSERT INTO TopicProp VALUES ('pp-ka-target-webalias', 1, 'Visualization', 'Input Field');
+--- assign property to &quot;Fl&#228;che&quot;
++-- assign property to &quot;Fl&#195;&#164;che&quot;
+ INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-83', '', 'tt-ka-shape', 1, 'pp-ka-target-webalias', 1);
+ INSERT INTO AssociationProp VALUES ('a-ka-83', 1, 'Ordinal Number', '150');
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/docs/session.txt	2007-10-08 22:03:49 UTC (rev 15)
+@@ -2,7 +2,7 @@
+ 
+ Web Session Attributes
+ 
+-J&#154;rg Richter
++J&#195;&#182;rg Richter
+ 17.3.2007
+ 
+ 
+
+Deleted: trunk/icons/color-0000ff.png
+===================================================================
+(Binary files differ)
+
+Deleted: trunk/icons/color-00ff00.png
+===================================================================
+(Binary files differ)
+
+Deleted: trunk/icons/color-00ffff.png
+===================================================================
+(Binary files differ)
+
+Deleted: trunk/icons/color-ff0000.png
+===================================================================
+(Binary files differ)
+
+Deleted: trunk/icons/color-ff00ff.png
+===================================================================
+(Binary files differ)
+
+Deleted: trunk/icons/color-ffff00.png
+===================================================================
+(Binary files differ)
+
+Added: trunk/icons/redball-middle.gif
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/icons/redball-middle.gif
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/pages/CityMap.jsp	2007-10-08 22:03:49 UTC (rev 15)
+@@ -50,7 +50,7 @@
+ 				out.println(&quot;&lt;a href=\&quot;javascript:top.frames.right.location.href='controller?action=&quot; +
+ 					KiezAtlas.ACTION_SHOW_INSTITUTION_INFO + &quot;&amp;id=&quot; + inst.getID() + &quot;'\&quot;&gt;&quot; +
+ 					&quot;&lt;img src=\&quot;&quot; + icon + &quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 10) + &quot;px; left:&quot; +
+-					(p.x - 10) + &quot;px;\&quot; alt=\&quot;&quot; + inst.getName() + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++					(p.x - 10) + &quot;px;\&quot; alt=\&quot;&quot; + inst.getName() + &quot;\&quot; title=\&quot;&quot; + inst.getName() + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
+ 			}
+ 		}
+ 		// --- shape display switches ---
+
+Modified: trunk/pages/pngfix.js
+===================================================================
+--- trunk/pages/pngfix.js	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/pages/pngfix.js	2007-10-08 22:03:49 UTC (rev 15)
+@@ -1,40 +1,40 @@
+-/*
+- 
+-Correctly handle PNG transparency in Win IE 5.5 &amp; 6.
+-<A HREF="http://homepage.ntlworld.com/bobosola.">http://homepage.ntlworld.com/bobosola.</A> Updated 18-Jan-2006.
+-
+-Use in &lt;HEAD&gt; with DEFER keyword wrapped in conditional comments:
+-&lt;!--[if lt IE 7]&gt;
+-&lt;script defer type=&quot;text/javascript&quot; src=&quot;pngfix.js&quot;&gt;&lt;/script&gt;
+-&lt;![endif]--&gt;
+-
+-Slightly modified for Kiezatlas by J&#154;rg Richter, 16.9.2006
+-*/
+-
+-var arVersion = navigator.appVersion.split(&quot;MSIE&quot;)
+-var version = parseFloat(arVersion[1])
+-
+-if ((version &gt;= 5.5) &amp;&amp; (document.body.filters)) 
+-{
+-   for(var i=0; i&lt;document.images.length; i++)
+-   {
+-      var img = document.images[i]
+-      var imgName = img.src.toUpperCase()
+-      if ((imgName.substring(imgName.length-3, imgName.length) == &quot;PNG&quot;) &amp;&amp; (img.className == &quot;fixpng&quot;))
+-      {
+-         var imgID = (img.id) ? &quot;id='&quot; + img.id + &quot;' &quot; : &quot;&quot;
+-         var imgClass = (img.className) ? &quot;class='&quot; + img.className + &quot;' &quot; : &quot;&quot;
+-         var imgTitle = (img.title) ? &quot;title='&quot; + img.title + &quot;' &quot; : &quot;title='&quot; + img.alt + &quot;' &quot;
+-         var imgStyle = &quot;display:inline-block;&quot; + img.style.cssText 
+-         if (img.align == &quot;left&quot;) imgStyle = &quot;float:left;&quot; + imgStyle
+-         if (img.align == &quot;right&quot;) imgStyle = &quot;float:right;&quot; + imgStyle
+-         if (img.parentElement.href) imgStyle = &quot;cursor:hand;&quot; + imgStyle
+-         var strNewHTML = &quot;&lt;span &quot; + imgID + imgClass + imgTitle
+-         + &quot; style=\&quot;&quot; + &quot;width:&quot; + img.width + &quot;px; height:&quot; + img.height + &quot;px;&quot; + imgStyle + &quot;;&quot;
+-         + &quot;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader&quot;
+-         + &quot;(src=\'&quot; + img.src + &quot;\', sizingMethod='scale');\&quot;&gt;&lt;/span&gt;&quot; 
+-         img.outerHTML = strNewHTML
+-         i = i-1
+-      }
+-   }
+-}
++/*
++ 
++Correctly handle PNG transparency in Win IE 5.5 &amp; 6.
++<A HREF="http://homepage.ntlworld.com/bobosola.">http://homepage.ntlworld.com/bobosola.</A> Updated 18-Jan-2006.
++
++Use in &lt;HEAD&gt; with DEFER keyword wrapped in conditional comments:
++&lt;!--[if lt IE 7]&gt;
++&lt;script defer type=&quot;text/javascript&quot; src=&quot;pngfix.js&quot;&gt;&lt;/script&gt;
++&lt;![endif]--&gt;
++
++Slightly modified for Kiezatlas by J&#195;&#182;rg Richter, 16.9.2006
++*/
++
++var arVersion = navigator.appVersion.split(&quot;MSIE&quot;)
++var version = parseFloat(arVersion[1])
++
++if ((version &gt;= 5.5) &amp;&amp; (document.body.filters)) 
++{
++   for(var i=0; i&lt;document.images.length; i++)
++   {
++      var img = document.images[i]
++      var imgName = img.src.toUpperCase()
++      if ((imgName.substring(imgName.length-3, imgName.length) == &quot;PNG&quot;) &amp;&amp; (img.className == &quot;fixpng&quot;))
++      {
++         var imgID = (img.id) ? &quot;id='&quot; + img.id + &quot;' &quot; : &quot;&quot;
++         var imgClass = (img.className) ? &quot;class='&quot; + img.className + &quot;' &quot; : &quot;&quot;
++         var imgTitle = (img.title) ? &quot;title='&quot; + img.title + &quot;' &quot; : &quot;title='&quot; + img.alt + &quot;' &quot;
++         var imgStyle = &quot;display:inline-block;&quot; + img.style.cssText 
++         if (img.align == &quot;left&quot;) imgStyle = &quot;float:left;&quot; + imgStyle
++         if (img.align == &quot;right&quot;) imgStyle = &quot;float:right;&quot; + imgStyle
++         if (img.parentElement.href) imgStyle = &quot;cursor:hand;&quot; + imgStyle
++         var strNewHTML = &quot;&lt;span &quot; + imgID + imgClass + imgTitle
++         + &quot; style=\&quot;&quot; + &quot;width:&quot; + img.width + &quot;px; height:&quot; + img.height + &quot;px;&quot; + imgStyle + &quot;;&quot;
++         + &quot;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader&quot;
++         + &quot;(src=\'&quot; + img.src + &quot;\', sizingMethod='scale');\&quot;&gt;&lt;/span&gt;&quot; 
++         img.outerHTML = strNewHTML
++         i = i-1
++      }
++   }
++}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -257,7 +257,7 @@
+ 			}
+ 			String to = email.getName();
+ 			// &quot;subject&quot;
+-			String subject = &quot;Kiezatlas: neuer Forumsbeitrag f&#159;r \&quot;&quot; + inst.getName() + &quot;\&quot;&quot;;
++			String subject = &quot;Kiezatlas: neuer Forumsbeitrag f&#195;&#188;r \&quot;&quot; + inst.getName() + &quot;\&quot;&quot;;
+ 			// &quot;body&quot;
+ 			Hashtable comment = cm.getTopicData(commentID, 1);
+ 			String body = &quot;Dies ist eine automatische Benachrichtigung von www.kiezatlas.de\r\r&quot; +
+@@ -269,10 +269,10 @@
+ 				&quot;Datum: &quot; + comment.get(PROPERTY_COMMENT_DATE) + &quot;\r&quot; +
+ 				&quot;Uhrzeit: &quot; + comment.get(PROPERTY_COMMENT_TIME) + &quot;\r&quot; +
+ 				&quot;------------------------------\r\r&quot; +
+-				&quot;Im Falle des Mi&#167;brauchs: In der \&quot;Forum Administration\&quot; ihres pers&#154;nlichen Kiezatlas-Zugangs haben &quot; +
+-				&quot;Sie die M&#154;glichkeit, einzelne Kommentare zu l&#154;schen, bzw. das Forum ganz zu deaktivieren.\r&quot; +
++				&quot;Im Falle des Mi&#195;&#159;brauchs: In der \&quot;Forum Administration\&quot; ihres pers&#195;&#182;nlichen Kiezatlas-Zugangs haben &quot; +
++				&quot;Sie die M&#195;&#182;glichkeit, einzelne Kommentare zu l&#195;&#182;schen, bzw. das Forum ganz zu deaktivieren.\r&quot; +
+ 				&quot;www.kiezatlas.de:8080/edit/&quot; + inst.getWebAlias() + &quot;\r\r&quot; +
+-				&quot;Mit freundlichen Gr&#159;&#167;en\r&quot; +
++				&quot;Mit freundlichen Gr&#195;&#188;&#195;&#159;en\r&quot; +
+ 				&quot;ihr Kiezatlas-Team&quot;;
+ 			//
+ 			System.out.println(&quot;&gt;&gt;&gt; send notification email&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -102,7 +102,7 @@
+ 
+ 
+ 	static final String PROPERTY_CITY = &quot;Stadt&quot;;
+-	static final String PROPERTY_OEFFNUNGSZEITEN = &quot;&#133;ffnungszeiten&quot;;
++	static final String PROPERTY_OEFFNUNGSZEITEN = &quot;&#195;&#150;ffnungszeiten&quot;;
+ 	static final String PROPERTY_SONSTIGES = &quot;Sonstiges&quot;;
+ 	static final String PROPERTY_ADMINISTRATION_INFO = &quot;Administrator Infos&quot;;
+ 	static final String PROPERTY_AGENCY_KIND = &quot;Art&quot;;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/topics/CityMapTopic.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -196,7 +196,7 @@
+ 		Vector instTypes = cm.getRelatedTopics(workspace.getID(), SEMANTIC_WORKSPACE_TYPES, TOPICTYPE_TOPICTYPE, 2, typeIDs, true);
+ 		// error check
+ 		if (instTypes.size() == 0) {
+-			throw new DeepaMehtaException(&quot;Administrator-Fehler: Einrichtungstyp f&#159;r Workspace \&quot;&quot; + workspace.getName() + &quot;\&quot; ist nicht bekannt&quot;);
++			throw new DeepaMehtaException(&quot;Administrator-Fehler: Einrichtungstyp f&#195;&#188;r Workspace \&quot;&quot; + workspace.getName() + &quot;\&quot; ist nicht bekannt&quot;);
+ 		}
+ 		//
+ 		return (BaseTopic) instTypes.firstElement();
+@@ -270,7 +270,7 @@
+ 				Point p = inst.getPoint(getID());	// throws DME
+ 				// Note: if YADE is &quot;off&quot; p is null
+ 				if (p == null) {
+-					String txt = &quot;Die Einrichtungen konnten nicht neuplatziert werden. Es m&#159;ssen erst 2 Referenzpunkte gesetzt werden.&quot;;
++					String txt = &quot;Die Einrichtungen konnten nicht neuplatziert werden. Es m&#195;&#188;ssen erst 2 Referenzpunkte gesetzt werden.&quot;;
+ 					directives.add(DIRECTIVE_SHOW_MESSAGE, txt, new Integer(NOTIFICATION_WARNING));
+ 					System.out.println(&quot;&gt;&gt;&gt; CityMapTopic.repositionAllInstitutions(): &quot; + txt);
+ 					return;
+@@ -328,7 +328,7 @@
+ 		Vector maps = as.cm.getTopics(TOPICTYPE_CITYMAP, props, topicmap.getID(), true);	// caseSensitiv=true
+ 		// error check
+ 		if (maps.size() &gt; 1) {
+-			throw new DeepaMehtaException(&quot;Mehrdeutigkeit: es gibt &quot; + maps.size() + &quot; \&quot;&quot; + alias + &quot;\&quot; Stadtpl&#138;ne&quot;);
++			throw new DeepaMehtaException(&quot;Mehrdeutigkeit: es gibt &quot; + maps.size() + &quot; \&quot;&quot; + alias + &quot;\&quot; Stadtpl&#195;&#164;ne&quot;);
+ 		}
+ 		//
+ 		BaseTopic map = maps.size() == 1 ? (BaseTopic) maps.firstElement() : null;
+
+Deleted: trunk/src/de/kiezatlas/deepamehta/topics/ColorTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/ColorTopic.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/topics/ColorTopic.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -1,128 +0,0 @@
+-package de.kiezatlas.deepamehta.topics;
+-
+-import de.kiezatlas.deepamehta.KiezAtlas;
+-//
+-import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaException;
+-import de.deepamehta.DeepaMehtaUtils;
+-import de.deepamehta.PresentableTopic;
+-import de.deepamehta.PresentableAssociation;
+-import de.deepamehta.PropertyDefinition;
+-import de.deepamehta.AmbiguousSemanticException;
+-import de.deepamehta.service.ApplicationService;
+-import de.deepamehta.service.CorporateDirectives;
+-import de.deepamehta.service.CorporateCommands;
+-import de.deepamehta.service.DeepaMehtaServiceUtils;
+-import de.deepamehta.service.Session;
+-import de.deepamehta.topics.LiveTopic;
+-import de.deepamehta.topics.TypeTopic;
+-//
+-import java.io.File;
+-import javax.swing.ImageIcon;
+-import java.awt.image.BufferedImage;
+-import java.awt.geom.Point2D;
+-import java.awt.*;
+-import java.util.*;
+-
+-
+-
+-/**
+- * Kiez-Atlas 1.3.3.&lt;br&gt;
+- * Requires DeepaMehta 2.0b6-post3.
+- * &lt;p&gt;
+- * Last functional change: 29.5.2006&lt;br&gt;
+- * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+- */
+-public class ColorTopic extends LiveTopic implements KiezAtlas {
+-
+-
+-
+-	// *******************
+-	// *** Constructor ***
+-	// *******************
+-
+-
+-
+-	public ColorTopic(BaseTopic topic, ApplicationService as) {
+-		super(topic, as);
+-	}
+-
+-
+-
+-	// **********************
+-	// *** Defining Hooks ***
+-	// **********************
+-
+-
+-
+-	// --------------------------
+-	// --- Providing Commands ---
+-	// --------------------------
+-
+-
+-
+-	// ### Note: the button for the &quot;Color&quot; property is added by superclass LiveTopic
+-
+-
+-
+-	// ---------------------------
+-	// --- Handling Properties ---
+-	// ---------------------------
+-
+-
+-
+-	public CorporateDirectives propertiesChanged(Hashtable newProps, Hashtable oldProps, String topicmapID,
+-																					String viewmode, Session session) {
+-		CorporateDirectives directives = super.propertiesChanged(newProps, oldProps, topicmapID, viewmode, session);
+-		// --- &quot;Color&quot; ---
+-		String color = (String) newProps.get(PROPERTY_COLOR);
+-		if (color != null) {
+-			System.out.print(&quot;&gt;&gt;&gt; \&quot;&quot; + PROPERTY_COLOR + &quot;\&quot; property has changed -- &quot;);
+-			String iconfile = getIconfile(color);
+-			File file = new File(FILESERVER_ICONS_PATH + iconfile);
+-			if (!file.exists()) {
+-				System.out.println(&quot;create new iconfile \&quot;&quot; + iconfile + &quot;\&quot;&quot;);
+-				createIconfile(file, color);
+-			} else {
+-				System.out.println(&quot;iconfile \&quot;&quot; + iconfile + &quot;\&quot; already exists&quot;);
+-			}
+-			//
+-			Hashtable props = new Hashtable();
+-			props.put(PROPERTY_ICON, iconfile);
+-			directives.add(DIRECTIVE_SHOW_TOPIC_PROPERTIES, getID(), props, new Integer(1));
+-		}
+-		//
+-		return directives;
+-	}
+-
+-	public static Vector hiddenProperties(TypeTopic type) {
+-		Vector props = new Vector();
+-		props.addElement(PROPERTY_ICON);
+-		return props;
+-	}
+-
+-
+-
+-	// **********************
+-	// *** Custom Methods ***
+-	// **********************
+-
+-
+-
+-	protected final void createIconfile(File file, String color) {
+-		// --- create offscreen image ---
+-		BufferedImage icon = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
+-		Graphics2D g = icon.createGraphics();
+-		// ### g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+-		// --- paint icon ---
+-		g.setColor(DeepaMehtaUtils.parseHexColor(color));
+-		g.fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE);	// ### Mac OS X, Java 1.4: fillRect() following drawing commands are ignored!
+-		// --- save icon as PNG file ---
+-		DeepaMehtaServiceUtils.createImageFile(icon, file);
+-	}
+-
+-	private String getIconfile(String color) {
+-		return &quot;color-&quot; + color.substring(1) + &quot;.png&quot;;
+-	}
+-}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/topics/FileImportTopic.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -1,516 +1,516 @@
+-package de.kiezatlas.deepamehta.topics;
+-
+-import de.kiezatlas.deepamehta.KiezAtlas;
+-//
+-import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaException;
+-import de.deepamehta.TopicInitException;
+-import de.deepamehta.topics.FileTopic;
+-import de.deepamehta.topics.LiveTopic;
+-import de.deepamehta.PropertyDefinition;
+-import de.deepamehta.service.Session;
+-import de.deepamehta.service.CorporateDirectives;
+-import de.deepamehta.service.CorporateMemory;
+-import de.deepamehta.service.ApplicationService;
+-import de.deepamehta.service.CorporateCommands;
+-//
+-import java.awt.Point;
+-import java.io.*;
+-import java.util.*;
+-
+-
+-
+-/**
+- * Kiez-Atlas 1.2.1.&lt;br&gt;
+- * Requires DeepaMehta 2.0b4.
+- * &lt;p&gt;
+- * Last functional change: 1.1.2005&lt;br&gt;
+- * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+- */
+-public class FileImportTopic extends FileTopic implements KiezAtlas {
+-
+-
+-
+-	static final String TOPICMAP_ID = &quot;t-ka-schoeneberg&quot;;	// the imported topics are placed in this map
+-	static final String GEOMETRY_FILE = &quot;geometry.txt&quot;;		// this file is expected on the server
+-
+-	static final String ITEM_IMPORT_FILE = &quot;Start Import&quot;;
+-	static final String CMD_IMPORT_FILE = &quot;importFile&quot;;
+-	static final String BUTTON_ASSIGN_FILE = &quot;assign file&quot;;		// ###
+-	static final String CMD_ASSIGN_FILE = &quot;assignFile&quot;;			// ###
+-
+-	Hashtable catTable = new Hashtable();
+-	Hashtable ageTable = new Hashtable();
+-	Hashtable offerTable = new Hashtable();
+-	//
+-	Hashtable codeTable = new Hashtable();
+-	Hashtable geometryTable = new Hashtable();
+-
+-
+-
+-	// *******************
+-	// *** Constructor ***
+-	// *******************
+-
+-
+-
+-	public FileImportTopic(BaseTopic topic, ApplicationService as) {
+-		super(topic, as);
+-	}
+-
+-
+-
+-	// **********************
+-	// *** Defining Hooks ***
+-	// **********************
+-
+-
+-
+-	// ------------------
+-	// --- Life Cycle ---
+-	// ------------------
+-
+-
+-
+-	public CorporateDirectives init(int initLevel, Session session) {
+-		CorporateDirectives directives = super.init(initLevel, session);
+-		//
+-		if (initLevel == INITLEVEL_1) {
+-			initMappingTables();
+-			initGeometryTables();
+-		}
+-		//
+-		return directives;
+-	}
+-
+-
+-
+-	// --------------------------
+-	// --- Providing Commands ---
+-	// --------------------------
+-
+-
+-
+-	/**
+-	 * Adds context menu items for importing TAB-separated files.
+-	 *
+-	 * @see		de.deepamehta.service.ApplicationService#getTopicCommands
+-	 */
+-	public CorporateCommands contextCommands(String topicmapID, String viewmode,
+-								Session session, CorporateDirectives directives) {
+-		CorporateCommands commands = new CorporateCommands(as);
+-		// --- import ---
+-		commands.addCommand(ITEM_IMPORT_FILE, CMD_IMPORT_FILE, FILESERVER_IMAGES_PATH, &quot;import.gif&quot;);
+-		// --- generic topic commands ---
+-		commands.add(super.contextCommands(topicmapID, viewmode, session, directives));
+-		//
+-		return commands;
+-	}
+-
+-	public static void buttonCommand(PropertyDefinition propDef, ApplicationService as, Session session) {
+-		String propName = propDef.getPropertyName();
+-		if (propName.equals(PROPERTY_FILE)) {
+-			propDef.setActionButton(BUTTON_ASSIGN_FILE, CMD_ASSIGN_FILE);
+-		}
+-	}
+-
+-
+-
+-	// --------------------------
+-	// --- Executing Commands ---
+-	// --------------------------
+-
+-
+-
+-	public CorporateDirectives executeCommand(String command, Session session,
+-			     				String topicmapID, String viewmode) {
+-		CorporateDirectives directives = new CorporateDirectives();
+-		//
+-		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+-		String cmd = st.nextToken();
+-		if (cmd.equals(CMD_IMPORT_FILE)) {
+-			// Hier wir der Import angestossen
+-			File importedFile = new File(FILESERVER_DOCUMENTS_PATH + getProperty(PROPERTY_FILE));
+-			System.out.println(&quot;&gt;&gt;&gt; Das zu importierende Dokument ist &quot; + getProperty(PROPERTY_FILE));
+-			try {
+-				// Note: the import file is expected to be latin-1 encoded
+-				BufferedReader importReader = new BufferedReader(
+-					new InputStreamReader(new FileInputStream(importedFile), &quot;ISO-8859-1&quot;));
+-				// the first line contains the column names
+-				String colNames = importReader.readLine();
+-				System.out.println(&quot;&gt;&gt;&gt; Die Namen der Spalten lauten &quot; + colNames);
+-				while (importReader.ready()) {
+-					String[] tk = split(importReader.readLine());
+-					System.out.println(&quot;-------------------------------------&quot;);
+-					// ### String str = tk[2];		// password
+-					String nr = tk[3];
+-					Point p = getGeometry(nr);
+-					//
+-					// Einrichtung
+-					String instName = tk[4];
+-					System.out.println(&quot;&gt;&gt;&gt; Name: &quot; + instName);
+-					//
+-					String instID = cm.getNewTopicID();
+-					LiveTopic inst = as.createLiveTopic(instID, TOPICTYPE_KIEZ_INSTITUTION, instName, session);
+-					as.setTopicProperty(inst, PROPERTY_NAME, instName);
+-					as.createViewTopic(TOPICMAP_ID, 1, null, instID, 1, p.x, p.y, false);	// ### version=1
+-					//
+-					// Kategorien
+-					String categories = tk[1];
+-					System.out.println(&quot;&gt;&gt;&gt; Kategorie: &quot; + categories);
+-					StringTokenizer categoryTokens = new StringTokenizer(categories, &quot;,&quot;);
+-					while (categoryTokens.hasMoreTokens()) {
+-						String thisCategory = categoryTokens.nextToken();
+-						String catID = mapCategory(thisCategory);
+-						if (catID != null) {
+-							as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, catID);
+-						}
+-					}
+-					// Adresse
+-					Hashtable instAdressProps = new Hashtable();
+-					String instStreet = tk[5];
+-					instAdressProps.put(PROPERTY_STREET, instStreet);
+-					String instPostalCode = tk[6];
+-					instAdressProps.put(PROPERTY_POSTAL_CODE, instPostalCode);
+-					String instAdressID = cm.getNewTopicID();
+-					LiveTopic instAdress = as.createLiveTopic(instAdressID, TOPICTYPE_ADDRESS, instStreet, session);
+-					as.setTopicProperties(instAdressID, 1, instAdressProps);
+-					as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instAdressID);
+-					// Telefon
+-					StringTokenizer phoneToken = new StringTokenizer(tk[7], &quot;;&quot;);
+-					while (phoneToken.hasMoreTokens()) {
+-						String phoneNumber = phoneToken.nextToken();
+-						if (phoneNumber.startsWith(&quot; &quot;)) {
+-							phoneNumber = phoneNumber.substring(1);
+-						}
+-						String instFonID = cm.getNewTopicID();
+-						LiveTopic thisInstFon = as.createLiveTopic(instFonID, TOPICTYPE_PHONE_NUMBER, phoneNumber, session);
+-						as.setTopicProperty(thisInstFon, PROPERTY_NAME, phoneNumber);
+-						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instFonID);
+-					}
+-					// Fax
+-					String instFax = tk[8];
+-					if (instFax.length() &gt; 0) {
+-						String instFaxID = cm.getNewTopicID();
+-						LiveTopic thisInstFax = as.createLiveTopic(instFaxID, TOPICTYPE_FAX_NUMBER, instFax, session);
+-						as.setTopicProperty(thisInstFax, PROPERTY_NAME, instFax);
+-						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instFaxID);
+-					}
+-					// Website
+-					String instWebUrl = tk[9];
+-					if (instWebUrl.length() &gt; 0) {
+-						String instWebpageID = cm.getNewTopicID();
+-						LiveTopic instWebpage = as.createLiveTopic(instWebpageID, TOPICTYPE_WEBPAGE, instWebUrl, session);
+-						as.setTopicProperty(instWebpage, PROPERTY_URL, instWebUrl);
+-						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instWebpageID);
+-					}
+-					// Email
+-					StringTokenizer ste = new StringTokenizer(tk[10], &quot;,&quot;);
+-					while (ste.hasMoreTokens()) {
+-						String emailAdr = ste.nextToken();
+-						if (emailAdr.startsWith(&quot; &quot;)) {
+-							emailAdr = emailAdr.substring(1);
+-						}
+-						String instMailID = cm.getNewTopicID();
+-						LiveTopic instMailTopic = as.createLiveTopic(instMailID, TOPICTYPE_EMAIL_ADDRESS, emailAdr, session);
+-						as.setTopicProperty(instMailTopic, PROPERTY_EMAIL_ADDRESS, emailAdr);
+-						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instMailID);
+-					}
+-					// Ansprechpartner
+-					importPersons(tk[11], instID, session);
+-					// Tr&#228;gername, Tr&#228;gerart
+-					importTraeger(tk[13], tk[12], instID, session);
+-					//
+-					Hashtable instProps = new Hashtable();
+-					// &#214;ffnungszeiten
+-					String instOpeningHours = tk[14];
+-					if (instOpeningHours.length() &gt; 0) {
+-						  instProps.put(PROPERTY_OEFFNUNGSZEITEN, instOpeningHours);
+-					}
+-					// Altersgruppen
+-					String instAgeGroups = tk[15];
+-					System.out.println(&quot;&gt;&gt;&gt; Altersgruppen: &quot; + instAgeGroups);
+-					StringTokenizer ageGroupTokens = new StringTokenizer(instAgeGroups, &quot;:&quot;);
+-					while (ageGroupTokens.hasMoreTokens()) {
+-						String thisAgeGroup = ageGroupTokens.nextToken();
+-						String ageGroupID = mapAgeGroup(thisAgeGroup);
+-						if (ageGroupID != null) {
+-							as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, ageGroupID);
+-						}
+-					}
+-					// Angebote
+-					String instOfferList = tk[16];
+-					System.out.println(&quot;&gt;&gt;&gt; Angebote: &quot; + instOfferList);
+-					StringTokenizer offerTokens = new StringTokenizer(instOfferList, &quot;:&quot;);
+-					while (offerTokens.hasMoreTokens()) {
+-						String thisOffer = offerTokens.nextToken();
+-						String offerID = mapOffers(thisOffer);
+-						if (offerID != null) {
+-							as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, offerID);
+-						}
+-					}
+-					// Sonstiges
+-					String instMisc = tk[17];
+-					if (instMisc.length() &gt; 0) {
+-						instProps.put(PROPERTY_SONSTIGES, instMisc);
+-					}
+-					as.setTopicProperties(instID, 1, instProps);
+-					// Stadtplan Link
+-					/* ### String instCityMapUrl = tk[18];
+-					if (instCityMapUrl.length() &gt; 0) {
+-						String instCityMapID = cm.getNewTopicID();
+-						LiveTopic instCityMap = as.createLiveTopic(instCityMapID, TOPICTYPE_WEBPAGE, instCityMapUrl, session);
+-						as.setTopicProperty(instCityMap, PROPERTY_URL, instCityMapUrl);
+-						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instCityMapID);
+-					} */
+-				}
+-			} catch (IOException e) {
+-				System.out.println(&quot;*** Fehler beim Importieren: &quot; + e);
+-			}
+-	    } else {
+-			return super.executeCommand(command, session, topicmapID, viewmode);
+-		}
+-		//
+-		return directives;
+-	}
+-
+-	public CorporateDirectives executeChainedCommand(String command,
+-								String result, String topicmapID, String viewmode,
+-								Session session) {
+-		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
+-		String cmd = st.nextToken();
+-		if (cmd.equals(CMD_ASSIGN_FILE)) {	// ### to be dropped
+-			CorporateDirectives directives = new CorporateDirectives();
+-			// Note: the result of a DIRECTIVE_CHOOSE_FILE contains the absolute
+-			// path of the (client side) selected file
+-			copyAndUpload(result, FILE_DOCUMENT, PROPERTY_FILE, session, directives);
+-			return directives;
+-		} else {
+-			return super.executeChainedCommand(command, result, topicmapID, viewmode, session);
+-		}
+-	}
+-
+-
+-
+-	// ***********************
+-	// *** Private Methods ***
+-	// ***********************
+-
+-
+-
+-	private void importPersons(String persons, String instID, Session session) {
+-		if (persons.length() &gt; 0) {
+-			StringTokenizer st = new StringTokenizer(persons, &quot;,&quot;);
+-			while (st.hasMoreTokens()) {
+-				String person = st.nextToken();
+-				if (person.startsWith(&quot; &quot;)) {
+-					person = person.substring(1);
+-				}
+-				System.out.print(&quot;&gt;&gt;&gt; Ansprechpartner: \&quot;&quot; + person + &quot;\&quot; &quot;);
+-				Hashtable props = new Hashtable();
+-				// fill gender prop
+-				if (person.startsWith(&quot;Fr. &quot;)) {
+-					props.put(PROPERTY_GENDER, GENDER_FEMALE);
+-					person = person.substring(4);
+-				} else if (person.startsWith(&quot;Hr. &quot;)) {
+-					props.put(PROPERTY_GENDER, GENDER_MALE);
+-					person = person.substring(4);
+-				}
+-				// fill name prop
+-				String name;
+-				int pos = person.indexOf(' ');
+-				if (pos == -1) {
+-					props.put(PROPERTY_NAME, person);	// last name only
+-					name = person;
+-				} else {
+-					String firstName = person.substring(0, pos);
+-					String lastName = person.substring(pos + 1);
+-					props.put(PROPERTY_NAME, lastName);
+-					props.put(PROPERTY_FIRST_NAME, firstName);
+-					name = firstName + &quot; &quot; + lastName;
+-				}
+-				// add only if not exist already
+-				String personID;
+-				BaseTopic p = cm.getTopic(TOPICTYPE_PERSON, name, 1);
+-				if (p != null) {
+-					personID = p.getID();
+-					System.out.println(&quot;--&gt; schon da (&quot; + personID + &quot;)&quot;);
+-				} else {
+-					personID = cm.getNewTopicID();
+-					System.out.println(&quot;--&gt; anlegen (&quot; + personID + &quot;)&quot;);
+-					as.createLiveTopic(personID, TOPICTYPE_PERSON, name, session);
+-					as.setTopicProperties(personID, 1, props);
+-				}
+-				//
+-				as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, personID);
+-			}
+-		}
+-	}
+-
+-	private void importTraeger(String traegerStr, String traegerArt, String instID, Session session) {
+-		String art = null;
+-		if (traegerArt.length() &gt; 0) {
+-			if (traegerArt.startsWith(&quot;:ko:&quot;)) {
+-				art = AGENCY_KIND_KOMMUNAL;
+-			} else if (traegerArt.startsWith(&quot;:fr:&quot;)) {
+-				art = AGENCY_KIND_FREI;
+-			}
+-		}
+-		//
+-		StringTokenizer st = new StringTokenizer(traegerStr, &quot;;&quot;);
+-		// Note: the traeger kind is ignored if there are more than one traeger
+-		if (st.countTokens() &gt; 1) {
+-			art = null;
+-		}
+-		//
+-		if (art != null || traegerStr.length() &gt; 0) {
+-			do {
+-				String traeger = st.hasMoreTokens() ? st.nextToken() : &quot;&quot;;
+-				if (traeger.startsWith(&quot; &quot;)) {
+-					traeger = traeger.substring(1);
+-				}
+-				Hashtable props = new Hashtable();
+-				props.put(PROPERTY_NAME, traeger);
+-				//
+-				if (art != null) {
+-					System.out.print(&quot;&gt;&gt;&gt; Tr&#138;ger: \&quot;&quot; + traeger + &quot;\&quot; (&quot; + art + &quot;) &quot;);
+-					props.put(PROPERTY_AGENCY_KIND, art);
+-				} else {
+-					System.out.print(&quot;&gt;&gt;&gt; Tr&#138;ger: \&quot;&quot; + traeger + &quot;\&quot; (Tr&#138;gerart nicht bekannt) &quot;);
+-				}
+-				// add only if not exist already
+-				String traegerID = null;
+-				if (traeger.length() &gt; 0) {
+-					BaseTopic p = cm.getTopic(TOPICTYPE_AGENCY, traeger, 1);
+-					if (p != null) {
+-						traegerID = p.getID();
+-						System.out.println(&quot;--&gt; schon da (&quot; + traegerID + &quot;)&quot;);
+-					}
+-				}
+-				if (traegerID == null) {
+-					traegerID = cm.getNewTopicID();
+-					System.out.println(&quot;--&gt; anlegen (&quot; + traegerID + &quot;)&quot;);
+-					as.createLiveTopic(traegerID, TOPICTYPE_AGENCY, traeger, session);
+-					as.setTopicProperties(traegerID, 1, props);
+-				}
+-				//
+-				as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, traegerID);
+-			} while (st.hasMoreTokens());
+-		}
+-	}
+-
+-	// ---
+-
+-	private void initMappingTables() {
+-		// Einrichtungskategorien -- Note: only 12 of 14 categories are mapped
+-		catTable.put(&quot;A&quot;,&quot;t-ka-kat10&quot;); //Kultur + Bildung&quot;); //+ Bildung
+-		catTable.put(&quot;B&quot;,&quot;t-ka-kat5&quot;); //&quot;Ausbildung + Arbeit&quot;); //- Selbstst&auml;ndigkeit&quot;);
+-		catTable.put(&quot;C&quot;,&quot;t-ka-kat15&quot;);//&quot;Sport&quot;); //-Spiel und Sport&quot;);
+-		catTable.put(&quot;D&quot;,&quot;t-ka-kat11&quot;);//&quot;Nachbarschaft + Stadtteil&quot;); //Freizeit und Nachbarschaft&quot;); //-
+-		catTable.put(&quot;E&quot;,&quot;t-ka-kat4&quot;);// Senioren&quot;
+-		catTable.put(&quot;F&quot;,&quot;t-ka-kat7&quot;);//&quot;Gesundheit + Behinderung&quot;);
+-		catTable.put(&quot;H&quot;,&quot;t-ka-kat10&quot;);//&quot;Kunst und Kultur&quot;);//-
+-		catTable.put(&quot;I&quot;,&quot;t-ka-kat16&quot;);//&quot;Wohnung + Unterkunft&quot;);
+-		catTable.put(&quot;J&quot;,&quot;t-ka-kat6&quot;);// &quot;Beratung&quot;); //Beratung und Psyche&quot;);//--
+-		catTable.put(&quot;K&quot;,&quot;t-ka-kat13&quot;);//&quot;NOT&quot;);// Akute Notlagen
+-		catTable.put(&quot;L&quot;,&quot;t-ka-kat9&quot;);//&quot;Kinderbetreuung&quot;); //--
+-		catTable.put(&quot;N&quot;,&quot;t-ka-kat12&quot;);//&quot;Netzwerk&quot;); //-e, Vereine,Verb&auml;nde&quot;);
+-		// Altersgruppen
+-		ageTable.put(&quot;1&quot;,&quot;t-ka-alt1&quot;); //Familien/Alleinerziehende mit S&#228;uglingen');
+-		ageTable.put(&quot;2&quot;,&quot;t-ka-alt2&quot;); //Familien/Alleinerziehende mit Kleinkindern');
+-		ageTable.put(&quot;3&quot;,&quot;t-ka-alt3&quot;); //Familien/Alleinerziehende mit Kindern im Schulalter');
+-		ageTable.put(&quot;4&quot;,&quot;t-ka-alt4&quot;); //Kinder im Schulalter');
+-		ageTable.put(&quot;5&quot;,&quot;t-ka-alt5&quot;); //Jugendliche/Selbstorganisierte');
+-		ageTable.put(&quot;6&quot;,&quot;t-ka-alt6&quot;); //'Jugendgruppen');
+-		ageTable.put(&quot;7&quot;,&quot;t-ka-alt7&quot;); //Auszubildende &amp; junge Erwachsene');
+-		ageTable.put(&quot;8&quot;,&quot;t-ka-alt8&quot;); //Erwachsene');
+-		ageTable.put(&quot;11&quot;,&quot;t-ka-alt9&quot;); //Seniorinnen und Senioren');
+-		ageTable.put(&quot;12&quot;,&quot;t-ka-alt10&quot;); //Alle Altersgruppen');
+-		ageTable.put(&quot;13&quot;,&quot;t-ka-alt11&quot;); //Sonstige');
+-		// Angebotsarten
+-		offerTable.put(&quot;Ber&quot;,&quot;t-ka-ang1&quot;); //Beratung');
+-		offerTable.put(&quot;Betr&quot;,&quot;t-ka-ang2&quot;); //Betreuung');
+-		offerTable.put(&quot;Ess&quot;,&quot;t-ka-ang3&quot;); //Essen');
+-		offerTable.put(&quot;Kon&quot;,&quot;t-ka-ang4&quot;); //Kontakte');
+-		offerTable.put(&quot;MC&quot;,&quot;t-ka-ang5&quot;); //Medien / Computer');
+-		offerTable.put(&quot;QB&quot;,&quot;t-ka-ang6&quot;); //Qualifizierung / Aus- /Weiterbildung');
+-		offerTable.put(&quot;RF&quot;,&quot;t-ka-ang7&quot;); //R&#228;ume / Freiraumnutzung');
+-		offerTable.put(&quot;Sp&quot;,&quot;t-ka-ang8&quot;); //Spielzeug / Sportger&#228;te / Spiel- /Sportplatz');
+-		offerTable.put(&quot;TGW&quot;,&quot;t-ka-ang9&quot;); //Technische Ger&#228;te / Werkzeuge / Werkst&#228;tten');
+-		offerTable.put(&quot;Tra&quot;,&quot;t-ka-ang10&quot;); //Transportm&#246;glichkeiten');
+-		offerTable.put(&quot;Unt&quot;,&quot;t-ka-ang11&quot;); //Unterhaltung');
+-		offerTable.put(&quot;VN&quot;,&quot;t-ka-ang12&quot;); //Vermittlung von Jobs / Nachbarschaftshilfe');
+-		offerTable.put(&quot;Son&quot;,&quot;t-ka-ang13&quot;); //Sonstige');
+-	}
+-
+-	private void initGeometryTables() {
+-		File geometryFile = new File(FILESERVER_DOCUMENTS_PATH + GEOMETRY_FILE);
+-		try {
+-			BufferedReader in = new BufferedReader(new FileReader(geometryFile));
+-			String line;
+-			int count = 0;
+-			while (!(line = in.readLine()).equals(&quot;&quot;)) {
+-				int pos = line.indexOf('=');
+-				String code = line.substring(0, pos);
+-				String nr = line.substring(pos + 1);
+-				if (codeTable.put(nr, code) != null) {
+-					System.out.println(&quot;*** FileImportTopic.initGeometryTables(): nr \&quot;&quot; + nr + &quot;\&quot; is not unique&quot;);
+-					// ### throw new TopicInitException(&quot;nr \&quot;&quot; + nr + &quot;\&quot; is not unique&quot;);
+-				}
+-				count++;
+-			} while (line.length() &gt; 0);
+-			System.out.println(&quot;&gt;&gt;&gt; &quot; + count + &quot; codes read&quot;);
+-			count = 0;
+-			while (in.ready()) {
+-				line = in.readLine();
+-				int pos1 = line.indexOf('=');
+-				int pos2 = line.indexOf(',');
+-				String code = line.substring(0, pos1);
+-				int x = Integer.parseInt(line.substring(pos1 + 1, pos2));
+-				int y = Integer.parseInt(line.substring(pos2 + 1));
+-				if (geometryTable.put(code, new Point(x, y)) != null) {
+-					throw new TopicInitException(&quot;code is not unique&quot;);
+-				}
+-				count++;
+-			}
+-			System.out.println(&quot;&gt;&gt;&gt; &quot; + count + &quot; coords read&quot;);
+-		} catch (IOException e) {
+-			throw new TopicInitException(&quot;Fehler beim Lesen der Geometriedaten (&quot; + e + &quot;)&quot;);
+-		}
+-	}
+-
+-	// ---
+-
+-	private String mapCategory(String mapkey) {
+-		return (String) catTable.get(mapkey);
+-	}
+-	
+-	private String mapAgeGroup(String agekey) {
+-		return (String) ageTable.get(agekey);
+-	}
+-	
+-	private String mapOffers(String offersKey) {
+-		return (String) offerTable.get(offersKey);
+-	}
+-
+-	// ---
+-
+-	private Point getGeometry(String nr) {
+-		String code = (String) codeTable.get(nr);
+-		if (code == null) {
+-			throw new DeepaMehtaException(&quot;nr \&quot;&quot; + nr + &quot;\&quot; not found in code table&quot;);
+-		}
+-		Point p = (Point) geometryTable.get(code);
+-		if (p == null) {
+-			throw new DeepaMehtaException(&quot;code \&quot;&quot; + code + &quot;\&quot; not found in geometry table&quot;);
+-		}
+-		return p;
+-	}
+-
+-	// ---
+-	
+-	String[] split(String str) {
+-		return str.split(&quot;\t&quot;, 20);		// limit=20
+-	}
+-}
++package de.kiezatlas.deepamehta.topics;
++
++import de.kiezatlas.deepamehta.KiezAtlas;
++//
++import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.TopicInitException;
++import de.deepamehta.topics.FileTopic;
++import de.deepamehta.topics.LiveTopic;
++import de.deepamehta.PropertyDefinition;
++import de.deepamehta.service.Session;
++import de.deepamehta.service.CorporateDirectives;
++import de.deepamehta.service.CorporateMemory;
++import de.deepamehta.service.ApplicationService;
++import de.deepamehta.service.CorporateCommands;
++//
++import java.awt.Point;
++import java.io.*;
++import java.util.*;
++
++
++
++/**
++ * Kiez-Atlas 1.2.1.&lt;br&gt;
++ * Requires DeepaMehta 2.0b4.
++ * &lt;p&gt;
++ * Last functional change: 1.1.2005&lt;br&gt;
++ * J&ouml;rg Richter&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
++ */
++public class FileImportTopic extends FileTopic implements KiezAtlas {
++
++
++
++	static final String TOPICMAP_ID = &quot;t-ka-schoeneberg&quot;;	// the imported topics are placed in this map
++	static final String GEOMETRY_FILE = &quot;geometry.txt&quot;;		// this file is expected on the server
++
++	static final String ITEM_IMPORT_FILE = &quot;Start Import&quot;;
++	static final String CMD_IMPORT_FILE = &quot;importFile&quot;;
++	static final String BUTTON_ASSIGN_FILE = &quot;assign file&quot;;		// ###
++	static final String CMD_ASSIGN_FILE = &quot;assignFile&quot;;			// ###
++
++	Hashtable catTable = new Hashtable();
++	Hashtable ageTable = new Hashtable();
++	Hashtable offerTable = new Hashtable();
++	//
++	Hashtable codeTable = new Hashtable();
++	Hashtable geometryTable = new Hashtable();
++
++
++
++	// *******************
++	// *** Constructor ***
++	// *******************
++
++
++
++	public FileImportTopic(BaseTopic topic, ApplicationService as) {
++		super(topic, as);
++	}
++
++
++
++	// **********************
++	// *** Defining Hooks ***
++	// **********************
++
++
++
++	// ------------------
++	// --- Life Cycle ---
++	// ------------------
++
++
++
++	public CorporateDirectives init(int initLevel, Session session) {
++		CorporateDirectives directives = super.init(initLevel, session);
++		//
++		if (initLevel == INITLEVEL_1) {
++			initMappingTables();
++			initGeometryTables();
++		}
++		//
++		return directives;
++	}
++
++
++
++	// --------------------------
++	// --- Providing Commands ---
++	// --------------------------
++
++
++
++	/**
++	 * Adds context menu items for importing TAB-separated files.
++	 *
++	 * @see		de.deepamehta.service.ApplicationService#getTopicCommands
++	 */
++	public CorporateCommands contextCommands(String topicmapID, String viewmode,
++								Session session, CorporateDirectives directives) {
++		CorporateCommands commands = new CorporateCommands(as);
++		// --- import ---
++		commands.addCommand(ITEM_IMPORT_FILE, CMD_IMPORT_FILE, FILESERVER_IMAGES_PATH, &quot;import.gif&quot;);
++		// --- generic topic commands ---
++		commands.add(super.contextCommands(topicmapID, viewmode, session, directives));
++		//
++		return commands;
++	}
++
++	public static void buttonCommand(PropertyDefinition propDef, ApplicationService as, Session session) {
++		String propName = propDef.getPropertyName();
++		if (propName.equals(PROPERTY_FILE)) {
++			propDef.setActionButton(BUTTON_ASSIGN_FILE, CMD_ASSIGN_FILE);
++		}
++	}
++
++
++
++	// --------------------------
++	// --- Executing Commands ---
++	// --------------------------
++
++
++
++	public CorporateDirectives executeCommand(String command, Session session,
++			     				String topicmapID, String viewmode) {
++		CorporateDirectives directives = new CorporateDirectives();
++		//
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
++		String cmd = st.nextToken();
++		if (cmd.equals(CMD_IMPORT_FILE)) {
++			// Hier wir der Import angestossen
++			File importedFile = new File(FILESERVER_DOCUMENTS_PATH + getProperty(PROPERTY_FILE));
++			System.out.println(&quot;&gt;&gt;&gt; Das zu importierende Dokument ist &quot; + getProperty(PROPERTY_FILE));
++			try {
++				// Note: the import file is expected to be latin-1 encoded
++				BufferedReader importReader = new BufferedReader(
++					new InputStreamReader(new FileInputStream(importedFile), &quot;ISO-8859-1&quot;));
++				// the first line contains the column names
++				String colNames = importReader.readLine();
++				System.out.println(&quot;&gt;&gt;&gt; Die Namen der Spalten lauten &quot; + colNames);
++				while (importReader.ready()) {
++					String[] tk = split(importReader.readLine());
++					System.out.println(&quot;-------------------------------------&quot;);
++					// ### String str = tk[2];		// password
++					String nr = tk[3];
++					Point p = getGeometry(nr);
++					//
++					// Einrichtung
++					String instName = tk[4];
++					System.out.println(&quot;&gt;&gt;&gt; Name: &quot; + instName);
++					//
++					String instID = cm.getNewTopicID();
++					LiveTopic inst = as.createLiveTopic(instID, TOPICTYPE_KIEZ_INSTITUTION, instName, session);
++					as.setTopicProperty(inst, PROPERTY_NAME, instName);
++					as.createViewTopic(TOPICMAP_ID, 1, null, instID, 1, p.x, p.y, false);	// ### version=1
++					//
++					// Kategorien
++					String categories = tk[1];
++					System.out.println(&quot;&gt;&gt;&gt; Kategorie: &quot; + categories);
++					StringTokenizer categoryTokens = new StringTokenizer(categories, &quot;,&quot;);
++					while (categoryTokens.hasMoreTokens()) {
++						String thisCategory = categoryTokens.nextToken();
++						String catID = mapCategory(thisCategory);
++						if (catID != null) {
++							as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, catID);
++						}
++					}
++					// Adresse
++					Hashtable instAdressProps = new Hashtable();
++					String instStreet = tk[5];
++					instAdressProps.put(PROPERTY_STREET, instStreet);
++					String instPostalCode = tk[6];
++					instAdressProps.put(PROPERTY_POSTAL_CODE, instPostalCode);
++					String instAdressID = cm.getNewTopicID();
++					LiveTopic instAdress = as.createLiveTopic(instAdressID, TOPICTYPE_ADDRESS, instStreet, session);
++					as.setTopicProperties(instAdressID, 1, instAdressProps);
++					as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instAdressID);
++					// Telefon
++					StringTokenizer phoneToken = new StringTokenizer(tk[7], &quot;;&quot;);
++					while (phoneToken.hasMoreTokens()) {
++						String phoneNumber = phoneToken.nextToken();
++						if (phoneNumber.startsWith(&quot; &quot;)) {
++							phoneNumber = phoneNumber.substring(1);
++						}
++						String instFonID = cm.getNewTopicID();
++						LiveTopic thisInstFon = as.createLiveTopic(instFonID, TOPICTYPE_PHONE_NUMBER, phoneNumber, session);
++						as.setTopicProperty(thisInstFon, PROPERTY_NAME, phoneNumber);
++						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instFonID);
++					}
++					// Fax
++					String instFax = tk[8];
++					if (instFax.length() &gt; 0) {
++						String instFaxID = cm.getNewTopicID();
++						LiveTopic thisInstFax = as.createLiveTopic(instFaxID, TOPICTYPE_FAX_NUMBER, instFax, session);
++						as.setTopicProperty(thisInstFax, PROPERTY_NAME, instFax);
++						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instFaxID);
++					}
++					// Website
++					String instWebUrl = tk[9];
++					if (instWebUrl.length() &gt; 0) {
++						String instWebpageID = cm.getNewTopicID();
++						LiveTopic instWebpage = as.createLiveTopic(instWebpageID, TOPICTYPE_WEBPAGE, instWebUrl, session);
++						as.setTopicProperty(instWebpage, PROPERTY_URL, instWebUrl);
++						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instWebpageID);
++					}
++					// Email
++					StringTokenizer ste = new StringTokenizer(tk[10], &quot;,&quot;);
++					while (ste.hasMoreTokens()) {
++						String emailAdr = ste.nextToken();
++						if (emailAdr.startsWith(&quot; &quot;)) {
++							emailAdr = emailAdr.substring(1);
++						}
++						String instMailID = cm.getNewTopicID();
++						LiveTopic instMailTopic = as.createLiveTopic(instMailID, TOPICTYPE_EMAIL_ADDRESS, emailAdr, session);
++						as.setTopicProperty(instMailTopic, PROPERTY_EMAIL_ADDRESS, emailAdr);
++						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instMailID);
++					}
++					// Ansprechpartner
++					importPersons(tk[11], instID, session);
++					// Tr&#226;&#128;&#176;gername, Tr&#226;&#128;&#176;gerart
++					importTraeger(tk[13], tk[12], instID, session);
++					//
++					Hashtable instProps = new Hashtable();
++					// &#195;&#183;ffnungszeiten
++					String instOpeningHours = tk[14];
++					if (instOpeningHours.length() &gt; 0) {
++						  instProps.put(PROPERTY_OEFFNUNGSZEITEN, instOpeningHours);
++					}
++					// Altersgruppen
++					String instAgeGroups = tk[15];
++					System.out.println(&quot;&gt;&gt;&gt; Altersgruppen: &quot; + instAgeGroups);
++					StringTokenizer ageGroupTokens = new StringTokenizer(instAgeGroups, &quot;:&quot;);
++					while (ageGroupTokens.hasMoreTokens()) {
++						String thisAgeGroup = ageGroupTokens.nextToken();
++						String ageGroupID = mapAgeGroup(thisAgeGroup);
++						if (ageGroupID != null) {
++							as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, ageGroupID);
++						}
++					}
++					// Angebote
++					String instOfferList = tk[16];
++					System.out.println(&quot;&gt;&gt;&gt; Angebote: &quot; + instOfferList);
++					StringTokenizer offerTokens = new StringTokenizer(instOfferList, &quot;:&quot;);
++					while (offerTokens.hasMoreTokens()) {
++						String thisOffer = offerTokens.nextToken();
++						String offerID = mapOffers(thisOffer);
++						if (offerID != null) {
++							as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, offerID);
++						}
++					}
++					// Sonstiges
++					String instMisc = tk[17];
++					if (instMisc.length() &gt; 0) {
++						instProps.put(PROPERTY_SONSTIGES, instMisc);
++					}
++					as.setTopicProperties(instID, 1, instProps);
++					// Stadtplan Link
++					/* ### String instCityMapUrl = tk[18];
++					if (instCityMapUrl.length() &gt; 0) {
++						String instCityMapID = cm.getNewTopicID();
++						LiveTopic instCityMap = as.createLiveTopic(instCityMapID, TOPICTYPE_WEBPAGE, instCityMapUrl, session);
++						as.setTopicProperty(instCityMap, PROPERTY_URL, instCityMapUrl);
++						as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, instCityMapID);
++					} */
++				}
++			} catch (IOException e) {
++				System.out.println(&quot;*** Fehler beim Importieren: &quot; + e);
++			}
++	    } else {
++			return super.executeCommand(command, session, topicmapID, viewmode);
++		}
++		//
++		return directives;
++	}
++
++	public CorporateDirectives executeChainedCommand(String command,
++								String result, String topicmapID, String viewmode,
++								Session session) {
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
++		String cmd = st.nextToken();
++		if (cmd.equals(CMD_ASSIGN_FILE)) {	// ### to be dropped
++			CorporateDirectives directives = new CorporateDirectives();
++			// Note: the result of a DIRECTIVE_CHOOSE_FILE contains the absolute
++			// path of the (client side) selected file
++			copyAndUpload(result, FILE_DOCUMENT, PROPERTY_FILE, session, directives);
++			return directives;
++		} else {
++			return super.executeChainedCommand(command, result, topicmapID, viewmode, session);
++		}
++	}
++
++
++
++	// ***********************
++	// *** Private Methods ***
++	// ***********************
++
++
++
++	private void importPersons(String persons, String instID, Session session) {
++		if (persons.length() &gt; 0) {
++			StringTokenizer st = new StringTokenizer(persons, &quot;,&quot;);
++			while (st.hasMoreTokens()) {
++				String person = st.nextToken();
++				if (person.startsWith(&quot; &quot;)) {
++					person = person.substring(1);
++				}
++				System.out.print(&quot;&gt;&gt;&gt; Ansprechpartner: \&quot;&quot; + person + &quot;\&quot; &quot;);
++				Hashtable props = new Hashtable();
++				// fill gender prop
++				if (person.startsWith(&quot;Fr. &quot;)) {
++					props.put(PROPERTY_GENDER, GENDER_FEMALE);
++					person = person.substring(4);
++				} else if (person.startsWith(&quot;Hr. &quot;)) {
++					props.put(PROPERTY_GENDER, GENDER_MALE);
++					person = person.substring(4);
++				}
++				// fill name prop
++				String name;
++				int pos = person.indexOf(' ');
++				if (pos == -1) {
++					props.put(PROPERTY_NAME, person);	// last name only
++					name = person;
++				} else {
++					String firstName = person.substring(0, pos);
++					String lastName = person.substring(pos + 1);
++					props.put(PROPERTY_NAME, lastName);
++					props.put(PROPERTY_FIRST_NAME, firstName);
++					name = firstName + &quot; &quot; + lastName;
++				}
++				// add only if not exist already
++				String personID;
++				BaseTopic p = cm.getTopic(TOPICTYPE_PERSON, name, 1);
++				if (p != null) {
++					personID = p.getID();
++					System.out.println(&quot;--&gt; schon da (&quot; + personID + &quot;)&quot;);
++				} else {
++					personID = cm.getNewTopicID();
++					System.out.println(&quot;--&gt; anlegen (&quot; + personID + &quot;)&quot;);
++					as.createLiveTopic(personID, TOPICTYPE_PERSON, name, session);
++					as.setTopicProperties(personID, 1, props);
++				}
++				//
++				as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, personID);
++			}
++		}
++	}
++
++	private void importTraeger(String traegerStr, String traegerArt, String instID, Session session) {
++		String art = null;
++		if (traegerArt.length() &gt; 0) {
++			if (traegerArt.startsWith(&quot;:ko:&quot;)) {
++				art = AGENCY_KIND_KOMMUNAL;
++			} else if (traegerArt.startsWith(&quot;:fr:&quot;)) {
++				art = AGENCY_KIND_FREI;
++			}
++		}
++		//
++		StringTokenizer st = new StringTokenizer(traegerStr, &quot;;&quot;);
++		// Note: the traeger kind is ignored if there are more than one traeger
++		if (st.countTokens() &gt; 1) {
++			art = null;
++		}
++		//
++		if (art != null || traegerStr.length() &gt; 0) {
++			do {
++				String traeger = st.hasMoreTokens() ? st.nextToken() : &quot;&quot;;
++				if (traeger.startsWith(&quot; &quot;)) {
++					traeger = traeger.substring(1);
++				}
++				Hashtable props = new Hashtable();
++				props.put(PROPERTY_NAME, traeger);
++				//
++				if (art != null) {
++					System.out.print(&quot;&gt;&gt;&gt; Tr&#195;&#164;ger: \&quot;&quot; + traeger + &quot;\&quot; (&quot; + art + &quot;) &quot;);
++					props.put(PROPERTY_AGENCY_KIND, art);
++				} else {
++					System.out.print(&quot;&gt;&gt;&gt; Tr&#195;&#164;ger: \&quot;&quot; + traeger + &quot;\&quot; (Tr&#195;&#164;gerart nicht bekannt) &quot;);
++				}
++				// add only if not exist already
++				String traegerID = null;
++				if (traeger.length() &gt; 0) {
++					BaseTopic p = cm.getTopic(TOPICTYPE_AGENCY, traeger, 1);
++					if (p != null) {
++						traegerID = p.getID();
++						System.out.println(&quot;--&gt; schon da (&quot; + traegerID + &quot;)&quot;);
++					}
++				}
++				if (traegerID == null) {
++					traegerID = cm.getNewTopicID();
++					System.out.println(&quot;--&gt; anlegen (&quot; + traegerID + &quot;)&quot;);
++					as.createLiveTopic(traegerID, TOPICTYPE_AGENCY, traeger, session);
++					as.setTopicProperties(traegerID, 1, props);
++				}
++				//
++				as.createAssociation(ASSOCTYPE_ASSOCIATION, instID, traegerID);
++			} while (st.hasMoreTokens());
++		}
++	}
++
++	// ---
++
++	private void initMappingTables() {
++		// Einrichtungskategorien -- Note: only 12 of 14 categories are mapped
++		catTable.put(&quot;A&quot;,&quot;t-ka-kat10&quot;); //Kultur + Bildung&quot;); //+ Bildung
++		catTable.put(&quot;B&quot;,&quot;t-ka-kat5&quot;); //&quot;Ausbildung + Arbeit&quot;); //- Selbstst&auml;ndigkeit&quot;);
++		catTable.put(&quot;C&quot;,&quot;t-ka-kat15&quot;);//&quot;Sport&quot;); //-Spiel und Sport&quot;);
++		catTable.put(&quot;D&quot;,&quot;t-ka-kat11&quot;);//&quot;Nachbarschaft + Stadtteil&quot;); //Freizeit und Nachbarschaft&quot;); //-
++		catTable.put(&quot;E&quot;,&quot;t-ka-kat4&quot;);// Senioren&quot;
++		catTable.put(&quot;F&quot;,&quot;t-ka-kat7&quot;);//&quot;Gesundheit + Behinderung&quot;);
++		catTable.put(&quot;H&quot;,&quot;t-ka-kat10&quot;);//&quot;Kunst und Kultur&quot;);//-
++		catTable.put(&quot;I&quot;,&quot;t-ka-kat16&quot;);//&quot;Wohnung + Unterkunft&quot;);
++		catTable.put(&quot;J&quot;,&quot;t-ka-kat6&quot;);// &quot;Beratung&quot;); //Beratung und Psyche&quot;);//--
++		catTable.put(&quot;K&quot;,&quot;t-ka-kat13&quot;);//&quot;NOT&quot;);// Akute Notlagen
++		catTable.put(&quot;L&quot;,&quot;t-ka-kat9&quot;);//&quot;Kinderbetreuung&quot;); //--
++		catTable.put(&quot;N&quot;,&quot;t-ka-kat12&quot;);//&quot;Netzwerk&quot;); //-e, Vereine,Verb&auml;nde&quot;);
++		// Altersgruppen
++		ageTable.put(&quot;1&quot;,&quot;t-ka-alt1&quot;); //Familien/Alleinerziehende mit S&#226;&#128;&#176;uglingen');
++		ageTable.put(&quot;2&quot;,&quot;t-ka-alt2&quot;); //Familien/Alleinerziehende mit Kleinkindern');
++		ageTable.put(&quot;3&quot;,&quot;t-ka-alt3&quot;); //Familien/Alleinerziehende mit Kindern im Schulalter');
++		ageTable.put(&quot;4&quot;,&quot;t-ka-alt4&quot;); //Kinder im Schulalter');
++		ageTable.put(&quot;5&quot;,&quot;t-ka-alt5&quot;); //Jugendliche/Selbstorganisierte');
++		ageTable.put(&quot;6&quot;,&quot;t-ka-alt6&quot;); //'Jugendgruppen');
++		ageTable.put(&quot;7&quot;,&quot;t-ka-alt7&quot;); //Auszubildende &amp; junge Erwachsene');
++		ageTable.put(&quot;8&quot;,&quot;t-ka-alt8&quot;); //Erwachsene');
++		ageTable.put(&quot;11&quot;,&quot;t-ka-alt9&quot;); //Seniorinnen und Senioren');
++		ageTable.put(&quot;12&quot;,&quot;t-ka-alt10&quot;); //Alle Altersgruppen');
++		ageTable.put(&quot;13&quot;,&quot;t-ka-alt11&quot;); //Sonstige');
++		// Angebotsarten
++		offerTable.put(&quot;Ber&quot;,&quot;t-ka-ang1&quot;); //Beratung');
++		offerTable.put(&quot;Betr&quot;,&quot;t-ka-ang2&quot;); //Betreuung');
++		offerTable.put(&quot;Ess&quot;,&quot;t-ka-ang3&quot;); //Essen');
++		offerTable.put(&quot;Kon&quot;,&quot;t-ka-ang4&quot;); //Kontakte');
++		offerTable.put(&quot;MC&quot;,&quot;t-ka-ang5&quot;); //Medien / Computer');
++		offerTable.put(&quot;QB&quot;,&quot;t-ka-ang6&quot;); //Qualifizierung / Aus- /Weiterbildung');
++		offerTable.put(&quot;RF&quot;,&quot;t-ka-ang7&quot;); //R&#226;&#128;&#176;ume / Freiraumnutzung');
++		offerTable.put(&quot;Sp&quot;,&quot;t-ka-ang8&quot;); //Spielzeug / Sportger&#226;&#128;&#176;te / Spiel- /Sportplatz');
++		offerTable.put(&quot;TGW&quot;,&quot;t-ka-ang9&quot;); //Technische Ger&#226;&#128;&#176;te / Werkzeuge / Werkst&#226;&#128;&#176;tten');
++		offerTable.put(&quot;Tra&quot;,&quot;t-ka-ang10&quot;); //Transportm&#203;&#134;glichkeiten');
++		offerTable.put(&quot;Unt&quot;,&quot;t-ka-ang11&quot;); //Unterhaltung');
++		offerTable.put(&quot;VN&quot;,&quot;t-ka-ang12&quot;); //Vermittlung von Jobs / Nachbarschaftshilfe');
++		offerTable.put(&quot;Son&quot;,&quot;t-ka-ang13&quot;); //Sonstige');
++	}
++
++	private void initGeometryTables() {
++		File geometryFile = new File(FILESERVER_DOCUMENTS_PATH + GEOMETRY_FILE);
++		try {
++			BufferedReader in = new BufferedReader(new FileReader(geometryFile));
++			String line;
++			int count = 0;
++			while (!(line = in.readLine()).equals(&quot;&quot;)) {
++				int pos = line.indexOf('=');
++				String code = line.substring(0, pos);
++				String nr = line.substring(pos + 1);
++				if (codeTable.put(nr, code) != null) {
++					System.out.println(&quot;*** FileImportTopic.initGeometryTables(): nr \&quot;&quot; + nr + &quot;\&quot; is not unique&quot;);
++					// ### throw new TopicInitException(&quot;nr \&quot;&quot; + nr + &quot;\&quot; is not unique&quot;);
++				}
++				count++;
++			} while (line.length() &gt; 0);
++			System.out.println(&quot;&gt;&gt;&gt; &quot; + count + &quot; codes read&quot;);
++			count = 0;
++			while (in.ready()) {
++				line = in.readLine();
++				int pos1 = line.indexOf('=');
++				int pos2 = line.indexOf(',');
++				String code = line.substring(0, pos1);
++				int x = Integer.parseInt(line.substring(pos1 + 1, pos2));
++				int y = Integer.parseInt(line.substring(pos2 + 1));
++				if (geometryTable.put(code, new Point(x, y)) != null) {
++					throw new TopicInitException(&quot;code is not unique&quot;);
++				}
++				count++;
++			}
++			System.out.println(&quot;&gt;&gt;&gt; &quot; + count + &quot; coords read&quot;);
++		} catch (IOException e) {
++			throw new TopicInitException(&quot;Fehler beim Lesen der Geometriedaten (&quot; + e + &quot;)&quot;);
++		}
++	}
++
++	// ---
++
++	private String mapCategory(String mapkey) {
++		return (String) catTable.get(mapkey);
++	}
++	
++	private String mapAgeGroup(String agekey) {
++		return (String) ageTable.get(agekey);
++	}
++	
++	private String mapOffers(String offersKey) {
++		return (String) offerTable.get(offersKey);
++	}
++
++	// ---
++
++	private Point getGeometry(String nr) {
++		String code = (String) codeTable.get(nr);
++		if (code == null) {
++			throw new DeepaMehtaException(&quot;nr \&quot;&quot; + nr + &quot;\&quot; not found in code table&quot;);
++		}
++		Point p = (Point) geometryTable.get(code);
++		if (p == null) {
++			throw new DeepaMehtaException(&quot;code \&quot;&quot; + code + &quot;\&quot; not found in geometry table&quot;);
++		}
++		return p;
++	}
++
++	// ---
++	
++	String[] split(String str) {
++		return str.split(&quot;\t&quot;, 20);		// limit=20
++	}
++}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/topics/InstitutionTopic.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -427,7 +427,7 @@
+ 			yadeY2 = Float.parseFloat(as.getTopicProperty(yp[1], PROPERTY_YADE_Y));
+ 		} catch (NumberFormatException e) {
+ 			throw new DeepaMehtaException(&quot;Administrator-Fehler: ein YADE Referenzpunkt von &quot; +
+-				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#159;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
++				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#195;&#188;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 		// yade -&gt; pixel
+ 		try {
+@@ -437,7 +437,7 @@
+ 			int y = (int) (y2 + (y1 - y2) * (yadeY - yadeY2) / (yadeY1 - yadeY2));
+ 			return new Point(x, y);
+ 		} catch (NumberFormatException e) {
+-			throw new DeepaMehtaException(&quot;YADE Koordinate von Einrichtung \&quot;&quot; + getName() + &quot;\&quot; ist ung&#159;ltig (&quot; + e.getMessage() + &quot;)&quot;);
++			throw new DeepaMehtaException(&quot;YADE Koordinate von Einrichtung \&quot;&quot; + getName() + &quot;\&quot; ist ung&#195;&#188;ltig (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 	}
+ 
+@@ -471,7 +471,7 @@
+ 			return new Point2D.Float(yadeX, yadeY);
+ 		} catch (NumberFormatException e) {
+ 			throw new DeepaMehtaException(&quot;Administrator-Fehler: ein YADE Referenzpunkt von &quot; +
+-				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#159;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
++				&quot;Stadtplan \&quot;&quot; + citymap.getName() + &quot;\&quot; hat ung&#195;&#188;ltigen Wert (&quot; + e.getMessage() + &quot;)&quot;);
+ 		}
+ 	}
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2007-10-08 22:03:07 UTC (rev 14)
++++ trunk/src/de/kiezatlas/deepamehta/topics/OutlinePointTopic.java	2007-10-08 22:03:49 UTC (rev 15)
+@@ -157,7 +157,7 @@
+ 			DeepaMehtaServiceUtils.createImageFile(bufferedImage, file);
+ 		} catch (DeepaMehtaException e) {
+ 			System.out.println(&quot;*** OutlinePointTopic.makeShape(): &quot; + e);
+-			directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Fehler beim Erzeugen einer Fl&#138;che: &quot; + e.getMessage(),
++			directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Fehler beim Erzeugen einer Fl&#195;&#164;che: &quot; + e.getMessage(),
+ 				new Integer(NOTIFICATION_WARNING));
+ 		}
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000006.html">[Kiezatlas-svn] r14 - tags
+</A></li>
+	<LI>Next message: <A HREF="000008.html">[Kiezatlas-svn] r16 - in trunk/src/de/kiezatlas/deepamehta: . topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7">[ date ]</a>
+              <a href="thread.html#7">[ thread ]</a>
+              <a href="subject.html#7">[ subject ]</a>
+              <a href="author.html#7">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

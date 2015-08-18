@@ -1,0 +1,1561 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r92 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2010-July/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r92%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C20100719090822.C795E480523%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000079.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r92 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r92%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta%0A%09src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C20100719090822.C795E480523%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r92 - in trunk: pages src/de/kiezatlas/deepamehta	src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Mon Jul 19 11:08:22 CEST 2010</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000079.html">[Kiezatlas-svn] r91 - in trunk: docs images pages src/de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80">[ date ]</a>
+              <a href="thread.html#80">[ thread ]</a>
+              <a href="subject.html#80">[ subject ]</a>
+              <a href="author.html#80">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2010-07-19 11:08:22 +0200 (Mon, 19 Jul 2010)
+New Revision: 92
+
+Added:
+   trunk/src/de/kiezatlas/deepamehta/ImportWorkerEvent.java
+Modified:
+   trunk/pages/ImportsHome.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ImportServlet.java
+   trunk/src/de/kiezatlas/deepamehta/ImportWorker.java
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Setup a 2nd ImportWorker for a new database to be integrated at berlin.de/buergeraktiv/atlas
+
+plus 1fix&amp;1change for the KiezService
+1) QuotationMarks causing problem in the getGeoObjectInfo() call, now stripping them in createGeoObjectBean
+2) rpccall: getWorkspaceCriterias() uses now the cityMapId to make reuse CityMapTopic.getSearchCriterias() logic
+
+Modified: trunk/pages/ImportsHome.jsp
+===================================================================
+--- trunk/pages/ImportsHome.jsp	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/pages/ImportsHome.jsp	2010-07-19 09:08:22 UTC (rev 92)
+@@ -4,30 +4,38 @@
+ &lt;%
+     String membership = (String) session.getAttribute(&quot;membership&quot;);
+     String timingInterval = (String) session.getAttribute(&quot;timingInterval&quot;);
++    String timingIntervalTwo = (String) session.getAttribute(&quot;timingIntervalTwo&quot;);
+     String workerThreadState = (String) session.getAttribute(&quot;workerThread&quot;);
++    String workerThreadStateTwo = (String) session.getAttribute(&quot;workerThreadTwo&quot;);
+     String workerThreadTime = (String) session.getAttribute(&quot;workerThreadTime&quot;);
++    String workerThreadTimeTwo = (String) session.getAttribute(&quot;workerThreadTimeTwo&quot;);
+     BaseTopic user = (BaseTopic) session.getAttribute(&quot;user&quot;);
+-    BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;importWorkspaces&quot;);
+-    Hashtable criterias = (Hashtable) session.getAttribute(&quot;importCriterias&quot;);
+-    Vector geoObjects = (Vector) session.getAttribute(&quot;geoObjects&quot;);
++    Vector workspaces = (Vector) session.getAttribute(&quot;importWorkspaces&quot;);
++    // Hashtable criterias = (Hashtable) session.getAttribute(&quot;importCriterias&quot;);
++    Vector geoProjectObjects = (Vector) session.getAttribute(&quot;geoProjectObjects&quot;);
++    Vector geoEventObjects = (Vector) session.getAttribute(&quot;geoEventObjects&quot;);
+     Vector unusableGeoObjects = (Vector) session.getAttribute(&quot;unusableGeoObjects&quot;);
+     //
+-	out.println(&quot;&lt;dl style=\&quot;width: 700px;\&quot;&gt;&quot;);
+-	//
+-    //Enumeration e = workspaces.elements();
+-    //while (e.hasMoreElements()) {
+-		//BaseTopic workspace = (BaseTopic) e.nextElement();
+-		out.println(&quot;&lt;dt&gt;&lt;b&gt;&quot; + workspace.getName() + &quot;&lt;/b&gt; beinhaltet &quot;+geoObjects.size() +&quot; Projekte &lt;/dt&gt;&quot;);
+-		Enumeration e2 = criterias.keys();
+-		while (e2.hasMoreElements()) {
+-			Object key = e2.nextElement();
+-            Object critInNumbers = criterias.get(key);
+-            out.println(&quot;&lt;dd&gt;&quot;);
+-                out.println(key.toString() + &quot; (&quot; +critInNumbers.toString()+ &quot;)&quot;);
+-            out.println(&quot;&lt;/dd&gt;&quot;);
+-		}
+-            out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_RESET_CRITERIAS+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt; resetCategories&lt;/a&gt;&lt;/dd&gt;&quot;);
+-        out.println(&quot;&lt;/dl&gt;&quot;);
++    out.println(&quot;&lt;dl style=\&quot;width: 700px;\&quot;&gt;&quot;);
++    //
++    Enumeration e = workspaces.elements();
++    while (e.hasMoreElements()) {
++      BaseTopic workspace = (BaseTopic) e.nextElement();
++      if (workspace.getName().equals(&quot;Ehrenamt Berlin&quot;)) {
++        out.println(&quot;&lt;dt&gt;&lt;b&gt;&quot; + workspace.getName() + &quot;&lt;/b&gt; beinhaltet &quot;+geoProjectObjects.size() +&quot; Projekte &lt;/dt&gt;&quot;);
++      } else {
++        out.println(&quot;&lt;dt&gt;&lt;b&gt;&quot; + workspace.getName() + &quot;&lt;/b&gt; beinhaltet &quot;+geoEventObjects.size() +&quot; Veranstaltungen &lt;/dt&gt;&quot;);
++      }
++      /*Enumeration e2 = criterias.keys();
++      while (e2.hasMoreElements()) {
++          Object key = e2.nextElement();
++          Object critInNumbers = criterias.get(key);
++          out.println(&quot;&lt;dd&gt;&quot;);
++              out.println(key.toString() + &quot; (&quot; +critInNumbers.toString()+ &quot;)&quot;);
++          out.println(&quot;&lt;/dd&gt;&quot;);
++      }*/
++      out.println(&quot;&lt;dd&gt;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_RESET_CRITERIAS+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt; resetCategories&lt;/a&gt;&lt;/dd&gt;&quot;);
++      if (e.hasMoreElements()) {
+         if (workerThreadState.equals(&quot;NEW&quot;)) {
+             out.println(&quot;&lt;p&gt;&lt;i&gt;&quot;);
+             out.println(&quot;The Import Worker for this workspace was kicked off at &quot; + workerThreadTime + &quot; and is currently working / sleeping. &quot;);
+@@ -38,16 +46,28 @@
+             out.println(&quot;The Import Worker for this Workspace was NOT kicked off yet.&quot;);
+             out.println(&quot;&lt;/i&gt;&lt;p/&gt;&quot;);
+         }
+-        out.println(&quot;&lt;h3&gt; Ehrenamt Berlin Import Report &lt;/h3&gt;&quot;);
+-        out.println(&quot;&lt;pre&gt; &quot;+unusableGeoObjects.size()+&quot; unlocatable Projects identified:&lt;/pre&gt; &lt;p/&gt;&quot;);
+-        for (int i = 0; i &lt; unusableGeoObjects.size(); i++) {
+-            GeoObjectTopic topic = (GeoObjectTopic) unusableGeoObjects.get(i);
+-            if (topic.getAddress() != null) {
+-                out.println(topic.getName()+&quot;, &lt;b&gt;Adress:&lt;/b&gt; &lt;i&gt;&quot;+topic.getAddress().getName()+&quot;&lt;/i&gt;&lt;br/&gt;&quot;);
+-            } else {
+-                out.println(topic.getName()+&quot;, &lt;b&gt;Adress:&lt;/b&gt; &lt;i&gt;empty&lt;/i&gt;&lt;br/&gt;&quot;);
+-            }
++      } else {
++        if (workerThreadStateTwo.equals(&quot;NEW&quot;)) {
++            out.println(&quot;&lt;p&gt;&lt;i&gt;&quot;);
++            out.println(&quot;The Import Worker for this workspace was kicked off at &quot; + workerThreadTimeTwo + &quot; and is currently working / sleeping. &quot;);
++            out.println(&quot;&lt;br/&gt; Import Intervall is set to &quot; +timingIntervalTwo+ &quot; min.&lt;/i&gt;&lt;p/&gt;&quot;);
++        } else {
++            out.println(&quot;&lt;a href=\&quot;?action=&quot;+KiezAtlas.ACTION_DO_IMPORT+&quot;&amp;workspaceId=&quot;+workspace.getID()+&quot;\&quot;&gt;&gt; kickoff Import&lt;/a&gt;&quot;);
++            out.println(&quot;&lt;p&gt;&lt;i&gt;&quot;);
++            out.println(&quot;&lt;br/&gt; The Import Worker for this Workspace was NOT kicked off yet.&lt;/i&gt;&lt;p/&gt;&quot;);
+         }
+-	//}
++      }
++    }
++    out.println(&quot;&lt;/dl&gt;&quot;);
++    out.println(&quot;&lt;h3&gt; Import Report for both Workspaces &lt;/h3&gt;&quot;);
++    out.println(&quot;&lt;pre&gt; &quot;+unusableGeoObjects.size()+&quot; unlocatable Projects identified:&lt;/pre&gt; &lt;p/&gt;&quot;);
++    for (int i = 0; i &lt; unusableGeoObjects.size(); i++) {
++        GeoObjectTopic topic = (GeoObjectTopic) unusableGeoObjects.get(i);
++        if (topic.getAddress() != null) {
++            out.println(topic.getName()+&quot;, &lt;b&gt;Address:&lt;/b&gt; &lt;i&gt;&quot;+topic.getAddress().getName()+&quot;&lt;/i&gt;&lt;br/&gt;&quot;);
++        } else {
++            out.println(topic.getName()+&quot;, &lt;b&gt;Address:&lt;/b&gt; &lt;i&gt;empty&lt;/i&gt;&lt;br/&gt;&quot;);
++        }
++    }
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -147,7 +147,7 @@
+ 			return PAGE_GEO_LIST;
+ 		// info
+ 		} else if (action.equals(ACTION_SHOW_GEO_INFO)) {
+-            // ### should also set the current HotspotMarker (e.g. after searchByCategory)
++      // ### should also set the current HotspotMarker (e.g. after searchByCategory)
+ 			String geoID = params.getValue(&quot;id&quot;);
+ 			setSelectedGeo(geoID, session);
+ 			TopicBean topicBean = as.createTopicBean(geoID, 1);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ImportServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ImportServlet.java	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/src/de/kiezatlas/deepamehta/ImportServlet.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -17,7 +17,7 @@
+ 
+ 
+ /**
+- * Kiezatlas 1.6.2&lt;br&gt;
++ * Kiezatlas 1.6.5&lt;br&gt;
+  * Requires DeepaMehta rev. 369
+  * &lt;p&gt;
+  * Last change: 06.12.2009&lt;br&gt;
+@@ -26,26 +26,35 @@
+  */
+ public class ImportServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
+-    private ImportWorker worker = null;
++  private ImportWorker ehrenamtWorker = null;
++  private ImportWorkerEvent eventWorker = null;
+ 
+-    public static final long UPDATE_INTERVAL = 86000000; // approximately 24 hours
+-    // public static final long UPDATE_INTERVAL = 600000; // approximately 10 mines
+-    // 
+-    public static final String ENGAGEMENT_WORKSPACE = &quot;t-331306&quot;;
+-    public static final String CITYMAP_TO_PUBLISH = &quot;t-331302&quot;;
+-    //
+-    public static final String TOPICTYPE_ENG_PROJECT = &quot;t-331314&quot;;
+-    public static final String TOPICTYPE_ENG_ZIELGRUPPE = &quot;t-331319&quot;;
+-    public static final String TOPICTYPE_ENG_TAETIGKEIT = &quot;t-331323&quot;;
+-    public static final String TOPICTYPE_ENG_EINSATZBEREICH = &quot;t-331321&quot;;
+-    public static final String TOPICTYPE_ENG_MERKMAL = &quot;t-331325&quot;;
+-    public static final String TOPICTYPE_ENG_BEZIRK = &quot;t-331327&quot;;
+-    //
+-    public static final String PROPERTY_PROJECT_ORIGIN_ID = &quot;OriginId&quot;;
+-    public static final String PROPERTY_PROJECT_LAST_MODIFIED = &quot;Timestamp&quot;;
+-    public static final String PROPERTY_PROJECT_ORGANISATION = &quot;Organisation&quot;;
++  public static final long UPDATE_INTERVAL = 86000000; // approximately 24 hours
++  public static final long UPDATE_INTERVAL_TESTING = 3600000; // approximately 60 mins
++  //
++  public static final String ENGAGEMENT_WORKSPACE = &quot;t-331306&quot;;
++  public static final String EVENTMENT_WORKSPACE = &quot;t-453282&quot;;
++  public static final String CITYMAP_TO_PUBLISH = &quot;t-331302&quot;;
++  public static final String EVENTMAP_TO_PUBLISH = &quot;t-453286&quot;;
++  //
++  public static final String TOPICTYPE_ENG_PROJECT = &quot;t-331314&quot;;
++  public static final String TOPICTYPE_ENG_ZIELGRUPPE = &quot;t-331319&quot;;
++  public static final String TOPICTYPE_ENG_TAETIGKEIT = &quot;t-331323&quot;;
++  public static final String TOPICTYPE_ENG_EINSATZBEREICH = &quot;t-331321&quot;;
++  public static final String TOPICTYPE_ENG_MERKMAL = &quot;t-331325&quot;;
++  public static final String TOPICTYPE_ENG_BEZIRK = &quot;t-331327&quot;;
++  //
++  public static final String TOPICTYPE_EVT_EVENT = &quot;t-453276&quot;;
++  public static final String TOPICTYPE_EVT_BEZIRK = &quot;t-453278&quot;;
++  public static final String TOPICTYPE_EVT_KATEGORIE = &quot;t-453280&quot;;
++  //
++  public static final String PROPERTY_PROJECT_ORIGIN_ID = &quot;OriginId&quot;;
++  public static final String PROPERTY_PROJECT_LAST_MODIFIED = &quot;Timestamp&quot;;
++  public static final String PROPERTY_PROJECT_ORGANISATION = &quot;Organisation&quot;;
++  public static final String PROPERTY_EVENT_DESCRIPTION = &quot;Beschreibung&quot;;
++  public static final String PROPERTY_EVENT_TIME = &quot;Datum / Zeit&quot;;
+ 
+-	protected String performAction(String action, RequestParameter params, Session session, CorporateDirectives directives)
++  protected String performAction(String action, RequestParameter params, Session session, CorporateDirectives directives)
+ 																									throws ServletException {
+         if (action == null) {
+             return PAGE_IMPORTS_LOGIN;
+@@ -59,12 +68,19 @@
+                 }
+                 setUser(user, session);
+                 session.setAttribute(&quot;timingInterval&quot;, &quot;&quot;+UPDATE_INTERVAL/1000/60);
+-                if (worker != null) {
+-                    session.setAttribute(&quot;workerThread&quot;, worker.getState().toString());
+-                    session.setAttribute(&quot;workerThreadTime&quot;, worker.getKickOffTime());
++                session.setAttribute(&quot;timingIntervalTwo&quot;, &quot;&quot;+UPDATE_INTERVAL/1000/60);
++                if (ehrenamtWorker != null) {
++                    session.setAttribute(&quot;workerThread&quot;, ehrenamtWorker.getState().toString());
++                    session.setAttribute(&quot;workerThreadTime&quot;, ehrenamtWorker.getKickOffTime());
+                 } else {
+                     session.setAttribute(&quot;workerThread&quot;, &quot;inactive&quot;);
+                 }
++                if (eventWorker != null) {
++                    session.setAttribute(&quot;workerThreadTwo&quot;, eventWorker.getState().toString());
++                    session.setAttribute(&quot;workerThreadTimeTwo&quot;, eventWorker.getKickOffTime());
++                } else {
++                    session.setAttribute(&quot;workerThreadTwo&quot;, &quot;inactive&quot;);
++                }
+                 Vector unusables = getUnlocatableGeoObjects();
+                 //
+                 session.setAttribute(&quot;unusableGeoObjects&quot;, unusables);
+@@ -76,40 +92,49 @@
+             if (session.getAttribute(&quot;membership&quot;) == null) {
+                 session.setAttribute(&quot;membership&quot;, &quot;Affiliated&quot;);
+             }
+-            session.setAttribute(&quot;workerThread&quot;, worker.getState().toString());
++            session.setAttribute(&quot;workerThread&quot;, ehrenamtWorker.getState().toString());
+             
+             return PAGE_IMPORTS_HOME;
+         } else if (action.equals(ACTION_RESET_CRITERIAS)) {
++            // 4 lines of security check
++            Vector workspaces = (Vector) session.getAttribute(&quot;importWorkspaces&quot;);
++            BaseTopic workspace = (BaseTopic) workspaces.get(0);
++            if (session == null || workspace == null) {
++                return PAGE_IMPORTS_LOGIN;
++            }
++            String workspaceId = params.getValue(&quot;workspaceId&quot;);
+             //
+-            Vector taetigkeiten = cm.getTopics(TOPICTYPE_ENG_TAETIGKEIT);
+-            Vector einsatzbereiche = cm.getTopics(TOPICTYPE_ENG_EINSATZBEREICH);
+-            Vector merkmale = cm.getTopics(TOPICTYPE_ENG_MERKMAL);
+-            Vector zielgruppen = cm.getTopics(TOPICTYPE_ENG_ZIELGRUPPE);
+-            Vector bezirke = cm.getTopics(TOPICTYPE_ENG_BEZIRK);
+-            bezirke.addAll(taetigkeiten);
+-            bezirke.addAll(einsatzbereiche);
+-            bezirke.addAll(merkmale);
+-            bezirke.addAll(zielgruppen);
+-            //
+-            for (int i = 0; i &lt; bezirke.size(); i++) {
+-                BaseTopic category = (BaseTopic) bezirke.get(i);
+-                CorporateDirectives newDirectives = as.deleteTopic(category.getID(), 1);
+-                newDirectives.updateCorporateMemory(as, session, null, null);
++            if (workspaceId.equals(ENGAGEMENT_WORKSPACE)) {
++                ehrenamtWorker.resetCriteriaFlag();
++            } else if (workspaceId.equals(EVENTMENT_WORKSPACE)) {
++                eventWorker.resetCriteriaFlag();
+             }
+             return PAGE_IMPORTS_HOME;
+         } else if (action.equals(ACTION_SHOW_REPORT)) {
+             //
+             return PAGE_IMPORTS_HOME;
+         } else if (action.equals(ACTION_DO_IMPORT)) {
+-            BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;importWorkspaces&quot;);
++            // 4 lines of security check
++            Vector workspaces = (Vector) session.getAttribute(&quot;importWorkspaces&quot;);
++            BaseTopic workspace = (BaseTopic) workspaces.get(0);
+             if (session == null || workspace == null) {
+                 return PAGE_IMPORTS_LOGIN;
+             }
+-            if (worker == null) {
+-                worker = new ImportWorker(as, cm, ENGAGEMENT_WORKSPACE, UPDATE_INTERVAL, directives);
+-                worker.setDaemon(true);
++            String workspaceId = params.getValue(&quot;workspaceId&quot;);
++            //
++            if (workspaceId.equals(ENGAGEMENT_WORKSPACE)) {
++                if (ehrenamtWorker == null) {
++                  ehrenamtWorker = new ImportWorker(as, cm, ENGAGEMENT_WORKSPACE, UPDATE_INTERVAL, directives, &quot;<A HREF="http://buerger-aktiv.index.de/kiezatlas/">http://buerger-aktiv.index.de/kiezatlas/</A>&quot;);
++                  ehrenamtWorker.setDaemon(true);
++                }
++                ehrenamtWorker.run();
++           } else if (workspaceId.equals(EVENTMENT_WORKSPACE)) {
++                if (eventWorker == null) {
++                  eventWorker = new ImportWorkerEvent(as, cm, EVENTMENT_WORKSPACE, UPDATE_INTERVAL, directives, &quot;<A HREF="http://www.berlin.de/land/kalender/export_kiezatlas.php">http://www.berlin.de/land/kalender/export_kiezatlas.php</A>&quot;);
++                  eventWorker.setDaemon(true);
++                }
++                eventWorker.run();
+             }
+-            worker.run();
+             //
+             return PAGE_IMPORTS_HOME;
+         }
+@@ -122,18 +147,17 @@
+             // next line: membership preferences are set according to workspaces
+             // Vector workspaces = getWorkspaces(getUserID(session), session);
+             //String workspaceId = ((BaseTopic)workspaces.get(0)).getID(); // take the first best
+-            BaseTopic workspace = as.getLiveTopic(ENGAGEMENT_WORKSPACE, 1);
+-            Vector criterias = getKiezCriteriaTypes(ENGAGEMENT_WORKSPACE);
+-            Hashtable critWithNumbers = new Hashtable(criterias.size());
+-            for (int i = 0; i &lt; criterias.size(); i++) {
+-                BaseTopic topic = (BaseTopic) criterias.get(i);
+-                Vector instancesOfTopic = cm.getTopics(topic.getID());
+-                critWithNumbers.put(topic.getName(), instancesOfTopic.size());
+-            }
+-            Vector geoObjects = getGeoObjectInformation(ENGAGEMENT_WORKSPACE);
+-			session.setAttribute(&quot;importWorkspaces&quot;, workspace);
+-            session.setAttribute(&quot;importCriterias&quot;, critWithNumbers);
+-            session.setAttribute(&quot;geoObjects&quot;, geoObjects);
++            BaseTopic workspaceEngagement = as.getLiveTopic(ENGAGEMENT_WORKSPACE, 1);
++            BaseTopic workspaceEvent = as.getLiveTopic(EVENTMENT_WORKSPACE, 1);
++            Vector workspaces = new Vector();
++            workspaces.add(workspaceEngagement);
++            workspaces.add(workspaceEvent);
++            //
++            Vector geoProjectObjects = getGeoObjectInformation(ENGAGEMENT_WORKSPACE);
++            Vector geoEventObjects = getGeoObjectInformation(EVENTMENT_WORKSPACE);
++            session.setAttribute(&quot;importWorkspaces&quot;, workspaces);
++            session.setAttribute(&quot;geoProjectObjects&quot;, geoProjectObjects);
++            session.setAttribute(&quot;geoEventObjects&quot;, geoEventObjects);
+ 		} else if (page.equals(PAGE_REPORT_HOME)) {
+             session.setAttribute(&quot;report&quot;, null);
+             // 
+@@ -144,11 +168,15 @@
+     
+     public void destroy() {
+         // worker.done();
+-        worker.setThreadDead();
++        ehrenamtWorker.setThreadDead();
++        eventWorker.setThreadDead();
+         // call stop method, too
+-        worker.done();
+-        System.out.println(&quot;---- WorkerThread destroyed (&quot; + worker.getClass() + &quot;) ---&quot;);
+-        worker = null;
++        ehrenamtWorker.done();
++        eventWorker.done();
++        System.out.println(&quot;---- WorkerThread destroyed (&quot; + ehrenamtWorker.getClass() + &quot;) ---&quot;);
++        System.out.println(&quot;---- WorkerThread destroyed (&quot; + eventWorker.getClass() + &quot;) ---&quot;);
++        ehrenamtWorker = null;
++        eventWorker = null;
+         System.out.println(&quot;--- DeepaMehtaServlet destroyed (&quot; + getClass() + &quot;) ---&quot;);
+ 		as.shutdown();
+ 	}
+@@ -160,6 +188,7 @@
+ 
+     private Vector getUnlocatableGeoObjects() {
+         Vector allTopics = cm.getTopics(TOPICTYPE_ENG_PROJECT);
++        allTopics.addAll(cm.getTopics(TOPICTYPE_EVT_EVENT));
+         Vector unusableTopics = new Vector();
+         for (int i = 0; i &lt; allTopics.size(); i++) {
+             BaseTopic geoTopic = (BaseTopic) allTopics.get(i);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ImportWorker.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ImportWorker.java	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/src/de/kiezatlas/deepamehta/ImportWorker.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -8,11 +8,11 @@
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.CorporateMemory;
+ import de.deepamehta.service.Session;
++import de.deepamehta.topics.EmailTopic;
+ import de.deepamehta.topics.LiveTopic;
+ import de.deepamehta.topics.TypeTopic;
+ import de.deepamehta.util.DeepaMehtaUtils;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+-import de.kiezatlas.deepamehta.ImportServlet;
+ import java.io.BufferedReader;
+ import java.io.InputStreamReader;
+ import java.io.StringReader;
+@@ -43,6 +43,7 @@
+ 
+     private boolean threadDone = false;
+     private boolean threadDead = false;
++    private boolean resetCriteriaFlag = false;
+     private ApplicationService as = null;
+     private CorporateMemory cm = null;
+     private CorporateDirectives directives = null;
+@@ -50,15 +51,17 @@
+     private String workspaceId = &quot;&quot;;
+     private long updateInterval;
+     private String workerStarted;
++    private String serviceURL;
+ 
+-    public ImportWorker(ApplicationService as, CorporateMemory cm, String workspaceId, long interval, CorporateDirectives directives) {
++    public ImportWorker(ApplicationService as, CorporateMemory cm, String workspaceId, long interval, 
++            CorporateDirectives directives, String url) {
+ 
+         this.cm = cm;
+         this.as = as;
+         this.workspaceId = workspaceId;
+         this.updateInterval = interval;
+         this.directives = directives;
+-
++        this.serviceURL = url;
+         // this.map = map;
+         // this.mapAlias = mapAlias;
+ 
+@@ -73,6 +76,11 @@
+         return threadDead;
+     }
+ 
++    public void resetCriteriaFlag() {
++        resetCriteriaFlag = true;
++        System.out.println(&quot;[ImportWorker] has set resetCriteriaFlag for scheduled ehrenemt import&quot;);
++    }
++
+     public void done() {
+         if (!threadDead) {
+             threadDone = true;
+@@ -101,9 +109,13 @@
+                 System.out.println(&quot;[ImportWorker] Thread \&quot;&quot;+this.getName()+&quot;\&quot; was kicked off for workspace \&quot;&quot; + workspaceId + &quot;\&quot; at &quot; + DeepaMehtaUtils.getTime().toString());
+                 workerStarted = DeepaMehtaUtils.getTime(true);
+                 // work here
+-                String ehrenamtXml = sendGetRequest(&quot;<A HREF="http://buerger-aktiv.index.de/kiezatlas/">http://buerger-aktiv.index.de/kiezatlas/</A>&quot;, &quot;&quot;);
++                String ehrenamtXml = sendGetRequest(serviceURL, &quot;&quot;);
+                 if (ehrenamtXml != null) {
+                     // delete former import
++                    if (resetCriteriaFlag) {
++                      clearCriterias();
++                      resetCriteriaFlag = false;
++                    }
+                     clearImport(); // clears workspace if new topics are available
+                     // store and publish new topics
+                     Vector topicIds = parseAndStoreData(ehrenamtXml);
+@@ -121,16 +133,16 @@
+ 
+     private void publishData(Vector topicIds) {
+         System.out.println(&quot;[ImportWorker] is starting to gather coordinates and publish \&quot;&quot;+topicIds.size()+&quot;\&quot; topics into : &quot; + cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getName());// + &quot; &quot; +
+-          //      &quot;/ &quot; + cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getID() + &quot; ofType: &quot; +cm.getTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1).getType());
+-        // BaseTopic cityMap = as.getLiveTopic(ImportServlet.CITYMAP_TO_PUBLISH, 1);
+-        // System.out.println(&quot;&gt;&gt;&gt; before corrupting everything, we publish into topic: &quot; + cityMap.getName() + &quot; of type &quot; + cityMap.getType());
+-        Vector unusable = new Vector(); // collection of GeoObjects with GPS Data
++        //
++        Vector unusable = new Vector(); // collection of GeoObjects without GPS Data
+         for (int i = 0; i &lt; topicIds.size(); i++) {
+             GeoObjectTopic baseTopic = (GeoObjectTopic) as.getLiveTopic(((String)topicIds.get(i)), 1);
+             // System.out.println(&quot;[GPSINFO] is LAT: &quot; + as.getTopicProperty(baseTopic, PROPERTY_GPS_LAT) + &quot; LON: &quot; + as.getTopicProperty(baseTopic, PROPERTY_GPS_LONG));
+             BaseTopic addressTopic = baseTopic.getAddress();
+             if (as.getTopicProperty(baseTopic.getID(), 1, PROPERTY_GPS_LAT).equals(&quot;&quot;)) {
+-                // System.out.println(&quot;[ImportWorker] WARNING ***  \&quot;&quot;+baseTopic.getName()+&quot;\&quot; is without GPS Data... dropping placement in CityMap&quot;);
++                System.out.println(&quot;[ImportWorker] WARNING ***  \&quot;&quot;+addressTopic.getName()+&quot;\&quot; is without GPS Data... dropping placement in CityMap&quot;);
++                // ### ToDo: Reporting Functionality
++                sendNotificationEmail(baseTopic.getName(), addressTopic.getName());
+                 unusable.add(baseTopic); //
+             } else if (as.getTopicProperty(addressTopic, PROPERTY_STREET).equals(&quot;&#252;ber Gute-Tat.de&quot;)) {
+                 unusable.add(baseTopic);
+@@ -215,6 +227,25 @@
+         }
+     }
+ 
++    /** remove criteria system from configured workspace */
++    private void clearCriterias() {
++        Vector taetigkeiten = cm.getTopics(ImportServlet.TOPICTYPE_ENG_TAETIGKEIT);
++        Vector einsatzbereiche = cm.getTopics(ImportServlet.TOPICTYPE_ENG_EINSATZBEREICH);
++        Vector merkmale = cm.getTopics(ImportServlet.TOPICTYPE_ENG_MERKMAL);
++        Vector zielgruppen = cm.getTopics(ImportServlet.TOPICTYPE_ENG_ZIELGRUPPE);
++        Vector bezirke = cm.getTopics(ImportServlet.TOPICTYPE_ENG_BEZIRK);
++        bezirke.addAll(taetigkeiten);
++        bezirke.addAll(einsatzbereiche);
++        bezirke.addAll(merkmale);
++        bezirke.addAll(zielgruppen);
++        //
++        for (int i = 0; i &lt; bezirke.size(); i++) {
++            BaseTopic category = (BaseTopic) bezirke.get(i);
++            CorporateDirectives newDirectives = as.deleteTopic(category.getID(), 1);
++            newDirectives.updateCorporateMemory(as, null, null, null);
++        }
++    }
++    
+     /** performs a clear deletion of a topic with all it`s associations and it`s removal from all maps*/
+     private void directiveDeletion(String topicID) {
+ 		// CorporateDirectives myDirective = as.deleteTopic(topicID, 1);	// ### version=1
+@@ -604,27 +635,63 @@
+         return cm.getTopics(geoType.getID());
+     }
+ 
+-	private Vector getWorkspaces(String userID, Session session) {
+-		Vector workspaces = new Vector();
+-		//
+-        session.setAttribute(&quot;membership&quot;, &quot;&quot;);
+-        Vector ws = as.getRelatedTopics(userID, SEMANTIC_MEMBERSHIP, TOPICTYPE_WORKSPACE, 2);
+-        Enumeration e = ws.elements();
+-        if (!e.hasMoreElements()) {
+-            Vector aws = as.getRelatedTopics(userID, SEMANTIC_AFFILIATED_MEMBERSHIP, TOPICTYPE_WORKSPACE, 2);
+-            session.setAttribute(&quot;membership&quot;, &quot;Affiliated&quot;);
+-            e = aws.elements();
++    // --- copy of BrowseServlet
++
++    private void sendNotificationEmail(String projectName, String addressData) {
++      try {
++        // GeoObjectTopic inst = (GeoObjectTopic) as.getLiveTopic(instID, 1);
++        // &quot;from&quot;
++        String from = as.getEmailAddress(&quot;t-rootuser&quot;);		// ###
++        if (from == null || from.equals(&quot;&quot;)) {
++          throw new DeepaMehtaException(&quot;email address of root user is unknown&quot;);
+         }
+-		while (e.hasMoreElements()) {
+-			BaseTopic w = (BaseTopic) e.nextElement();
+-			//if (isKiezatlasWorkspace(w.getID())) {
+-			workspaces.addElement(w);
+-			//}
+-		}
+-		//
+-		return workspaces;
+-	}
++        // &quot;to&quot;
++        String to = &quot;<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at newthinking.de</A>&quot;;
++        // &quot;subject&quot;
++        String subject = &quot;Ehrenamtsatlas: fehlerhafter Addresseintrag in der Ehrenamtsdatenbank \&quot;&quot; + projectName + &quot;\&quot;&quot;;
++        // &quot;body&quot;
++        String body = &quot;Dies ist eine automatische Benachrichtigung von www.kiezatlas.de\r\r&quot; +
++          &quot;Dem Ehrenamtsprojekt \&quot;&quot; + projectName + &quot;\&quot; konnte nicht korrekt verortet werden:\r\r&quot; +
++          &quot;------------------------------\r&quot; +
++          &quot;Adresseintrag: &quot; + addressData + &quot;\r&quot; +
++          &quot;------------------------------\r\r&quot; +
++          &quot;\r&quot; +
++          &quot;www.berlin.de/buergeraktiv/atlas\r\r&quot; +
++          &quot;Mit freundlichen Gr&#252;&#223;en\r&quot; +
++          &quot;ihr Kiezatlas-Team&quot;;
++        //
++        System.out.println(&quot;&gt;&gt;&gt; send notification email&quot;);
++        System.out.println(&quot;  &gt; SMTP server: \&quot;&quot; + as.getSMTPServer() + &quot;\&quot;&quot;);	// as.getSMTPServer() throws DME
++        System.out.println(&quot;  &gt; from: \&quot;&quot; + from + &quot;\&quot;&quot;);
++        System.out.println(&quot;  &gt; to: \&quot;&quot; + to + &quot;\&quot;&quot;);
++        // send email
++        EmailTopic.sendMail(as.getSMTPServer(), from, to, subject, body);		// EmailTopic.sendMail() throws DME
++      } catch (Exception e) {
++        System.out.println(&quot;*** notification email not send (&quot; + e + &quot;)&quot;);
++      }
++    }
+ 
++    private Vector getWorkspaces(String userID, Session session) {
++      Vector workspaces = new Vector();
++      //
++          session.setAttribute(&quot;membership&quot;, &quot;&quot;);
++          Vector ws = as.getRelatedTopics(userID, SEMANTIC_MEMBERSHIP, TOPICTYPE_WORKSPACE, 2);
++          Enumeration e = ws.elements();
++          if (!e.hasMoreElements()) {
++              Vector aws = as.getRelatedTopics(userID, SEMANTIC_AFFILIATED_MEMBERSHIP, TOPICTYPE_WORKSPACE, 2);
++              session.setAttribute(&quot;membership&quot;, &quot;Affiliated&quot;);
++              e = aws.elements();
++          }
++      while (e.hasMoreElements()) {
++        BaseTopic w = (BaseTopic) e.nextElement();
++        //if (isKiezatlasWorkspace(w.getID())) {
++        workspaces.addElement(w);
++        //}
++      }
++      //
++      return workspaces;
++    }
++
+     /**
+      * returns null if no topictype whihc is assigned to the given workspace,
+      * is a subtype of &quot;GeoObjectTopic&quot;
+
+Added: trunk/src/de/kiezatlas/deepamehta/ImportWorkerEvent.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ImportWorkerEvent.java	                        (rev 0)
++++ trunk/src/de/kiezatlas/deepamehta/ImportWorkerEvent.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -0,0 +1,698 @@
++package de.kiezatlas.deepamehta;
++
++import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaConstants;
++import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.assocs.LiveAssociation;
++import de.deepamehta.service.ApplicationService;
++import de.deepamehta.service.CorporateDirectives;
++import de.deepamehta.service.CorporateMemory;
++import de.deepamehta.service.Session;
++import de.deepamehta.topics.LiveTopic;
++import de.deepamehta.topics.TypeTopic;
++import de.deepamehta.util.DeepaMehtaUtils;
++import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
++import java.io.BufferedReader;
++import java.io.InputStreamReader;
++import java.io.StringReader;
++import java.net.URL;
++import java.net.URLConnection;
++import java.net.UnknownHostException;
++import java.util.Enumeration;
++import java.util.Hashtable;
++import java.util.Vector;
++import javax.xml.parsers.DocumentBuilder;
++import javax.xml.parsers.DocumentBuilderFactory;
++import org.w3c.dom.Document;
++import org.w3c.dom.Node;
++import org.w3c.dom.NodeList;
++import org.xml.sax.InputSource;
++import org.xml.sax.SAXException;
++import org.xml.sax.SAXParseException;
++
++/**
++ * Ehrenamt Schnittstelle 0.9b
++ * is a thread based worker which imports single projects and all occuring criterias resp. categories
++ * from an xml interface into one kiezatlas workspace - it reuses topics (e.g. addresstopics) known to
++ * the cm (by name), triggers a geolocation on each project with nice address
++ *
++ * @author Malte Rei&#223;ig (<A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>)
++ */
++public class ImportWorkerEvent extends Thread implements DeepaMehtaConstants, KiezAtlas {
++
++    private boolean threadDone = false;
++    private boolean threadDead = false;
++    private boolean resetCriteriaFlag = false;
++    private ApplicationService as = null;
++    private CorporateMemory cm = null;
++    private CorporateDirectives directives = null;
++
++    private String workspaceId = &quot;&quot;;
++    private long updateInterval;
++    private String workerStarted;
++    private String serviceURL;
++
++    public ImportWorkerEvent(ApplicationService as, CorporateMemory cm, String workspaceId, long interval,
++            CorporateDirectives directives, String url) {
++
++        this.cm = cm;
++        this.as = as;
++        this.workspaceId = workspaceId;
++        this.updateInterval = interval;
++        this.directives = directives;
++        this.serviceURL = url;
++        // this.map = map;
++        // this.mapAlias = mapAlias;
++
++    }
++
++    public void setThreadDead() {
++        //
++        threadDead = true;
++    }
++
++    public boolean getThreadState() {
++        return threadDead;
++    }
++
++    public void resetCriteriaFlag() {
++        resetCriteriaFlag = true;
++        System.out.println(&quot;[ImportWorker] has set resetCriteriaFlag for scheduled event import&quot;);
++    }
++
++    public void done() {
++        if (!threadDead) {
++            threadDone = true;
++            System.out.println(&quot;&quot;);
++            System.out.println(&quot;[ImportWorker] done \&quot;&quot;+getName()+&quot;\&quot; is going to sleep for &quot; + updateInterval/1000/60 + &quot;min. at &quot;+DeepaMehtaUtils.getTime()+&quot; -- &quot;);
++            workerStarted = DeepaMehtaUtils.getTime(true);
++            System.out.println(&quot;&quot;);
++            try {
++                // wait for a day or two
++                this.sleep(updateInterval);
++                // start a fresh one
++                threadDone = false;
++                run();
++            } catch (InterruptedException intex) {
++                System.out.println(&quot;*** ImportWorker was interrupted cause of &quot; + intex.getMessage());
++            }
++        } else {
++            System.out.println(&quot;[ImportWorker] Thread named \&quot;&quot;+getName()+&quot;\&quot; is dead ----&quot;);
++        }
++
++    }
++
++    public void run() {
++        if (!threadDead) {
++            while (!threadDone) {
++                System.out.println(&quot;[ImportWorker] Thread \&quot;&quot;+this.getName()+&quot;\&quot; was kicked off for workspace \&quot;&quot; + workspaceId + &quot;\&quot; at &quot; + DeepaMehtaUtils.getTime().toString());
++                workerStarted = DeepaMehtaUtils.getTime(true);
++                // work here
++                String ehrenamtXml = sendGetRequest(serviceURL, &quot;&quot;);
++                if (ehrenamtXml != null) {
++                    // delete former import
++                    if (resetCriteriaFlag) {
++                      clearCriterias();
++                      resetCriteriaFlag = false;
++                    }
++                    clearImport(); // clears workspace if new topics are available
++                    // store and publish new topics
++                    Vector topicIds = parseAndStoreData(ehrenamtXml);
++                    publishData(topicIds);
++                }
++                done();
++            }
++        } else {
++            //System.out.println(&quot;[INFO] Import Worker Thread  \&quot;&quot;+this.getName()+&quot;\&quot; tried to run, despite we already killed it !!!&quot;);
++            threadDone = true;
++            System.out.println(&quot;[ImportWorker] Thread \&quot;&quot;+this.getName()+&quot;\&quot; is running out now !!&quot;);
++        }
++        // running out
++    }
++
++    private void publishData(Vector topicIds) {
++        System.out.println(&quot;[ImportWorker] is starting to gather coordinates and publish \&quot;&quot;+topicIds.size()+&quot;\&quot; topics into : &quot; + cm.getTopic(ImportServlet.EVENTMAP_TO_PUBLISH, 1).getName());// + &quot; &quot; +
++        Vector unusable = new Vector(); // collection of GeoObjects with GPS Data
++        for (int i = 0; i &lt; topicIds.size(); i++) {
++            GeoObjectTopic baseTopic = (GeoObjectTopic) as.getLiveTopic(((String)topicIds.get(i)), 1);
++            // System.out.println(&quot;[GPSINFO] is LAT: &quot; + as.getTopicProperty(baseTopic, PROPERTY_GPS_LAT) + &quot; LON: &quot; + as.getTopicProperty(baseTopic, PROPERTY_GPS_LONG));
++            BaseTopic addressTopic = baseTopic.getAddress();
++            if (as.getTopicProperty(baseTopic.getID(), 1, PROPERTY_GPS_LAT).equals(&quot;&quot;)) {
++                System.out.println(&quot;[ImportWorker] WARNING ***  \&quot;&quot;+addressTopic.getName()+&quot;\&quot; is without GPS Data... dropping placement in CityMap&quot;);
++                // ###TODO: Report Functionality
++                unusable.add(baseTopic); //
++            } else if (as.getTopicProperty(addressTopic, PROPERTY_STREET).equals(&quot;&#252;ber Gute-Tat.de&quot;)) {
++                unusable.add(baseTopic);
++            } else {
++                // System.out.println(&quot;&gt;&gt;&gt;&gt; creating ViewTopic for &quot; + baseTopic.getName() + &quot; (&quot; + baseTopic.getID() + &quot;)&quot; );
++                as.createViewTopic(ImportServlet.EVENTMAP_TO_PUBLISH, 1, null, baseTopic.getID(), 1, 0, 0, false);
++            }
++            // System.out.println(&quot;&gt;&gt;&gt; ready to publish geoObject &quot; +baseTopic.getName()+&quot; (&quot;+baseTopic.getID()+&quot;)&quot;);
++        }
++        int validEntries = topicIds.size() - unusable.size();
++        //
++        System.out.println(&quot;[ImportWorker] stored &quot; + validEntries + &quot; in public cityMap \&quot;&quot; +as.getTopicProperty(ImportServlet.EVENTMAP_TO_PUBLISH, 1, PROPERTY_WEB_ALIAS)+ &quot;\&quot;&quot;);
++        System.out.println(&quot;[ImportWorker] didn`t published &quot; + unusable.size() + &quot; unlocatable \&quot;&quot;+getWorkspaceGeoType(workspaceId).getName()+&quot;e\&quot; &quot;);
++        //
++    }
++
++    public String getKickOffTime() {
++        return workerStarted;
++    }
++
++    /** remove criteria system from configured workspace */
++    private void clearCriterias() {
++        Vector bezirke = cm.getTopics(ImportServlet.TOPICTYPE_EVT_BEZIRK);
++        Vector einsatzbereiche = cm.getTopics(ImportServlet.TOPICTYPE_EVT_KATEGORIE);
++        bezirke.addAll(einsatzbereiche);
++        //
++        for (int i = 0; i &lt; bezirke.size(); i++) {
++            BaseTopic category = (BaseTopic) bezirke.get(i);
++            CorporateDirectives newDirectives = as.deleteTopic(category.getID(), 1);
++            newDirectives.updateCorporateMemory(as, null, null, null);
++        }
++    }
++
++    /** completely remove all topics created by the last import
++     *  e.g. delete from topicmap, delete related address topic, delete email topic,
++     *  delete person topic, delete webpage topic, delete webpage topic if not used by any other topic ...
++     */
++    private void clearImport() {
++        /** import data is, date of last import, complete or not complete, error objects */
++        Vector allGeoObjects = cm.getTopics(getWorkspaceGeoType(workspaceId).getID());
++        Vector allRelatedTopics = new Vector();
++        System.out.println(&quot;[ImportWorker] cleaning up (&quot;+getWorkspaceGeoType(workspaceId).getName()+&quot;). In number--- (&quot; +allGeoObjects.size()+ &quot;)&quot;);
++        for (int i = 0; i &lt; allGeoObjects.size(); i++) {
++            BaseTopic baseTopic = (BaseTopic) allGeoObjects.get(i);
++            Vector relatedTopics = as.getRelatedTopics(baseTopic.getID(), ASSOCTYPE_ASSOCIATION, 2);
++            for (int j = 0; j &lt; relatedTopics.size(); j++) {
++                BaseTopic relatedTopic = (BaseTopic) relatedTopics.get(j);
++                if (relatedTopic.getType().equals(ImportServlet.TOPICTYPE_EVT_BEZIRK) ||
++                        relatedTopic.getType().equals(ImportServlet.TOPICTYPE_EVT_KATEGORIE)) {
++                    //
++                } else {
++                    // store topicID in Vector for later removal
++                    allRelatedTopics.add(relatedTopic);
++                }
++            }
++            directiveDeletion(baseTopic.getID());
++            //
++        }
++        //
++        System.out.println(&quot;[ImportWorker] is starting to delete &quot;+allRelatedTopics.size()+&quot; relatedTopics (just if one entry has no associations)---&quot;);
++        for (int k = 0; k &lt; allRelatedTopics.size(); k++) {
++            BaseTopic relTopic = (BaseTopic) allRelatedTopics.get(k);
++            //
++            if (cm.getAssociationIDs(relTopic.getID(), 1).size() &gt; 0) {
++               // System.out.println(&quot;&gt;&gt;&gt; relTopic (&quot;+relTopic.getID()+&quot;) \&quot;&quot;+relTopic.getName()+&quot;\&quot; not to delete, has &quot;+cm.getAssociationIDs(relTopic.getID(), 1).size()+&quot; other associations&quot;);
++            } else {
++               directiveDeletion(relTopic.getID());
++            }
++        }
++    }
++
++    /** performs a clear deletion of a topic with all it`s associations and it`s removal from all maps*/
++    private void directiveDeletion(String topicID) {
++		// CorporateDirectives myDirective = as.deleteTopic(topicID, 1);	// ### version=1
++        try {
++            LiveTopic topic = as.getLiveTopic(topicID, 1);
++            if (topic != null) {
++                // topic.del
++                CorporateDirectives newDirectives = as.deleteTopic(topic.getID(), 1);	// ### version=1
++                newDirectives.updateCorporateMemory(as, null, null, null);
++            }
++        } catch (DeepaMehtaException dex) {
++            // yeah, it`s not known to CM..
++        }
++	}
++
++    /**
++       * just reads in THE xml String from berlin.de and saves every single event into the kiezatlas cm
++     *
++     * @param xmlData
++     * @return
++     */
++    private Vector parseAndStoreData(String xmlData) {
++    Vector topicIds = new Vector();
++    try {
++
++        DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
++        DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
++        Document doc = docBuilder.parse(new InputSource(new StringReader(xmlData)));
++
++        // normalize text representation..
++        doc.getDocumentElement().normalize();
++        //
++        NodeList listOfProjects = doc.getElementsByTagName(&quot;project&quot;);
++        int amountOfProjects = listOfProjects.getLength();
++        System.out.println(&quot;&quot;);
++        System.out.println(&quot; --- Import started at &quot;+DeepaMehtaUtils.getTime() +&quot; for a total no of &quot; + amountOfProjects + &quot; &quot; + getWorkspaceGeoType(workspaceId).getName());
++        // for(int s = 0; s &lt; listOfProjects.getLength(); s++){
++        System.out.println(&quot; -- &quot;);
++        System.out.println(&quot;&quot;);
++        Vector misspelledObjects = new Vector();
++        // iterate over projects
++        for(int p = 0; p &lt; amountOfProjects; p++) {
++            // fields of each project
++            String projectName = &quot;&quot;, eventDescription = &quot;&quot;, originId = &quot;&quot;, contactPerson = &quot;&quot;, projectUrl = &quot;&quot;, postcode = &quot;&quot;, streetNr = &quot;&quot;, bezirk = &quot;&quot;, orgaName = &quot;&quot;,
++                    orgaWebsite = &quot;&quot;, orgaContact = &quot;&quot;, timeStamp = &quot;&quot;;
++            Vector zielgruppen = new Vector();
++            NodeList projectDetail = listOfProjects.item(p).getChildNodes();
++            // System.out.println(&quot;&gt;&gt; projectDetail has childs in number : &quot; + projectDetail.getLength());
++            for (int i = 0; i &lt; projectDetail.getLength(); i++) {
++                Node node = projectDetail.item(i);
++                // System.out.println(&quot;&gt;&gt;&gt; node is &quot; + node.getNodeName() + &quot; : &quot; + node.getNodeValue() + &quot; (&quot; + node.getNodeType()+&quot;)&quot;);
++                if (node.hasChildNodes()) {
++                    NodeList details = node.getChildNodes();
++                    for (int j = 0; j &lt; details.getLength(); j++) {
++                        Node detailNode = details.item(j);
++                        if (detailNode.hasChildNodes()) {
++                            // System.out.println(&quot;&gt;&gt;&gt;&gt; &quot;+detailNode.getNodeName()+&quot; is &quot;);
++                            for(int k = 0; k &lt; detailNode.getChildNodes().getLength(); k++) {
++                                Node contentNode = detailNode.getChildNodes().item(k);
++                                if (contentNode.hasChildNodes()) {
++                                    // process deep project info, such as categories
++                                    for (int l = 0; l &lt; contentNode.getChildNodes().getLength(); l++) {
++                                        Node anotherNode = contentNode.getChildNodes().item(l);
++                                        if (contentNode.getNodeName().equals(&quot;contact&quot;)) {
++                                            // it`s THE contact person
++                                            contactPerson = anotherNode.getNodeValue();
++                                            // System.out.println(&quot;&gt; ansprechpartner: &quot; + anotherNode.getNodeValue());
++                                        } else if (contentNode.getNodeName().equals(&quot;adress&quot;)) {
++                                            // it`s THE point of interest
++                                            streetNr = anotherNode.getNodeValue();
++                                            // System.out.println(&quot;&gt; anlaufstelle: &quot; + anotherNode.getNodeValue());
++                                        } else if (contentNode.getNodeName().equals(&quot;postcode&quot;)) {
++                                            // it`s THE code of interest
++                                            postcode = anotherNode.getNodeValue();
++                                            // System.out.println(&quot;&gt; plz: &quot; + anotherNode.getNodeValue());
++                                        } else if (contentNode.getNodeName().equals(&quot;location&quot;)) {
++                                            // it`s THE category \&quot;Bezirk\&quot;
++                                            bezirk = anotherNode.getNodeValue();
++                                            // bezirk
++                                            // System.out.println(&quot;&gt; bezirk: &quot; + bezirk);
++                                        } else if (contentNode.getNodeName().equals(&quot;zielgruppen&quot;)) {
++                                            // these are target groups for this project
++                                            // System.out.println(&quot;&gt; zielgruppen: &quot;); // + anotherNode.getNodeValue());
++                                            zielgruppen = readInCategories(anotherNode.getNodeValue());
++                                        } else {
++                                            System.out.println(&quot;*** ImportServlet found unknown category for a POI while importing from ehrenamt.&quot;);
++                                        }
++                                    }
++                                } else {
++                                    // check for other interesting data such as
++                                    //
++                                    if(detailNode.getNodeName().equals(&quot;created&quot;)) {
++                                        // System.out.println(&quot;&gt; timestamp is : &quot; + contentNode.getNodeValue());
++                                        timeStamp = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;projectname&quot;)) {
++                                        // System.out.println(&quot;- Name is \&quot; &quot; + contentNode.getNodeValue() + &quot;\&quot;&quot;);
++                                        projectName = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;projectdescr&quot;)) {
++                                        // System.out.println(&quot;- Name is \&quot; &quot; + contentNode.getNodeValue() + &quot;\&quot;&quot;);
++                                        eventDescription = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;projecturl&quot;)) {
++                                        // obsolete ? all needed infos should be right here..
++                                        projectUrl = contentNode.getNodeValue();
++                                        // System.out.println(&quot;&gt;website at : &quot; + contentNode.getNodeValue());
++                                    } else if (detailNode.getNodeName().equals(&quot;organisationname&quot;)) {
++                                        // System.out.println(&quot;&gt;organ. is : &quot; + contentNode.getNodeValue());
++                                        orgaName = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;contact&quot;)) {
++                                        // System.out.println(&quot;&gt;contactperson is : &quot; + contentNode.getNodeValue());
++                                        orgaContact = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;url&quot;)) {
++                                        // System.out.println(&quot;&gt;projectpage at : &quot; + contentNode.getNodeValue());
++                                        orgaWebsite = contentNode.getNodeValue();
++                                    } else if (detailNode.getNodeName().equals(&quot;id&quot;)) {
++                                        // System.out.println(&quot;&gt;projectpage at : &quot; + contentNode.getNodeValue());
++                                        originId = contentNode.getNodeValue();
++                                    }
++                                    //System.out.println(&quot;data is: &quot; + contentNode.getNodeValue());
++                                }
++                            }
++                        }
++                    }
++                }
++            }
++            // projectData was gathered
++            // store information per project now
++            String topicID = saveProjectData(originId, projectName, eventDescription, contactPerson, projectUrl, postcode, streetNr, bezirk,
++                        orgaName, orgaWebsite, orgaContact, timeStamp, zielgruppen);
++            topicIds.add(topicID);
++        }//end of for loop with p for projects
++        System.out.println(&quot;[ImportWorker] stored data at &quot;+DeepaMehtaUtils.getTime() +&quot; for a total no of &quot; + amountOfProjects + &quot; &quot; + getWorkspaceGeoType(workspaceId).getName());
++    } catch (SAXParseException err) {
++           System.out.println (&quot;** Parsing error&quot; + &quot;, line &quot;
++             + err.getLineNumber () + &quot;, column &quot; + err.getColumnNumber() + &quot;, message: &quot; + err.getMessage());
++    } catch (SAXException e) {
++        Exception x = e.getException ();
++        ((x == null) ? e : x).printStackTrace ();
++
++    } catch (Throwable t) {
++        t.printStackTrace ();
++    }
++    //System.exit (0);
++    return topicIds;
++    }
++
++    /**
++     *  save one item &quot;Event&quot; into the corporate memory with
++     *  reusing existing addresses, webpages and persons
++     *  building up the categorySystem by each item which is in some categories
++     */
++    private String saveProjectData(String originId, String eventName, String eventDescr, String contactPerson, String projectUrl, String postcode, String streetNr, String bezirk, String orgaName,
++            String orgaWebsite, String orgaContact, String timeStamp, Vector zielgruppen) {
++        String topicId = &quot;&quot;;
++        String address = streetNr + &quot;, &quot; + postcode + &quot; &quot; + bezirk;
++        // storing data in corporate memory
++        String geoTypeId = getWorkspaceGeoType(workspaceId).getID();
++        LiveTopic geoObjectTopic = as.createLiveTopic(as.getNewTopicID(), geoTypeId, eventName, null);
++        //
++        as.setTopicProperty(geoObjectTopic, PROPERTY_NAME, eventName);
++        String descr = &quot;&quot;;
++        if (eventDescr.length() &gt; 256) { descr = eventDescr.substring(0, 256) + &quot; ...&quot;; } else { descr = eventDescr; }
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_EVENT_DESCRIPTION, descr);
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_PROJECT_ORGANISATION, orgaName);
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_PROJECT_ORIGIN_ID, originId);
++        as.setTopicProperty(geoObjectTopic, ImportServlet.PROPERTY_EVENT_TIME, timeStamp);
++        as.setTopicProperty(geoObjectTopic, PROPERTY_LOCKED_GEOMETRY, &quot;off&quot;);
++        //
++        LiveTopic webpageTopic;
++        LiveTopic contactPersonTopic;
++        LiveTopic addressTopic;
++        LiveTopic cityTopic;
++        // LiveTopic mailTopic;
++        // check for webpage in cm
++        Hashtable webProps = new Hashtable();
++        webProps.put(PROPERTY_URL, projectUrl);
++        Vector webpages = cm.getTopics(TOPICTYPE_WEBPAGE, webProps);
++        // check for URL !!!
++        if (webpages.size() &gt; 0) {
++            webpageTopic = as.getLiveTopic((BaseTopic)webpages.get(0));
++            //
++        } else {
++            webpageTopic = as.createLiveTopic(as.getNewTopicID(), TOPICTYPE_WEBPAGE, projectUrl, null);
++            as.setTopicProperty(webpageTopic.getID(), 1, PROPERTY_URL, projectUrl);
++            // as.setTopicProperty(webpageTopic.getID(), 1, PROPERTY_NAME, &quot;weitere Ehrenamt Projektinfos&quot;);
++        }
++        // check for person in cm
++        BaseTopic knownPerson = cm.getTopic(TOPICTYPE_PERSON, contactPerson, 1);
++        if (knownPerson != null) {
++            contactPersonTopic = as.getLiveTopic(knownPerson);
++        } else {
++            contactPersonTopic = as.createLiveTopic(as.getNewTopicID(), TOPICTYPE_PERSON, contactPerson, null);
++        }
++        // check for City Topic Berlin in cm
++        BaseTopic berlinTopic = cm.getTopic(TOPICTYPE_CITY, &quot;Berlin&quot;, 1);
++        if (berlinTopic != null) {
++            cityTopic = as.getLiveTopic(berlinTopic);
++        } else {
++            cityTopic = null;
++            System.out.println(&quot;[WARNING] ImportWorker is using Property \&quot;Stadt\&quot; at GeoObjectTopic instead of City Topic&quot;);
++            as.setTopicProperty(geoObjectTopic, PROPERTY_CITY, &quot;Berlin&quot;);
++        }
++        // BaseTopic knownMailbox = cm.getTopic(TOPICTYPE_EMAIL_ADDRESS, orgaContact, 1);
++        // check for address in cm
++        BaseTopic knownAddress = cm.getTopic(TOPICTYPE_ADDRESS, streetNr, 1);
++        // check for street in Adress !!
++        if (knownAddress != null) {
++            addressTopic = as.getLiveTopic(knownAddress);
++        } else {
++            addressTopic = as.createLiveTopic(as.getNewTopicID(), TOPICTYPE_ADDRESS, streetNr, null);
++            System.out.println(&quot;&gt;&gt;&gt; created new Address for &quot; + streetNr);
++        }
++        // add postalcode to address topic
++        as.setTopicProperty(addressTopic, PROPERTY_POSTAL_CODE, postcode);
++        as.setTopicProperty(addressTopic, PROPERTY_STREET, streetNr);
++        //
++        LiveAssociation toWebpage = as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), webpageTopic.getID(), null, null);
++        LiveAssociation toPerson = as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), contactPersonTopic.getID(), null, null);
++        LiveAssociation toAddress = as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), addressTopic.getID(), null, null);
++        if (as.getAssociation(addressTopic.getID(), ASSOCTYPE_ASSOCIATION, 2, TOPICTYPE_CITY, true, directives) == null) {
++            LiveAssociation toCity = as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, addressTopic.getID(), cityTopic.getID(), null, null);
++        }
++        // fetch GPS Data from GeoCoder
++        GeoObjectTopic geoObject = (GeoObjectTopic) geoObjectTopic;
++        // ### fixme: if address is just &quot;Berlin&quot; which seems to be happening, then G. has a coordinate for that spot !!!
++        geoObject.setGPSCoordinates(directives);
++        // bezirk label special move
++        if (bezirk.startsWith(&quot;Berlin-&quot;) || bezirk.startsWith(&quot;berlin-&quot;)) {
++            // slice a bit redundancy
++            bezirk = bezirk.substring(7);
++        }
++        // one to one
++        BaseTopic bezirkAlreadyKnown = cm.getTopic(ImportServlet.TOPICTYPE_EVT_BEZIRK, bezirk, 1);
++        if (bezirkAlreadyKnown != null) {
++            // connect to known Bezirk
++            // System.out.println(&quot;&gt;&gt; reusing BezirkTopic \&quot;&quot;+bezirkAlreadyKnown.getName()+&quot;\&quot;&quot;);
++            as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), bezirkAlreadyKnown.getID(), null, null);
++        } else {
++            // new Bezirk and connect to
++            System.out.println(&quot;&gt;&gt; creating &quot;+as.getLiveTopic(ImportServlet.TOPICTYPE_EVT_BEZIRK, 1).getName()+&quot; Topic \&quot;&quot;+bezirk+&quot;\&quot;&quot;);
++            LiveTopic bezirkTopic = as.createLiveTopic(as.getNewTopicID(), ImportServlet.TOPICTYPE_EVT_BEZIRK, bezirk, null);
++            as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), bezirkTopic.getID(), null, null);
++        }
++        // one to many
++        for (int i = 0; i &lt; zielgruppen.size(); i++) {
++            String zielgruppenName = (String) zielgruppen.get(i);
++            BaseTopic knownZielgruppe = cm.getTopic(ImportServlet.TOPICTYPE_EVT_KATEGORIE, zielgruppenName, 1);
++            if (knownZielgruppe != null) {
++                // connect to known cat
++                // System.out.println(&quot;&gt;&gt; reusing ZielgruppenTopic \&quot;&quot;+knownZielgruppe.getName()+&quot;\&quot;&quot;);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), knownZielgruppe.getID(), null, null);
++            } else {
++                System.out.println(&quot;&gt;&gt; creating &quot;+as.getLiveTopic(ImportServlet.TOPICTYPE_EVT_KATEGORIE, 1).getName()+&quot;Topic \&quot;&quot;+zielgruppenName+&quot;\&quot;&quot;);
++                LiveTopic newZielgruppe = as.createLiveTopic(as.getNewTopicID(), ImportServlet.TOPICTYPE_EVT_KATEGORIE, zielgruppenName, null);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), newZielgruppe.getID(), null, null);
++            }
++        }
++        /** / one to many
++        for (int i = 0; i &lt; taetigkeiten.size(); i++) {
++            String taetigkeitName = (String) taetigkeiten.get(i);
++            BaseTopic knownTaetigkeit = cm.getTopic(ImportServlet.TOPICTYPE_ENG_TAETIGKEIT, taetigkeitName, 1);
++            if (knownTaetigkeit != null) {
++                // connect to known cat
++                // System.out.println(&quot;&gt;&gt; reusing ZielgruppenTopic \&quot;&quot;+catAlreadyKnown.getName()+&quot;\&quot;&quot;);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), knownTaetigkeit.getID(), null, null);
++            } else {
++                System.out.println(&quot;&gt;&gt; creating &quot;+as.getLiveTopic(ImportServlet.TOPICTYPE_ENG_TAETIGKEIT, 1).getName()+&quot;Topic \&quot;&quot;+taetigkeitName+&quot;\&quot;&quot;);
++                LiveTopic newTaetigkeiten = as.createLiveTopic(as.getNewTopicID(), ImportServlet.TOPICTYPE_ENG_TAETIGKEIT, taetigkeitName, null);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), newTaetigkeiten.getID(), null, null);
++            }
++        }
++        // one to many
++        for (int i = 0; i &lt; merkmale.size(); i++) {
++            String merkmalsName = (String) merkmale.get(i);
++            BaseTopic merkmalKnown = cm.getTopic(ImportServlet.TOPICTYPE_ENG_MERKMAL, merkmalsName, 1);
++            if (merkmalKnown != null) {
++                // connect to known cat
++                // System.out.println(&quot;&gt;&gt; reusing ZielgruppenTopic \&quot;&quot;+catAlreadyKnown.getName()+&quot;\&quot;&quot;);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), merkmalKnown.getID(), null, null);
++            } else {
++                System.out.println(&quot;&gt;&gt; creating &quot;+as.getLiveTopic(ImportServlet.TOPICTYPE_ENG_MERKMAL, 1).getName()+&quot;Topic \&quot;&quot;+merkmalsName+&quot;\&quot;&quot;);
++                LiveTopic newMerkmal = as.createLiveTopic(as.getNewTopicID(), ImportServlet.TOPICTYPE_ENG_MERKMAL, merkmalsName, null);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), newMerkmal.getID(), null, null);
++            }
++        }
++        // one to many
++        for (int i = 0; i &lt; einsatzbereiche.size(); i++) {
++            String einsatzbereichsName = (String) einsatzbereiche.get(i);
++            BaseTopic knownEinsatzbereich = cm.getTopic(ImportServlet.TOPICTYPE_ENG_EINSATZBEREICH, einsatzbereichsName, 1);
++            if (knownEinsatzbereich != null) {
++                // connect to known cat
++                // System.out.println(&quot;&gt;&gt; reusing ZielgruppenTopic \&quot;&quot;+catAlreadyKnown.getName()+&quot;\&quot;&quot;);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), knownEinsatzbereich.getID(), null, null);
++            } else {
++                System.out.println(&quot;&gt;&gt; creating &quot;+as.getLiveTopic(ImportServlet.TOPICTYPE_ENG_EINSATZBEREICH, 1).getName()+&quot;Topic \&quot;&quot;+einsatzbereichsName+&quot;\&quot;&quot;);
++                LiveTopic newEinsatzbereich = as.createLiveTopic(as.getNewTopicID(), ImportServlet.TOPICTYPE_ENG_EINSATZBEREICH, einsatzbereichsName, null);
++                as.createLiveAssociation(as.getNewAssociationID(), ASSOCTYPE_ASSOCIATION, geoObjectTopic.getID(), newEinsatzbereich.getID(), null, null);
++            }
++        }**/
++        return geoObjectTopic.getID();
++    }
++
++    private Vector readInCategories(String catSeperatedValue) {
++        Vector cats = new Vector();
++        while (catSeperatedValue.indexOf(&quot;;&quot;) != -1) {
++            int pointer = catSeperatedValue.indexOf(&quot;;&quot;);
++            String catName, restName = &quot;&quot;;
++            if (pointer != -1) {
++                catName = catSeperatedValue.substring(0, pointer);
++                restName = catSeperatedValue.substring(pointer + 1);
++                cats.add(catName);
++                //System.out.println(&quot;&gt;&gt; cat: &quot; + catName + &quot; rest: &quot; + restName);
++            }
++            catSeperatedValue = restName;
++        }
++        cats.add(catSeperatedValue);
++        // System.out.println(&quot;&gt;&gt; lastcat: &quot; + catSeperatedValue);
++        return cats;
++    }
++
++    private String sendGetRequest(String endpoint, String requestParameters) {
++        String result = null;
++        if (endpoint.startsWith(&quot;<A HREF="http://">http://</A>&quot;)) {
++            // Send a GET request to the servlet
++            try {
++                // Send data
++                String urlStr = endpoint;
++                if (requestParameters != null &amp;&amp; requestParameters.length() &gt; 0) {
++                    urlStr += &quot;?&quot; + requestParameters;
++                }
++                URL url = new URL(urlStr);
++                System.out.println(&quot;[ImportWorker] sending request to: &quot; + url.toURI().toURL().toString());
++                URLConnection conn = url.openConnection();
++                // Get the response
++                // BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), &quot;ISO-8859-1&quot;));
++                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), &quot;UTF-8&quot;));
++                StringBuffer sb = new StringBuffer();
++                String line;
++                while ((line = rd.readLine()) != null) {
++                    sb.append(line);
++                }
++                rd.close();
++                result = sb.toString();
++                System.out.println(&quot;[ImportWorker] finished loading data from &quot; + url);
++                DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
++                DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
++                Document doc = docBuilder.parse(new InputSource(new StringReader(result)));
++            } catch(UnknownHostException uke) {
++                System.out.println(&quot;*** ImportWorker Thread could not load the xml data to import from &quot; + endpoint + &quot; message is: &quot; + uke.getMessage());
++                return null;
++                // done();
++            } catch (SAXParseException saxp) {
++                System.out.println (&quot;** Parsing error&quot; + &quot;, line &quot;
++                    + saxp.getLineNumber () + &quot;, column &quot; + saxp.getColumnNumber() + &quot;, message: &quot; + saxp.getMessage());
++                System.out.println(&quot;dataValue: &quot; +result.substring(saxp.getColumnNumber()-15, saxp.getColumnNumber()+50));
++                System.out.println(&quot;*** Import Worker is skipping the import for today !&quot;);
++                return null;
++            } catch (Exception ex) {
++                System.out.println(&quot;*** ImportWorker Thread encountered problem: &quot; + ex.getMessage());
++                return null;
++            }
++        }
++        return result;
++    }
++
++    private Vector getGeoObjectInformation(String workspaceId) {
++        BaseTopic geoType = getWorkspaceGeoType(workspaceId);
++        if (geoType == null) {
++            System.out.println(&quot;&gt;&gt; Workspace (&quot;+workspaceId+&quot;) is not configured properly&quot;);
++            return new Vector();
++        }
++        return cm.getTopics(geoType.getID());
++    }
++
++	private Vector getWorkspaces(String userID, Session session) {
++		Vector workspaces = new Vector();
++		//
++        session.setAttribute(&quot;membership&quot;, &quot;&quot;);
++        Vector ws = as.getRelatedTopics(userID, SEMANTIC_MEMBERSHIP, TOPICTYPE_WORKSPACE, 2);
++        Enumeration e = ws.elements();
++        if (!e.hasMoreElements()) {
++            Vector aws = as.getRelatedTopics(userID, SEMANTIC_AFFILIATED_MEMBERSHIP, TOPICTYPE_WORKSPACE, 2);
++            session.setAttribute(&quot;membership&quot;, &quot;Affiliated&quot;);
++            e = aws.elements();
++        }
++		while (e.hasMoreElements()) {
++			BaseTopic w = (BaseTopic) e.nextElement();
++			//if (isKiezatlasWorkspace(w.getID())) {
++			workspaces.addElement(w);
++			//}
++		}
++		//
++		return workspaces;
++	}
++
++    /**
++     * returns null if no topictype whihc is assigned to the given workspace,
++     * is a subtype of &quot;GeoObjectTopic&quot;
++     *
++     * @param workspaceId
++     * @return
++     */
++    private BaseTopic getWorkspaceSubType(String workspaceId, String superTypeId) {
++        //
++        TypeTopic geotype = as.type(superTypeId, 1);
++        Vector subtypes = geotype.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, ASSOCTYPE_USES, 2);
++        int i;
++        for (i = 0; i &lt; workspacetypes.size(); i++) {
++            BaseTopic topic = (BaseTopic) workspacetypes.get(i);
++            int a;
++            for (a = 0; a &lt; subtypes.size(); a++) {
++                // System.out.println(&quot; counter: &quot; + a);
++                String derivedOne = (String) subtypes.get(a);
++                // System.out.println(&quot;    &quot; + derivedOne.getID() + &quot;:&quot; + derivedOne.getName());
++                if (derivedOne.equals(topic.getID())) {
++                    // System.out.println(&quot; found geoType &quot; + topic.getID() + &quot;:&quot; + topic.getName());
++                    return topic;
++                }
++            }
++        }
++        return null;
++    }
++
++    /**
++     * returns null if no topictype whihc is assigned to the given workspace,
++     * is a subtype of &quot;GeoObjectTopic&quot;
++     *
++     * @param workspaceId
++     * @return
++     */
++    private BaseTopic getWorkspaceGeoType(String workspaceId) {
++        //
++        TypeTopic geotype = as.type(TOPICTYPE_KIEZ_GEO, 1);
++        Vector subtypes = geotype.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, ASSOCTYPE_USES, 2);
++        int i;
++        for (i = 0; i &lt; workspacetypes.size(); i++) {
++            BaseTopic topic = (BaseTopic) workspacetypes.get(i);
++            int a;
++            for (a = 0; a &lt; subtypes.size(); a++) {
++                // System.out.println(&quot; counter: &quot; + a);
++                String derivedOne = (String) subtypes.get(a);
++                // System.out.println(&quot;    &quot; + derivedOne.getID() + &quot;:&quot; + derivedOne.getName());
++                if (derivedOne.equals(topic.getID())) {
++                    // System.out.println(&quot; found geoType &quot; + topic.getID() + &quot;:&quot; + topic.getName());
++                    return topic;
++                }
++            }
++        }
++        return null;
++    }
++
++
++    /**
++     * simply retrieves the BaseTopics assigned to a workspace which are used
++     * for navigation in web-frontends
++     *
++     * @param workspaceId
++     * @return
++     */
++    private Vector getKiezCriteriaTypes(String workspaceId)
++    {
++        Vector criterias = new Vector();
++        TypeTopic critType = as.type(TOPICTYPE_CRITERIA, 1);
++        Vector subtypes = critType.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, &quot;at-uses&quot;, 2);
++        for(int i = 0; i &lt; workspacetypes.size(); i++)
++        {
++            BaseTopic topic = (BaseTopic)workspacetypes.get(i);
++            for(int a = 0; a &lt; subtypes.size(); a++)
++            {
++                String derivedOne = (String)subtypes.get(a);
++                if(derivedOne.equals(topic.getID()))
++                {
++                    //System.out.println(&quot;&gt;&gt;&gt; use criteria (&quot; + derivedOne + &quot;) &quot; + topic.getName());
++                    criterias.add(topic);
++                }
++            }
++
++        }
++
++        return criterias;
++    }
++
++}
+\ No newline at end of file
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -255,10 +255,10 @@
+ 	public static final String ACTION_DOWNLOAD_CITYMAP =&quot;downloadCityMap&quot;;
+ 	public static final String ACTION_SHOW_LIST_LEGEND =&quot;showListLegend&quot;;
+ 	// import servlet
+-    public static final String ACTION_SHOW_IMPORTS = &quot;showImports&quot;;
+-    public static final String ACTION_SHOW_REPORT = &quot;showImportReport&quot;;
+-    public static final String ACTION_DO_IMPORT = &quot;doImport&quot;;
+-    public static final String ACTION_RESET_CRITERIAS = &quot;resetCritCats&quot;;
++  public static final String ACTION_SHOW_IMPORTS = &quot;showImports&quot;;
++  public static final String ACTION_SHOW_REPORT = &quot;showImportReport&quot;;
++  public static final String ACTION_DO_IMPORT = &quot;doImport&quot;;
++  public static final String ACTION_RESET_CRITERIAS = &quot;resetCritCats&quot;;
+ 
+ 
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -1,10 +1,10 @@
+ package de.kiezatlas.deepamehta;
+ 
+ import de.deepamehta.BaseTopic;
+-import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.service.*;
+ import de.deepamehta.service.web.JSONRPCServlet;
+ import de.deepamehta.topics.TypeTopic;
++import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import java.util.Hashtable;
+ import java.util.Vector;
+ import java.util.regex.Matcher;
+@@ -89,11 +89,12 @@
+     private String getWorkspaceCriterias(String params)
+     {
+         System.out.println(&quot;&gt;&gt;&gt;&gt; getWorkspaceCriterias(&quot; + params + &quot;)&quot;);
+-        String parameters[] = params.split(&quot;:&quot;);
++        String parameters[] = params.split(&quot;,&quot;);
+         String workspaceId = parameters[0];
++        String mapId = parameters[1];
+         StringBuffer messages = null;
+         StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
+-        String criteriaList = createListOfCategorizations(workspaceId.substring(2, workspaceId.length()-2));
++        String criteriaList = createCritCatSystemList(workspaceId.substring(2, workspaceId.length()-2), mapId.substring(2, mapId.length()-2));
+         result.append(criteriaList);
+         result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
+         return result.toString();
+@@ -289,8 +290,9 @@
+         //
+         TopicBean topicBean = as.createTopicBean(topic.getID(), 1);
+         removeCredentialInformation(topicBean);
++        String topicName = removeQuotationMarksFromNames(topicBean.name);
+         bean.append(&quot;{\&quot;id\&quot;: \&quot;&quot; + topicBean.id + &quot;\&quot;,&quot;);
+-        bean.append(&quot;\&quot;name\&quot;: \&quot;&quot; + topicBean.name + &quot;\&quot;,&quot;);
++        bean.append(&quot;\&quot;name\&quot;: \&quot;&quot; + topicName + &quot;\&quot;,&quot;);
+         bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + topicBean.icon + &quot;\&quot;,&quot;);
+         bean.append(&quot;\&quot;properties\&quot;: [&quot;);
+         Vector properties = topicBean.fields;
+@@ -390,30 +392,32 @@
+             else
+                 catList.append(&quot;]},&quot;);
+         }
+-
++        if (criterias.size() == 0) catList.append(&quot;]&quot;);
+         return catList.toString();
+     }
+ 
+     /**
+-     * list of categorizations for one workspace
++     * list of all categorizations for one workspace
+      *
+      * @param workspaceId
+      * @return
+      */
+-    private String createListOfCategorizations(String workspaceId)
++    private String createCritCatSystemList(String workspaceId, String mapId)
+     {
+         StringBuffer objectList = new StringBuffer();
+         objectList.append(&quot;[&quot;);
+-        Vector criterias = getKiezCriteriaTypes(workspaceId);
+-        for(int i = 0; i &lt; criterias.size(); i++)
+-        {
+-            BaseTopic criteria = (BaseTopic) criterias.get(i);
+-            objectList.append(&quot;{\&quot;critId\&quot;: \&quot;&quot; + criteria.getID() + &quot;\&quot;, &quot;);
+-            objectList.append(&quot;\&quot;critName\&quot;: \&quot;&quot; + criteria.getName() + &quot;\&quot;, &quot;);
++        // Vector criterias = getKiezCriteriaTypes(workspaceId);
++        CityMapTopic mapTopic = (CityMapTopic) as.getLiveTopic(mapId, 1);
++        SearchCriteria[] crits = mapTopic.getSearchCriterias();
++        // Vector collectedCrits = new Vector();
++        for (int i = 0; i &lt; crits.length; i++) {
++            SearchCriteria searchCriteria = crits[i];
++            // collectedCrits.add(searchCriteria.criteria.getID());
++            objectList.append(&quot;{\&quot;critId\&quot;: \&quot;&quot; + searchCriteria.criteria.getID() + &quot;\&quot;, &quot;);
++            objectList.append(&quot;\&quot;critName\&quot;: \&quot;&quot; + searchCriteria.criteria.getName() + &quot;\&quot;, &quot;);
+             objectList.append(&quot;\&quot;categories\&quot;: [&quot;);
+-            Vector categories = cm.getTopics(criteria.getID());
+-            for(int c = 0; c &lt; categories.size(); c++)
+-            {
++            Vector categories = cm.getTopics(searchCriteria.criteria.getID());
++            for (int c = 0; c &lt; categories.size(); c++) {
+                 objectList.append(&quot;{&quot;);
+                 objectList.append(&quot;\&quot;catId\&quot;:&quot;);
+                 BaseTopic cat = (BaseTopic)categories.get(c);
+@@ -423,7 +427,7 @@
+                 objectList.append(&quot;\&quot;&quot; + cat.getName() + &quot;\&quot;, &quot;);
+                 objectList.append(&quot;\&quot;catIcon\&quot;:&quot;);
+                 objectList.append(&quot;\&quot;&quot; + as.getLiveTopic(cat).getIconfile() + &quot;\&quot;&quot;);
+-
++                //
+                 int index = categories.indexOf(cat);
+                 if(index == categories.size() - 1) {
+                     objectList.append(&quot;}&quot;);
+@@ -431,9 +435,7 @@
+                     objectList.append(&quot;},&quot;);
+                 }
+             }
+-
+-            int andex = criterias.indexOf(criteria);
+-            if(andex == criterias.size() - 1)
++            if(i == crits.length - 1)
+                 objectList.append(&quot;]}&quot;);
+             else
+                 objectList.append(&quot;]},&quot;);
+@@ -444,7 +446,7 @@
+     }
+ 
+     /**
+-     * simply retrieves the BaseTopics assigned to a workspace which are used
++     * simply retrieves the topics assigned to a workspace which are used
+      * for navigation in web-frontends
+      *
+      * @param workspaceId
+@@ -455,13 +457,13 @@
+         Vector criterias = new Vector();
+         TypeTopic critType = as.type(&quot;tt-ka-kriterium&quot;, 1);
+         Vector subtypes = critType.getSubtypeIDs();
+-        Vector workspacetypes = as.getRelatedTopics(workspaceId, &quot;at-uses&quot;, critType.getID(), 2, true);
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, &quot;at-uses&quot;, TOPICTYPE_TOPICTYPE, 2, true, true);
+         for ( int i = 0; i &lt; workspacetypes.size(); i++ ) {
+             BaseTopic topic = (BaseTopic)workspacetypes.get(i);
+             for ( int a = 0; a &lt; subtypes.size(); a++ ) {
+                 String derivedOne = (String)subtypes.get(a);
+                 if ( derivedOne.equals(topic.getID()) ) {
+-                    //System.out.println(&quot;&gt;&gt;&gt; use criteria (&quot; + derivedOne + &quot;) &quot; + topic.getName());
++                    // System.out.println(&quot;&gt;&gt;&gt; use criteria (&quot; + derivedOne + &quot;) &quot; + topic.getName());
+                     criterias.add(topic);
+                 }
+             }
+@@ -469,6 +471,8 @@
+         return criterias;
+     }
+ 
++    // ### ToDo: as.getLiveTopic().getSearchCriteria();
++    
+     /**
+      * returns null if no topictype whihc is assigned to the given workspace,
+      * is a subtype of &quot;GeoObjectTopic&quot;
+@@ -503,6 +507,11 @@
+         return value.indexOf(&quot;\&quot;&quot;) != -1;
+     }
+ 
++    private String removeQuotationMarksFromNames(String name) {
++        name = name.replaceAll(&quot;\&quot;&quot;, &quot;&quot;);
++        return name;
++    }
++
+     private String removeControlChars(String value) {
+         // html uses carriage-return, line-feed and horizontal tab
+         value = value.replaceAll(&quot;\r&quot;, &quot;\\\\r&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2010-07-09 23:06:45 UTC (rev 91)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2010-07-19 09:08:22 UTC (rev 92)
+@@ -346,12 +346,17 @@
+ 
+ 	// ---
+ 
+-    private String getAddressString() {
++  /** loadGPSCoordinates is the only one who uses this */
++  private String getAddressString() {
+         String result;
+         StringBuffer address = new StringBuffer();
+         // Related Address Topic
+         BaseTopic add = getAddress();
+         if (add != null) {
++            if (add.getName().equals(&quot;&quot;)) {
++              System.out.println(&quot;*** loadGPSCoordinates.WARNING: addressString is empty for: &quot; + getName());
++              return &quot;&quot;;
++            } // no streetname and housenumber available return empty all to GeoCoder
+             // Streetname and Housenumber
+             address.append(add.getName());
+         } else {
+@@ -365,7 +370,7 @@
+         return result;
+ 	}
+ 
+-    public BaseTopic getAddress() {
++  public BaseTopic getAddress() {
+ 		try {
+ 			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
+ 		} catch (AmbiguousSemanticException e) {
+@@ -563,6 +568,7 @@
+     public String[] loadGPSCoordinates(CorporateDirectives directives) {
+         //
+         String givenAddress = getAddressString();
++        if (givenAddress.equals(&quot;&quot;)) return new String[4]; // skip gps fetch for just &quot; Berlin&quot; without a street
+         StringBuffer requestUrl = new StringBuffer(&quot;<A HREF="http://maps.google.com/maps/geo?">http://maps.google.com/maps/geo?</A>&quot;);
+         requestUrl.append(&quot;q=&quot;);
+         requestUrl.append(convertAddressForRequest(givenAddress));
+@@ -581,7 +587,7 @@
+                     //System.out.println(inputLine);
+                     String[] points = inputLine.split(&quot;,&quot;);
+                     if (points[2].equals(&quot;0&quot;) &amp;&amp; points[3].equals(&quot;0&quot;)) {
+-                        System.out.println(&quot;    geoCoder is lazy, could not locate GeoObjects (&quot;+this.getAddressString()+&quot;) G coordinates, trying again &quot; + i);
++                        System.out.println(&quot;[WARNING] .. geoCoder is lazy, could not locate GeoObjects (&quot;+this.getAddressString()+&quot;) G coordinates, trying again &quot; + i);
+                     } else {
+                         return points;
+                     }
+@@ -593,10 +599,11 @@
+                 return new String[4];
+             }
+         }
+-        System.out.println(&quot;    GeoObjectTopic (&quot;+this.getID()+&quot;) was not able to load coordinates for &quot;+convertAddressForRequest(givenAddress)+&quot; !&quot;);
++        System.out.println(&quot;[WARNING] GeoObjectTopic (&quot;+this.getID()+&quot;) was not able to load coordinates for &quot;+convertAddressForRequest(givenAddress)+&quot; !&quot;);
+         return new String[4];
+     }
+ 
++    /** */
+     public void setGPSCoordinates(CorporateDirectives directives) {
+         boolean emptyLat = (!as.getTopicProperty(this, PROPERTY_GPS_LAT).equals(&quot;&quot;)) ? true : false;
+         boolean emptyLong = (!as.getTopicProperty(this, PROPERTY_GPS_LONG).equals(&quot;&quot;)) ? true : false;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000079.html">[Kiezatlas-svn] r91 - in trunk: docs images pages src/de	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#80">[ date ]</a>
+              <a href="thread.html#80">[ thread ]</a>
+              <a href="subject.html#80">[ subject ]</a>
+              <a href="author.html#80">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

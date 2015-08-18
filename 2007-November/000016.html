@@ -1,0 +1,545 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r24 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2007-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r24%20-%20in%20trunk%3A%20db/patches%20docs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200711211606.lALG6OAk014824%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000015.html">
+   <LINK REL="Next"  HREF="000017.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r24 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r24%20-%20in%20trunk%3A%20db/patches%20docs%20pages%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200711211606.lALG6OAk014824%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r24 - in trunk: db/patches docs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed Nov 21 17:06:24 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000015.html">[Kiezatlas-svn] r23 - in trunk: db/patches pages
+</A></li>
+        <LI>Next message: <A HREF="000017.html">[Kiezatlas-svn] r25 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16">[ date ]</a>
+              <a href="thread.html#16">[ thread ]</a>
+              <a href="subject.html#16">[ subject ]</a>
+              <a href="author.html#16">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2007-11-21 17:06:15 +0100 (Wed, 21 Nov 2007)
+New Revision: 24
+
+Modified:
+   trunk/db/patches/ka-1.5.sql
+   trunk/docs/session.txt
+   trunk/pages/GeoObjectForm.jsp
+   trunk/pages/GeoObjectHome.jsp
+   trunk/pages/GeoObjectInfo.jsp
+   trunk/pages/GeoObjectList.jsp
+   trunk/pages/KiezAtlas.jsp
+   trunk/pages/frameset.jsp
+   trunk/pages/kiezatlas.css
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+   trunk/src/de/kiezatlas/deepamehta/GeoObject.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+1) extended ka-1.5.sql patch with 3 updates of cardinal numbers
+2) Improved fancy control flow in browse servlet and Listing of Objects with Address preview
+3) rechecked editservlet
+4) reverted frameset.jsp
+5) improved mapLinkBlock
+6) Extended getCity() in GeoobjectTopic,
+7) clearified css and session.txt
+..
+
+
+Modified: trunk/db/patches/ka-1.5.sql
+===================================================================
+--- trunk/db/patches/ka-1.5.sql	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/db/patches/ka-1.5.sql	2007-11-21 16:06:15 UTC (rev 24)
+@@ -144,6 +144,8 @@
+ 
+ --- Update for Person Ansprechpartner Ordinal Number for InfoPage
+ UPDATE AssociationProp SET PropValue='170' WHERE AssociationID='a-ka-34' AND PropName='Ordinal Number';
++UPDATE AssociationProp SET PropValue='155' WHERE AssociationID='a-ka-8' AND PropName='Ordinal Number';
++UPDATE AssociationProp SET PropValue='198' WHERE AssociationID='a-ka-19' AND PropName='Ordinal Number';
+ 
+ 
+ --- Version Change
+
+Modified: trunk/docs/session.txt
+===================================================================
+--- trunk/docs/session.txt	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/docs/session.txt	2007-11-21 16:06:15 UTC (rev 24)
+@@ -97,7 +97,7 @@
+ Global
+ ------
+ 
+-inst				BaseTopic
++geo				BaseTopic
+ 
+ 
+ ForumAdministration
+
+Modified: trunk/pages/GeoObjectForm.jsp
+===================================================================
+--- trunk/pages/GeoObjectForm.jsp	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/GeoObjectForm.jsp	2007-11-21 16:06:15 UTC (rev 24)
+@@ -10,7 +10,7 @@
+ 		KiezAtlas.PROPERTY_WEB_ALIAS,
+ 		KiezAtlas.PROPERTY_YADE_X,
+ 		KiezAtlas.PROPERTY_YADE_Y,
+-		&quot;City&quot;, &quot;Title&quot;, &quot;Content&quot;,
++		&quot;Title&quot;, &quot;Content&quot;,
+ 		&quot;Width&quot;, &quot;Height&quot;};
+ %&gt;
+ &lt;%
+
+Modified: trunk/pages/GeoObjectHome.jsp
+===================================================================
+--- trunk/pages/GeoObjectHome.jsp	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/GeoObjectHome.jsp	2007-11-21 16:06:15 UTC (rev 24)
+@@ -8,7 +8,7 @@
+ 	String imageFile = topicBean.getValue(&quot;Image / File&quot;);
+ 	if (imageFile != null) {
+ 		String relativePath = &quot;../../dm-images/images/&quot;;
+-		String imageHtmlString = &quot;&lt;img src=&quot; + relativePath + imageFile + &quot;&gt;&quot;;
++		String imageHtmlString = &quot;&lt;/br&gt;&lt;img src=&quot; + relativePath + imageFile + &quot;&gt;&quot;;
+ 		out.println(imageHtmlString);
+ 	}
+ 	topicBean.removeFieldsContaining(&quot;Image&quot;);
+@@ -24,7 +24,7 @@
+ 	// Name as Headline
+ 	out.println(&quot;&lt;H2&gt;&quot; + topicBean.getValue(&quot;Name&quot;) + &quot;&lt;/H2&gt;&quot;);
+ 	//hier die topic bean rinne
+-	out.println(html.info(topicBean));
++	out.println(html.info(topicBean, DeepaMehtaConstants.BEAN_LAYOUT_BOX));
+ 	// link to form page
+ 	out.println(&quot;&lt;p&gt;\r&quot; + html.link(&quot;Zum &Auml;nderungsformular&quot;, KiezAtlas.ACTION_SHOW_GEO_FORM) + &quot;&lt;/p&gt;&quot;);
+ 	// link to forum administration page
+
+Modified: trunk/pages/GeoObjectInfo.jsp
+===================================================================
+--- trunk/pages/GeoObjectInfo.jsp	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/GeoObjectInfo.jsp	2007-11-21 16:06:15 UTC (rev 24)
+@@ -34,21 +34,29 @@
+ 	//Print Adress if available on this Topic includind directlink to bvg
+ 	try { 
+ 		if (topicBean.getValue(&quot;Address / Street&quot;) != null) {
+-			// turnaround if no property &quot;Stadt&quot; grab related Address / City
+-			Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+-			String city = &quot;&quot;;
+-			if (tmp != null) {
++			// first comes the property and as second the possible related address topic 
++			String city = topicBean.getValue(&quot;Stadt&quot;);
++			if (city == null) {
++				Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
+ 				if (tmp.size() &gt; 0) {
+ 					city = ((BaseTopic) tmp.elementAt(0)).getName();
+-				}	
+-			} else {
+-				city = topicBean.getValue(&quot;Stadt&quot;);
++				} else {
++					city = &quot;&quot;;
++				}
+ 			}
+-			 
++			
+ 			String street = topicBean.getValue(&quot;Address / Street&quot;);
+ 			String postalCode = topicBean.getValue(&quot;Address / Postal Code&quot;);
+-			//fetch maplink block
++			// fetch maplink block
+ 			out.println(mapLink(street, postalCode, city));
++		} else {
++			// Trotzdem die Stadt rausschreiben wenn keine adresse da ist..
++			String city = topicBean.getValue(&quot;Stadt&quot;);
++			Vector tmp = topicBean.getValues(&quot;Address / City&quot;);
++			if (city == null &amp;&amp; tmp.size() &gt; 0) {
++				city = ((BaseTopic) tmp.elementAt(0)).getName();
++			}
++			out.println(city);
+ 		}
+ 	} catch (DeepaMehtaException ex){
+ 		out.println(&quot;Bitte Entschuldigung Sie, es ist ein Fehler aufgetreten: &quot; + ex);	
+@@ -69,6 +77,5 @@
+ 			&quot; enth&auml;lt &quot;+ commentCount + &quot; Kommentare&lt;/p&gt;&quot;);
+ 	}
+ 	// cleanup session for switching maps within one session
+-	session.setAttribute(&quot;topicBean&quot;, null);
+ %&gt;
+ &lt;% end(out); %&gt;
+
+Modified: trunk/pages/GeoObjectList.jsp
+===================================================================
+--- trunk/pages/GeoObjectList.jsp	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/GeoObjectList.jsp	2007-11-21 16:06:15 UTC (rev 24)
+@@ -29,14 +29,11 @@
+ 			&quot;\&quot;&gt;&quot; + inst.getName() + &quot;&lt;/a&gt;&quot;);
+ 		// address
+ 		Hashtable address = (Hashtable) addresses.get(inst.getID());
+-		if (address != null) {
+-			String street = (String) address.get(KiezAtlas.PROPERTY_STREET);
+-	    	String postcode = (String) address.get(KiezAtlas.PROPERTY_POSTAL_CODE);
+-			String city = (String) address.get(KiezAtlas.PROPERTY_CITY);
+-			if (street != null || postcode != null || city != null) {
+-				out.println(&quot;&lt;br&gt;&lt;small&gt;&quot; + street + &quot;&nbsp;&nbsp;&nbsp;&quot; + postcode + &quot; &quot; + city + &quot;&lt;/small&gt;&quot;);
+-			}
+-		}
++		
++		String street = (String) address.get(KiezAtlas.PROPERTY_STREET);
++	    String postcode = (String) address.get(KiezAtlas.PROPERTY_POSTAL_CODE);
++		String city = (String) address.get(KiezAtlas.PROPERTY_CITY);
++		out.println(&quot;&lt;br&gt;&lt;small&gt;&quot; + (street != null ? street + &quot;&nbsp;&nbsp;&nbsp;&quot; : &quot;&quot;) + (postcode != null ? postcode + &quot; &quot; : &quot;&quot;) + city + &quot;&lt;/small&gt;&quot;);
+ 		out.println(&quot;&lt;/td&gt;&quot;);
+ 		out.println(&quot;&lt;/tr&gt;&quot;);
+ 	}
+
+Modified: trunk/pages/KiezAtlas.jsp
+===================================================================
+--- trunk/pages/KiezAtlas.jsp	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/KiezAtlas.jsp	2007-11-21 16:06:15 UTC (rev 24)
+@@ -136,9 +136,10 @@
+ 			String mapURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=">http://www.fahrinfo-berlin.de/gis/index.jsp?adr_zip=</A>&quot; + postalCode + &quot;&amp;adr_street=&quot; + streetname + &quot;&amp;adr_house=&quot; + hnr;
+ 			String imageLink = &quot; &lt;a href=\&quot;&quot; + mapURL + &quot;\&quot; target=\&quot;fahrinfo\&quot;&gt;&lt;img src=\&quot;../images/fahrinfo.gif\&quot; border=\&quot;0\&quot; hspace=\&quot;20\&quot;&gt;&lt;/a&gt;&quot;;
+ 			String blockString = street + &quot; &quot; + imageLink + &quot;&lt;/br&gt;&quot; + postalCode + &quot; &quot; + city;			
+-			return blockString; 
++			return blockString;
+ 		} else {
+-			return street;
++			String blockString = street + &quot;&lt;/br&gt;&quot; +  postalCode + &quot; &quot; +city;
++			return blockString;
+ 		}
+ 	}
+ 
+
+Modified: trunk/pages/frameset.jsp
+===================================================================
+--- trunk/pages/frameset.jsp	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/frameset.jsp	2007-11-21 16:06:15 UTC (rev 24)
+@@ -5,21 +5,11 @@
+ &lt;/head&gt;
+ 
+ 	&lt;%
+-		TopicBean topicBean = (TopicBean) session.getAttribute(&quot;topicBean&quot;);
+-			
+-		if (topicBean != null) {
+-			System.out.println(&quot;&gt; set rightFrame to  &quot; + topicBean.id);
+ 			out.println(&quot;&lt;frameset cols=\&quot;*,320\&quot;&gt;&quot;);
+-				out.println(&quot;&lt;frame name =\&quot;left\&quot; src=\&quot;../pages/blank.html\&quot;/&gt;&quot;);
+-				out.println(&quot;&lt;frame name =\&quot;right\&quot; src=\&quot;controller?action=initFrame&amp;frame=&quot; +KiezAtlas.FRAME_RIGHT+ &quot;&amp;id=&quot; +topicBean.id+ &quot;\&quot;/&gt;&quot;);
+-			out.println(&quot;&lt;/frameset&gt;&quot;);
+-		} else {
+-			System.out.println(&quot;&gt; set rightFrame to criterias or list all institutions&quot;);
+-			out.println(&quot;&lt;frameset cols=\&quot;*,320\&quot;&gt;&quot;);
+-				out.println(&quot;&lt;frame name =\&quot;left\&quot; src=\&quot;../pages/blank.html\&quot;/&gt;&quot;);
+-				out.println(&quot;&lt;frame name =\&quot;right\&quot; src=\&quot;controller?action=initFrame&amp;frame=&quot; +KiezAtlas.FRAME_RIGHT+ &quot;\&quot;/&gt;&quot;);
++			out.println(&quot;&lt;frame name =\&quot;left\&quot; src=\&quot;../pages/blank.html\&quot;/&gt;&quot;);
++			out.println(&quot;&lt;frame name =\&quot;right\&quot; src=\&quot;controller?action=initFrame&amp;frame=&quot; +KiezAtlas.FRAME_RIGHT+ &quot;\&quot;/&gt;&quot;);
+ 			out.println(&quot;&lt;/frameset&gt;&quot;);		
+-		}
++			
+ 	%&gt;
+ 	
+ &lt;/html&gt;
+
+Modified: trunk/pages/kiezatlas.css
+===================================================================
+--- trunk/pages/kiezatlas.css	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/pages/kiezatlas.css	2007-11-21 16:06:15 UTC (rev 24)
+@@ -1,7 +1,10 @@
++body, td {
++	font-family: Verdana, Arial, Lucida Sans;
++	font-size: 12px;
++}
++
+ body {
+ 	background-color: #FFFFFF;
+-	font-family: Verdana, Arial;
+-	font-size: 12px;
+ }
+ 
+ .big {
+@@ -24,7 +27,7 @@
+ 
+ /* used to display the label/key/name of the property */
+ .label {
+-	font-family: Verdana, Arial;
++	font-family: Verdana, Arial, Lucida Sans;
+ 	font-size: 10px;
+ 	color: #666;
+ 	font-weight: bold;
+@@ -32,14 +35,14 @@
+ 
+ /* used to display the value of the property for every layout mostly typo */
+ .content {
+-	color: #000;
+-	font-family: Verdana, Arial;
++	font-color: #000;
++	font-family: Verdana, Arial, Lucida Sans;
+ 	font-size: 12px;
+ }
+ 
+ /* used in the Flow and Box Layout as the background for the one big div container instead of table, starts below the image and fahrplan link */
+-/* rename to infoContainer and integrate into table layout*/
+-.wholeInfo {
++
++.infoContainer {
+ 	align: left;
+ 	width: 95%;
+ 	text-align: left;
+@@ -53,7 +56,7 @@
+ .multiBox {
+ 	position: relative;
+ 	color: #000;
+-	font-family: Verdana, Arial;
++	font-family: Verdana, Arial, Lucida Sans;
+ 	font-size: 12px;
+ 	#padding-left: 20px; 
+ 	padding: 10px;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-11-21 16:06:15 UTC (rev 24)
+@@ -13,6 +13,7 @@
+ import javax.swing.ImageIcon;
+ 
+ import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaConstants;
+ import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.PresentableTopic;
+ import de.deepamehta.service.Session;
+@@ -31,7 +32,7 @@
+  * Kiez-Atlas 1.5&lt;br&gt;
+  * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 12.11.2007&lt;br&gt;
++ * Last change: 15.11.2007&lt;br&gt;
+  * Malte Rei&szlig;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+@@ -58,6 +59,7 @@
+ 					session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 					setCityMap(CityMapTopic.lookupCityMap(kiez, true, as), session);	// throwIfNotFound=true
+ 				} else {
++					session.setAttribute(&quot;topicBean&quot;, null);
+ 					setCityMap(CityMapTopic.lookupCityMap(alias, true, as), session);	// throwIfNotFound=true
+ 				}
+ 				initInstitutaionType(session);	// relies on city map
+@@ -82,17 +84,21 @@
+ 		//
+ 		if (action.equals(ACTION_INIT_FRAME)) {
+ 			String frame = params.getValue(&quot;frame&quot;);
+-			String id = params.getValue(&quot;id&quot;);
++			TopicBean topicBean = (TopicBean) session.getAttribute(&quot;topicBean&quot;);
+ 			if (frame.equals(FRAME_LEFT)) {
+-				//selectMarker
++				//selectMarker if topicBean is set / form external call
++				if(topicBean != null){
++					setSelectedGeo(topicBean.id, session);
++				}					
+ 				return PAGE_CITY_MAP;
+ 			} else if (frame.equals(FRAME_RIGHT)) {
+-				if (id != null) {
++				if (topicBean != null) {
+ 					//try to show a given GeoObject, have to set a hotspot
+ 					String mapID = getCityMap(session).getID(); // ### just for the hotspot
+ 					String instTypeID = getInstitutionType(session).getID(); // ### just for the hotspot 
+ 					setSearchMode(&quot;0&quot;, session); // ### i have to set a searchmode
+-					GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(id, 1);
++					
++					GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(topicBean.id, 1);
+ 					boolean isForumActivated = geo.isForumActivated();
+ 					session.setAttribute(&quot;forumActivition&quot;, isForumActivated ? SWITCH_ON : SWITCH_OFF);
+ 					if (isForumActivated) {
+@@ -104,7 +110,7 @@
+ 					return PAGE_GEO_INFO;
+ 				} else if (getCriterias(session).length &gt; 0) {
+ 					// list categories of 1st search criteria, if there is a criteria at all
+-					setSearchMode(&quot;1&quot;, session);	// ### was SEARCHMODE_BY_CATEGORY
++					setSearchMode(&quot;0&quot;, session);	// ### was SEARCHMODE_BY_CATEGORY
+ 					return PAGE_CATEGORY_LIST; 
+ 				} else {
+ 					// otherwise list all institutions
+@@ -224,21 +230,19 @@
+ 			// categories &amp; addresses
+ 			Hashtable categories = new Hashtable();
+ 			Hashtable addresses = new Hashtable();
+-			// wenn kein stadt property vorhanden ist, dann gehe weiter zu related topic address
+ 			for (int i = 0; i &lt; insts.size(); i++) {
+ 				BaseTopic t = (BaseTopic) insts.elementAt(i);
+ 				try {
+-					GeoObjectTopic inst = (GeoObjectTopic) as.getLiveTopic(t);
++					GeoObjectTopic geo = (GeoObjectTopic) as.getLiveTopic(t);
+ 					// categories
+ 					String critTypeID = getCriteria(0, session).criteria.getID();
+-					categories.put(inst.getID(), inst.getCategories(critTypeID));
+-					// address
+-					BaseTopic address = inst.getAddress();
+-					if (address != null) {
+-						Hashtable addressProps = as.getTopicProperties(address);
+-						addressProps.put(PROPERTY_CITY, inst.getCity());
+-						addresses.put(inst.getID(), addressProps);
+-					}
++					categories.put(geo.getID(), geo.getCategories(critTypeID));
++					// address		
++					BaseTopic address = geo.getAddress();
++					// if no related address put new hashtable in it for property city
++					Hashtable addressProps = address != null ?  as.getTopicProperties(address) : new Hashtable(); 
++					addressProps.put(PROPERTY_CITY, geo.getCity());
++					addresses.put(geo.getID(), addressProps);
+ 				} catch (ClassCastException e) {
+ 					System.out.println(&quot;*** BrowseServlet.preparePage(): &quot; + t + &quot;: &quot; + e);
+ 					// ### happens if geo object type is not up to date
+
+Modified: trunk/src/de/kiezatlas/deepamehta/EditServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/src/de/kiezatlas/deepamehta/EditServlet.java	2007-11-21 16:06:15 UTC (rev 24)
+@@ -19,12 +19,13 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.4.1.&lt;br&gt;Institution
+- * Requires DeepaMehta 2.0b7-post1.
++ * Kiez-Atlas 1.5&lt;br&gt;
++ * Requires DeepaMehta 2.0b8.
+  * &lt;p&gt;
+- * Last functional change: 17.3.2007&lt;br&gt;
+- * J&ouml;rg Richter&lt;br&gt;
+- * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
++ * Last functional change: 15.11.2007&lt;br&gt;
++ * Last change: 15.10.2007&lt;br&gt;
++ * Malte Rei&szlig;ig&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  */
+ public class EditServlet extends DeepaMehtaServlet implements KiezAtlas {
+ 
+@@ -68,6 +69,8 @@
+ 		} else if (action.equals(ACTION_UPDATE_GEO)) {
+ 			GeoObjectTopic geo = getGeoObject(session);
+ 			updateTopic(geo.getType(), params, session);
++			TopicBean topicBean = as.createTopicBean(geo.getID(), 1);
++			session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 			String newFilename = writeImage(params.getUploads());
+ 			if (newFilename != null) {
+ 				as.setTopicProperty(geo.getImage(), PROPERTY_FILE, newFilename);
+@@ -108,10 +111,9 @@
+ 		} else if (action.equals(ACTION_GO_HOME)) {
+ 			GeoObjectTopic geo = getGeoObject(session);
+ 			// error check
+-			System.out.println(&quot;geo is: &quot; + geo.getID());
++			// System.out.println(&quot;geo is: &quot; + geo.getID());
+ 			if (geo != null) {
+ 				TopicBean topicBean = as.createTopicBean(geo.getID(), 1);
+-				System.out.println(&quot;TopicBeanCreated with id &quot; + topicBean.id );
+ 				session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 			} else {
+ 				System.out.println(&quot;&gt;&gt;&gt;&gt; Could not retrieve GeoObjectTopic from Session&quot;);
+@@ -126,6 +128,8 @@
+ 
+ 	protected void preparePage(String page, RequestParameter params, Session session) {
+ 		if (page.equals(PAGE_GEO_HOME)) {
++			//GeoObjectTopic geoId = (BaseTopic) session.getAttribute(&quot;geo&quot;);
++			
+ 			updateImagefile(session);
+ 		} else if (page.equals(PAGE_FORUM_ADMINISTRATION)) {
+ 			GeoObjectTopic geo = getGeoObject(session);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/GeoObject.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/GeoObject.java	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/src/de/kiezatlas/deepamehta/GeoObject.java	2007-11-21 16:06:15 UTC (rev 24)
+@@ -6,7 +6,14 @@
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
+ import de.kiezatlas.deepamehta.KiezAtlas;
+ 
+-
++/**
++ * Kiez-Atlas 1.5&lt;br&gt;
++ * Requires DeepaMehta 2.0b7-post1.
++ * &lt;p&gt;
++ * Last change: 15.10.2007&lt;br&gt;
++ * Malte Rei&szlig;ig&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
++ */
+ public class GeoObject implements KiezAtlas, Serializable{
+ 	/**
+ 	 *  Value Object/ Bean
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2007-11-15 18:48:16 UTC (rev 23)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2007-11-21 16:06:15 UTC (rev 24)
+@@ -9,6 +9,7 @@
+ 
+ import de.deepamehta.AmbiguousSemanticException;
+ import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaConstants;
+ import de.deepamehta.DeepaMehtaException;
+ import de.deepamehta.PresentableTopic;
+ import de.deepamehta.service.ApplicationService;
+@@ -244,7 +245,26 @@
+ 	
+ 	
+ 	public String getCity() {
+-		return getProperty(PROPERTY_CITY);
++		// if a geoobject has a stadt property, take it and return it
++		// else if a geoobject has an addressTopic assigned, check if there is a city, if so return this city
++		//
++		String city = getProperty(PROPERTY_CITY);
++		BaseTopic address = getAddress();
++		try {
++			if (!city.equals(&quot;&quot;)) {
++				return city;
++			} else if (address != null) {
++				BaseTopic town = as.getRelatedTopic(address.getID(), ASSOCTYPE_ASSOCIATION, &quot;tt-city&quot;, 2, true);
++				if (town != null) {
++					city = town.getName();
++					return city;
++				}				
++			}
++			return &quot;&quot;;
++		} catch (AmbiguousSemanticException aex) {
++			System.out.println(&quot;*** GeoObjectTopic.getCity(): &quot; + aex);
++			return aex.getDefaultTopic().getName();
++		}
+ 	}
+ 
+ 	
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000015.html">[Kiezatlas-svn] r23 - in trunk: db/patches pages
+</A></li>
+	<LI>Next message: <A HREF="000017.html">[Kiezatlas-svn] r25 - in trunk: docs pages	src/de/kiezatlas/deepamehta
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#16">[ date ]</a>
+              <a href="thread.html#16">[ thread ]</a>
+              <a href="subject.html#16">[ subject ]</a>
+              <a href="author.html#16">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

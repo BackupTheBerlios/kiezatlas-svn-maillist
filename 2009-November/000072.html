@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r83 - in trunk: pages src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-November/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r83%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200911200536.nAK5apZH015413%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000071.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r83 - in trunk: pages src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r83%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200911200536.nAK5apZH015413%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r83 - in trunk: pages src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Fri Nov 20 06:36:51 CET 2009</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000071.html">[Kiezatlas-svn] r82 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72">[ date ]</a>
+              <a href="thread.html#72">[ thread ]</a>
+              <a href="subject.html#72">[ subject ]</a>
+              <a href="author.html#72">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-11-20 06:36:47 +0100 (Fri, 20 Nov 2009)
+New Revision: 83
+
+Modified:
+   trunk/pages/Download.jsp
+   trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+   trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+Log:
+Kiezatlas List update for a better Spreadsheet exchange - Part III
+File Writer switched to ISO Latin 1
+
+
+
+Modified: trunk/pages/Download.jsp
+===================================================================
+--- trunk/pages/Download.jsp	2009-11-16 00:32:24 UTC (rev 82)
++++ trunk/pages/Download.jsp	2009-11-20 05:36:47 UTC (rev 83)
+@@ -12,6 +12,6 @@
+     //
+     out.println(&quot;&lt;p&gt;&lt;i&gt;Hinweis: Die aktuellen Daten sind als sog \&quot;.csv\&quot;-Datei unter der Adresse st&auml;ndig abrufbar. &quot; +
+             &quot;F&uuml;r den Import in ein g&auml;ngiges Tabellenkalkulationsprogramm ist folgendes zu beachten: &quot; +
+-            &quot;Die Daten liegen in der sog. &lt;b&gt;UTF-8&lt;/b&gt; Kodierung vor und die Spalten sind mittels &lt;b&gt;Tab&lt;/b&gt; voneinander getrennt. &quot; +
++            &quot;Die Daten liegen in jetzt in der Westeurop&auml;ischen Kodierung vor  (ISO-8859-1) und die Spalten sind mittels &lt;b&gt;Tab&lt;/b&gt; voneinander getrennt. &quot; +
+             &quot;Kommatas werden zur Trennung nicht eingesetzt. Beim Importvorgang kann es sein dass diese Eigenschaften vom Benutzer anzugeben sind.&lt;/i&gt;&lt;/p&gt;&quot;);
+ %&gt;
+
+Modified: trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2009-11-16 00:32:24 UTC (rev 82)
++++ trunk/src/de/kiezatlas/deepamehta/DownloadWorker.java	2009-11-20 05:36:47 UTC (rev 83)
+@@ -51,8 +51,8 @@
+             File fileToWrite = new File(filePath);
+             fileToWrite.delete(); // delete the former file and start to write the new one
+             FileOutputStream fout = new FileOutputStream(filePath, true);
+-            // OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
+-            OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;UTF-8&quot;);
++            OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
++            // OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;UTF-8&quot;);
+             while(fis.ready()) {
+                 out.write(fis.read());
+             }
+@@ -98,10 +98,6 @@
+         tmp.removeFieldsContaining(&quot;Image&quot;);
+         tmp.removeFieldsContaining(&quot;Forum&quot;);
+         tmp.removeFieldsContaining(&quot;Description&quot;);
+-        tmp.removeField(KiezAtlas.PROPERTY_YADE_X);
+-        tmp.removeField(KiezAtlas.PROPERTY_YADE_Y);
+-        tmp.removeField(KiezAtlas.PROPERTY_GPS_LAT);
+-        tmp.removeField(KiezAtlas.PROPERTY_GPS_LONG);
+         for (int i = 0; i &lt; tmp.fields.size(); i++) {
+             TopicBeanField field = (TopicBeanField) tmp.fields.get(i);
+             headline.append(field.label);
+@@ -124,10 +120,6 @@
+             bean.removeFieldsContaining(&quot;Image&quot;);
+             bean.removeFieldsContaining(&quot;Forum&quot;);
+             bean.removeFieldsContaining(&quot;Description&quot;);
+-            bean.removeField(KiezAtlas.PROPERTY_YADE_X);
+-            bean.removeField(KiezAtlas.PROPERTY_YADE_Y);
+-            bean.removeField(KiezAtlas.PROPERTY_GPS_LAT);
+-            bean.removeField(KiezAtlas.PROPERTY_GPS_LONG);
+             for (int i = 0; i &lt; bean.fields.size(); i++) {
+                 TopicBeanField field = (TopicBeanField) bean.fields.get(i);
+                 if (field.type == TopicBeanField.TYPE_SINGLE) {
+@@ -165,8 +157,8 @@
+                 // System.out.println(&quot;&gt;&gt;&gt;&gt; DownloadWorker.exportFile(): &quot; + filePath);
+                 File fileToWrite = new File(filePath+&quot;.tmp&quot;);
+                 FileOutputStream fout = new FileOutputStream(fileToWrite, true);
+-                // OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
+-                OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;UTF-8&quot;);
++                OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;ISO-8859-1&quot;);
++                // OutputStreamWriter out = new OutputStreamWriter(fout ,&quot;UTF-8&quot;);
+                 out.write(content);
+                 out.close();
+                 System.out.println(&quot;  &gt; temporary file \&quot;&quot; + fileToWrite + &quot;\&quot; successfully written&quot;);
+
+Modified: trunk/src/de/kiezatlas/deepamehta/ListServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-11-16 00:32:24 UTC (rev 82)
++++ trunk/src/de/kiezatlas/deepamehta/ListServlet.java	2009-11-20 05:36:47 UTC (rev 83)
+@@ -764,7 +764,7 @@
+             for (int i = 0; i &lt; maps.size(); i++) {
+                 BaseTopic map = (BaseTopic) maps.get(i);
+                 Vector allTopics = cm.getViewTopics(map.getID(), 1, typeTopic.getID());
+-                counts.put(map.getID(), allTopics.size());
++                counts.put(map.getID(), allTopics.size()); // hashtable does like int's, ### unsafe
+             }
+         }
+         // System.out.println(&quot;&gt;&gt; TIMER: mapCount has finished at : &quot; + DeepaMehtaUtils.getTime(true));
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000071.html">[Kiezatlas-svn] r82 - in trunk: pages src/de/kiezatlas/deepamehta
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#72">[ date ]</a>
+              <a href="thread.html#72">[ thread ]</a>
+              <a href="subject.html#72">[ subject ]</a>
+              <a href="author.html#72">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,1259 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r70 - in trunk: . db/patches libs	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2009-May/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r70%20-%20in%20trunk%3A%20.%20db/patches%20libs%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200905061812.n46ICSXL009117%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000059.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r70 - in trunk: . db/patches libs	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r70%20-%20in%20trunk%3A%20.%20db/patches%20libs%0A%09src/de/kiezatlas/deepamehta%20src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200905061812.n46ICSXL009117%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r70 - in trunk: . db/patches libs	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics">maltito at mail.berlios.de
+       </A><BR>
+    <I>Wed May  6 20:12:31 CEST 2009</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000059.html">[Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63">[ date ]</a>
+              <a href="thread.html#63">[ thread ]</a>
+              <a href="subject.html#63">[ subject ]</a>
+              <a href="author.html#63">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2009-05-06 20:12:21 +0200 (Wed, 06 May 2009)
+New Revision: 70
+
+Added:
+   trunk/db/patches/ka-email-1.6.3.sql
+   trunk/db/patches/ka-gps.sql
+   trunk/libs/
+   trunk/libs/geoGoogle-1.5.0.jar
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+Log:
+Preparations for KiezAtlas 1.6.3 (RPC Servlet &amp; GPS Converter)
+* First RPCs will serve detailed GeoObject Information, Search possibilites, CityMaps and Criterias and Categories for Kiez-Scenarios
+* GPSConverterTopic with corresponding Patch
+* Custom E-Mail Patch for KiezAtlas 
+* Introduced GoogleGeoCoder Library
+
+
+Added: trunk/db/patches/ka-email-1.6.3.sql
+===================================================================
+--- trunk/db/patches/ka-email-1.6.3.sql	2009-04-17 01:00:40 UTC (rev 69)
++++ trunk/db/patches/ka-email-1.6.3.sql	2009-05-06 18:12:21 UTC (rev 70)
+@@ -0,0 +1,114 @@
++
++----------------------------
++--- Update Email Feature from patch 2.18 and 2.19 ka-1.6.2 which i skipped to install then ---
++----------------------------
++
++--- &quot;Recipient&quot; ---
++INSERT INTO Topic VALUES ('tt-assoctype', 1, 1, 'at-recipient', 'Recipient');
++INSERT INTO TopicProp VALUES ('at-recipient', 1, 'Name', 'Recipient');
++INSERT INTO TopicProp VALUES ('at-recipient', 1, 'Plural Name', 'Recipients');
++INSERT INTO TopicProp VALUES ('at-recipient', 1, 'Color', '#E14589');
++
++--- &quot;Sender&quot; ---
++INSERT INTO Topic VALUES ('tt-assoctype', 1, 1, 'at-sender', 'Sender');
++INSERT INTO TopicProp VALUES ('at-sender', 1, 'Name', 'Sender');
++INSERT INTO TopicProp VALUES ('at-sender', 1, 'Plural Name', 'Senders');
++INSERT INTO TopicProp VALUES ('at-sender', 1, 'Color', '#4589E1');
++
++--- &quot;Attachment&quot; ---
++INSERT INTO Topic VALUES ('tt-assoctype', 1, 1, 'at-attachment', 'Attachment');
++INSERT INTO TopicProp VALUES ('at-attachment', 1, 'Name', 'Attachment');
++INSERT INTO TopicProp VALUES ('at-attachment', 1, 'Plural Name', 'Attachments');
++INSERT INTO TopicProp VALUES ('at-attachment', 1, 'Color', '#408000');
++
++
++--- create topic type &quot;Recipient List&quot; ---
++
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-recipientlist', 'Recipient List');
++INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Name', 'Recipient List');
++INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Plural Name', 'Recipient Lists');
++INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Description', '&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;A &lt;i&gt;Recipient List&lt;/i&gt; is ...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;');
++INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Description Query', 'What is a &quot;Recipient List&quot;?');
++INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Icon', 'authentificationsource.gif');
++-- INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Creation Icon', 'createKompetenzstern.gif');
++-- INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Unique Topic Names', 'on');
++INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Custom Implementation', 'de.deepamehta.topics.RecipientListTopic');
++-- super type
++INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-340', '', 'tt-generic', 1, 'tt-recipientlist', 1);
++-- search type
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-recipientlist-search', 'Recipient List Search');
++INSERT INTO TopicProp VALUES ('tt-recipientlist-search', 1, 'Name', 'Recipient List Search');
++-- INSERT INTO TopicProp VALUES ('tt-recipientlist-search', 1, 'Icon', 'event-search.gif');
++-- derive search type
++INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-341', '', 'tt-topiccontainer', 1, 'tt-recipientlist-search', 1);
++-- assign search type to type
++INSERT INTO Association VALUES ('at-aggregation', 1, 1, 'a-342', '', 'tt-recipientlist-search', 1, 'tt-recipientlist', 1);
++
++-- create relation from &quot;Email&quot; to &quot;Recipient List&quot;
++
++INSERT INTO Association VALUES ('at-relation', 1, 1, 'a-343', '', 'tt-email', 1, 'tt-recipientlist', 1);
++INSERT INTO AssociationProp VALUES ('a-343', 1, 'Cardinality', 'many');
++INSERT INTO AssociationProp VALUES ('a-343', 1, 'Association Type ID', 'at-recipient');
++INSERT INTO AssociationProp VALUES ('a-343', 1, 'Web Info', 'Related Topic Name');
++INSERT INTO AssociationProp VALUES ('a-343', 1, 'Web Form', 'Related Topic Selector');
++INSERT INTO AssociationProp VALUES ('a-343', 1, 'Ordinal Number', '35');
++
++--- create association type: &quot;Attachment&quot; ---
++
++INSERT INTO Topic VALUES ('tt-assoctype', 1, 1, 'at-attachment', 'Attachment');
++INSERT INTO TopicProp VALUES ('at-attachment', 1, 'Name', 'Attachment');
++INSERT INTO TopicProp VALUES ('at-attachment', 1, 'Plural Name', 'Attachments');
++INSERT INTO TopicProp VALUES ('at-attachment', 1, 'Color', '#408000');
++
++-- remove association types &quot;attachement&quot; and &quot;e-mail addressee&quot;
++
++DELETE FROM Topic WHERE ID='at-attachement';
++DELETE FROM TopicProp WHERE TopicID='at-attachement';
++DELETE FROM ViewTopic WHERE TopicID='at-attachement';
++DELETE FROM Association WHERE TypeID='at-attachement';
++
++DELETE FROM Topic WHERE ID='at-emailaddressee';
++DELETE FROM TopicProp WHERE TopicID='at-emailaddressee';
++DELETE FROM ViewTopic WHERE TopicID='at-emailaddressee';
++DELETE FROM Association WHERE TypeID='at-emailaddressee';
++
++--- create association type: &quot;Attachment&quot; ---
++
++--- remove supertype of &quot;Recipient&quot; and &quot;Sender&quot; ---
++--- DELETE FROM Association WHERE ID='a-327';
++--- DELETE FROM AssociationProp WHERE AssociationID='a-327';
++--- DELETE FROM ViewAssociation WHERE AssociationID='a-327';
++--- DELETE FROM Association WHERE ID='a-329';
++--- DELETE FROM AssociationProp WHERE AssociationID='a-329';
++--- DELETE FROM ViewAssociation WHERE AssociationID='a-329';
++
++
++--- create property &quot;Recipient Type&quot; ---
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-recipienttype', 'Recipient Type');
++INSERT INTO TopicProp VALUES ('pp-recipienttype', 1, 'Name', 'Recipient Type');
++INSERT INTO TopicProp VALUES ('pp-recipienttype', 1, 'Visualization', 'Options Menu');
++INSERT INTO TopicProp VALUES ('pp-recipienttype', 1, 'Default Value', 'To');
++-- assign property to &quot;Recipient&quot;
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-347', '', 'at-recipient', 1, 'pp-recipienttype', 1);
++INSERT INTO AssociationProp VALUES ('a-347', 1, 'Ordinal Number', '50');
++-- create property values &quot;To&quot;, &quot;Cc&quot;, &quot;Bcc&quot;
++INSERT INTO Topic VALUES ('tt-constant', 1, 1, 't-recipienttype-to', 'To');
++INSERT INTO TopicProp VALUES ('t-recipienttype-to', 1, 'Name', 'To');
++INSERT INTO Topic VALUES ('tt-constant', 1, 1, 't-recipienttype-cc', 'Cc');
++INSERT INTO TopicProp VALUES ('t-recipienttype-cc', 1, 'Name', 'Cc');
++INSERT INTO Topic VALUES ('tt-constant', 1, 1, 't-recipienttype-bcc', 'Bcc');
++INSERT INTO TopicProp VALUES ('t-recipienttype-bcc', 1, 'Name', 'Bcc');
++-- assign property values to &quot;Recipient Type&quot;
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-344', '', 'pp-recipienttype', 1, 't-recipienttype-to', 1);
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-345', '', 'pp-recipienttype', 1, 't-recipienttype-cc', 1);
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-346', '', 'pp-recipienttype', 1, 't-recipienttype-bcc', 1);
++INSERT INTO AssociationProp VALUES ('a-344', 1, 'Ordinal Number', '1');
++INSERT INTO AssociationProp VALUES ('a-345', 1, 'Ordinal Number', '2');
++INSERT INTO AssociationProp VALUES ('a-346', 1, 'Ordinal Number', '3');
++
++
++--- set custom implementation for &quot;Person Search&quot;, &quot;Institution&quot;, and &quot;Institution Search&quot; ---
++INSERT INTO TopicProp VALUES ('tt-personcontainer', 1, 'Custom Implementation', 'de.deepamehta.topics.PersonSearchTopic');
++INSERT INTO TopicProp VALUES ('tt-institution', 1, 'Custom Implementation', 'de.deepamehta.topics.InstitutionTopic');
++INSERT INTO TopicProp VALUES ('tt-institutioncontainer', 1, 'Custom Implementation', 'de.deepamehta.topics.InstitutionSearchTopic');
++
+
+Added: trunk/db/patches/ka-gps.sql
+===================================================================
+--- trunk/db/patches/ka-gps.sql	2009-04-17 01:00:40 UTC (rev 69)
++++ trunk/db/patches/ka-gps.sql	2009-05-06 18:12:21 UTC (rev 70)
+@@ -0,0 +1,42 @@
++
++----------------------------
++--- Intro GPS Converter ---
++----------------------------
++
++--- create topic type &quot;GPS Converter&quot; ---
++
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-gpsconverter', 'GPS Converter');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter', 1, 'Name', 'GPS Converter');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter', 1, 'Plural Name', 'GPS Converters');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter', 1, 'Description', '&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body&gt;&lt;p&gt;A &lt;i&gt;GPS Converter&lt;/i&gt; connected to a Kiezatlas Workspace, transforms all YADEX and YADEY Coordinates of GeoObject subtypes, into additonal LONG and LAT world coordinates...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter', 1, 'Description Query', 'What is a &quot;GPS Converter&quot;?');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter', 1, 'Icon', 'location.png');
++-- INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Creation Icon', 'createKompetenzstern.gif');
++-- INSERT INTO TopicProp VALUES ('tt-recipientlist', 1, 'Unique Topic Names', 'on');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter', 1, 'Custom Implementation', 'de.kiezatlas.deepamehta.topics.GPSConverterTopic');
++-- super type
++INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-120', '', 'tt-generic', 1, 'tt-ka-gpsconverter', 1);
++-- search type
++INSERT INTO Topic VALUES ('tt-topictype', 1, 1, 'tt-ka-gpsconverter-search', 'GPS Converter Search');
++INSERT INTO TopicProp VALUES ('tt-ka-gpsconverter-search', 1, 'Name', 'GPS Converter Search');
++-- derive search type
++INSERT INTO Association VALUES ('at-derivation', 1, 1, 'a-ka-121', '', 'tt-topiccontainer', 1, 'tt-ka-gpsconverter-search', 1);
++-- assign search type to type
++INSERT INTO Association VALUES ('at-aggregation', 1, 1, 'a-ka-122', '', 'tt-ka-gpsconverter-search', 1, 'tt-ka-gpsconverter', 1);
++
++--- create property &quot;GPS LONG&quot; ---
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-gpslong', 'LONG');
++INSERT INTO TopicProp VALUES ('pp-ka-gpslong', 1, 'Name', 'LONG');
++INSERT INTO TopicProp VALUES ('pp-ka-gpslong', 1, 'Visualization', 'Input Field');
++
++--- create property &quot;GPS LAT&quot; ---
++INSERT INTO Topic VALUES ('tt-property', 1, 1, 'pp-ka-gpslat', 'Lattitude');
++INSERT INTO TopicProp VALUES ('pp-ka-gpslat', 1, 'Name', 'LAT');
++INSERT INTO TopicProp VALUES ('pp-ka-gpslat', 1, 'Visualization', 'Input Field');
++
++-- assign GPS properties to &quot;GeoObject&quot;
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-123', '', 'tt-ka-geoobject', 1, 'pp-ka-gpslong', 1);
++INSERT INTO Association VALUES ('at-composition', 1, 1, 'a-ka-124', '', 'tt-ka-geoobject', 1, 'pp-ka-gpslat', 1);
++
++-- assign GPS Converter Topic to Adminstration Workgroup
++INSERT INTO Association VALUES ('at-uses', 1, 1, 'a-ka-125', '', 't-administrationgroup', 1, 'tt-ka-gpsconverter', 1);
+\ No newline at end of file
+
+Added: trunk/libs/geoGoogle-1.5.0.jar
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/libs/geoGoogle-1.5.0.jar
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-04-17 01:00:40 UTC (rev 69)
++++ trunk/src/de/kiezatlas/deepamehta/KiezAtlas.java	2009-05-06 18:12:21 UTC (rev 70)
+@@ -55,6 +55,7 @@
+ 	static final String TOPICTYPE_AGENCY = &quot;tt-ka-traeger&quot;;
+ 	static final String TOPICTYPE_CRITERIA = &quot;tt-ka-kriterium&quot;;
+ 	static final String TOPICTYPE_YADE_POINT = &quot;tt-ka-yadepoint&quot;;
++	static final String TOPICTYPE_GPS_CONVERTER = &quot;tt-ka-gpsconverter&quot;;
+ 	static final String TOPICTYPE_FORUM = &quot;tt-ka-forum&quot;;
+ 	static final String TOPICTYPE_COMMENT = &quot;tt-ka-kommentar&quot;;
+ 	static final String TOPICTYPE_OUTLINE_POINT = &quot;tt-ka-outlinepoint&quot;;
+@@ -129,6 +130,8 @@
+ 	static final String PROPERTY_AGENCY_KIND = &quot;Art&quot;;
+ 	static final String PROPERTY_YADE_X = &quot;YADE x&quot;;
+ 	static final String PROPERTY_YADE_Y = &quot;YADE y&quot;;
++    static final String PROPERTY_GPS_LONG = &quot;LONG&quot;;
++    static final String PROPERTY_GPS_LAT = &quot;LAT&quot;;
+ 	static final String PROPERTY_LAST_MODIFIED = &quot;Zuletzt ge&#228;ndert&quot;;
+ 	//
+ 	static final String PROPERTY_FORUM_ACTIVITION = &quot;Aktivierung&quot;;
+@@ -158,6 +161,8 @@
+ 	// ----------------
+ 
+ 
++    static final String ITEM_LOAD_COORDINATES = &quot;Load GPS Coordinates&quot;;
++    static final String  CMD_START_GEOCODING = &quot;loadGeoCodes&quot;;
+ 
+     static final String ITEM_LOCK_GEOMETRY = &quot;Lock&quot;;
+     static final String  CMD_LOCK_GEOMETRY = &quot;lockGeometry&quot;;
+
+Added: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-04-17 01:00:40 UTC (rev 69)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2009-05-06 18:12:21 UTC (rev 70)
+@@ -0,0 +1,466 @@
++package de.kiezatlas.deepamehta;
++
++import de.deepamehta.AmbiguousSemanticException;
++import de.deepamehta.BaseTopic;
++import de.deepamehta.DeepaMehtaException;
++import de.deepamehta.service.*;
++import de.deepamehta.service.web.JSONRPCServlet;
++import de.deepamehta.topics.TopicTypeTopic;
++import de.deepamehta.topics.TypeTopic;
++import java.text.CharacterIterator;
++import java.text.StringCharacterIterator;
++import java.util.Enumeration;
++import java.util.Hashtable;
++import java.util.Vector;
++
++
++public class KiezServlet extends JSONRPCServlet implements KiezAtlas {
++
++    // --- 3 Hooks overriden
++
++    protected String performPostRequest(String remoteMethod, String params, Session session, CorporateDirectives directives)
++    {
++        String result = &quot;&quot;;
++        if(remoteMethod.equals(&quot;getMapTopics&quot;)) {
++            result = getGeoMapTopics(params, session, directives);
++        } else if(remoteMethod.equals(&quot;getGeoObjectInfo&quot;)) {
++            result = getGeoObjectInfo(params);
++        } else if(remoteMethod.equals(&quot;getWorkspaceCriterias&quot;)) {
++            result = getWorkspaceCriterias(params);
++        } else if(remoteMethod.equals(&quot;searchGeoObjects&quot;)) {
++            result = searchTopics(params, directives);
++        }
++        return result;
++    }
++
++    protected String performAction(String topicId, String params, Session session, CorporateDirectives directives)
++    {
++//        TopicBean bean = as.createTopicBean(topicId, 1);
++//        TypeTopic geoType = as.type(bean.typeID, 1);
++//        BaseTopic workspace;
++//        try
++//        {
++//            workspace = as.getRelatedTopic(geoType.getID(), ASSOCTYPE_USES, 1);
++//        }
++//        catch(AmbiguousSemanticException ex)
++//        {
++//            workspace = ex.getDefaultTopic();
++//        }
++//        Vector criterias = getKiezCriteriaTypes(workspace.getID());
++//        String crits[] = new String[criterias.size()];
++//        for(int i = 0; i &lt; crits.length; i++)
++//            crits[i] = ((BaseTopic)criterias.get(i)).getID();
++//
++//        session.setAttribute(&quot;topicBean&quot;, bean);
++//        session.setAttribute(&quot;imagePath&quot;, &quot;&quot;);
++//        session.setAttribute(&quot;criterias&quot;, crits);
++//        session.setAttribute(&quot;instType&quot;, geoType);
++//        System.out.println(&quot;&gt;&gt;&gt;&gt; created TopicBean for &quot; + topicId);
++//        return KiezAtlas.PAGE_GEO_INFO;
++        return topicId;
++    }
++
++    protected void preparePage(String page, String params, Session session, CorporateDirectives directives)
++    {
++        session.setAttribute(&quot;forumActivition&quot;, &quot;off&quot;);
++    }
++
++    // --- Remote Methods
++
++    private String getGeoObjectInfo(String params)
++    {
++        System.out.println(&quot;&gt;&gt;&gt; getGeoObjectInfo(&quot; + params + &quot;)&quot;);
++        String parameters[] = params.split(&quot;:&quot;);
++        String topicId = parameters[0];
++        StringBuffer messages = new StringBuffer(&quot;\&quot;My GeoObject Notification\&quot;&quot;);
++        StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
++        String geoObjectString = createGeoObjectBean(cm.getTopic(topicId, 1), messages);
++        if (geoObjectString.equals(&quot;&quot;)) {
++            System.out.println(&quot;TopicBean for GeoObject is empty &quot; + cm.getTopic(topicId, 1).getName());
++            geoObjectString = &quot;\&quot;\&quot;&quot;;
++        } else {
++            // System.out.println(&quot;TopicBean for GeoObjectEmpty &quot; + geoObjectString);
++            result.append(geoObjectString);
++        }
++        result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
++        // System.out.println(&quot;result: &quot;+ result.toString());
++        return result.toString();
++    }
++
++
++    /**
++     * Serializes Criterias and their Categories for a worksapce into JSON
++     *
++     * @param params
++     * @return
++     */
++    private String getWorkspaceCriterias(String params)
++    {
++        System.out.println(&quot;&gt;&gt;&gt; getWorkspaceCriterias(&quot; + params + &quot;)&quot;);
++        String parameters[] = params.split(&quot;:&quot;);
++        String workspaceId = parameters[0];
++        StringBuffer messages = new StringBuffer(&quot;\&quot;My Workspace Criteria Notification\&quot;&quot;);
++        StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
++        String criteriaList = createListOfCategorizations(workspaceId);
++        if (criteriaList.equals(&quot;&quot;)) {
++            //System.out.println(&quot;*** listOfCategorizations is Empty: &quot; + criteriaList);
++            result.append(&quot;\&quot;\&quot;&quot;);
++        } else {
++            //System.out.println(&quot;*** listOfCategorizations is : &quot; + criteriaList);
++            result.append(criteriaList);
++        }
++        result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
++        return result.toString();
++    }
++
++    /**
++     * search for topic property name and returns a list of slim geo objects as
++     * results
++     *
++     * @param params
++     * @param directives
++     * @return
++     */
++    private String searchTopics(String params, CorporateDirectives directives) {
++        System.out.println(&quot;&gt;&gt;&gt; searchGeoObjects(&quot; + params +&quot;)&quot;);
++        StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
++        StringBuffer messages = null;
++        String parameters[] = params.split(&quot;:&quot;);
++        String query = parameters[0];
++        String workspaceId = parameters[1];
++        // String topicmapId = parameters[2];
++        Vector criterias = getKiezCriteriaTypes(workspaceId);
++        BaseTopic geoType = getWorkspaceGeoType(workspaceId);
++        Hashtable props = new Hashtable();
++        props.put(PROPERTY_NAME, query);
++        Vector results = cm.getTopics(geoType.getID(), props); // getTopic(query, props, topicmapId, directives);
++        System.out.println(&quot;&gt;&gt;&gt; found &quot; + results.size() + &quot; geoObjects with name &quot; + query);
++        result.append(&quot;[&quot;);
++        for (int i=0; i &lt; results.size(); i++) {
++            BaseTopic topic = (BaseTopic) results.get(i);
++            
++            result.append(createSlimGeoObject(topic, criterias, new StringBuffer()));
++            if (results.indexOf(topic) == results.size()-1) {
++                result.append(&quot;]&quot;);
++            } else {
++                result.append(&quot;, &quot;);
++            }
++        }
++        result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
++        return result.toString();
++    }
++
++    /**
++     * delivers all topics in a citymap as &quot;slim&quot; geoobjects
++     *
++     * @param params (mapId, workspaceId)
++     * @param session
++     * @param directives
++     * @return
++     */
++    private String getGeoMapTopics(String params, Session session, CorporateDirectives directives)
++    {
++        System.out.println(&quot;&gt;&gt;&gt; getGeoMapTopics(&quot; + params + &quot;)&quot;);
++        String parameters[] = params.split(&quot;:&quot;);
++        String mapId = parameters[0];
++        String workspaceId = parameters[1];
++        StringBuffer messages = new StringBuffer(&quot;\&quot;My GeoMapTopic Notification\&quot;&quot;);
++        StringBuffer result = new StringBuffer(&quot;{\&quot;result\&quot;: &quot;);
++        StringBuffer mapTopics = new StringBuffer(&quot;{ \&quot;map\&quot;: \&quot;&quot; + mapId + &quot;\&quot;, \&quot;topics\&quot;: [&quot;);
++        // 
++        BaseTopic geoType = (BaseTopic) getWorkspaceGeoType(workspaceId);
++        Vector criterias = getKiezCriteriaTypes(workspaceId);
++        Vector allTopics = cm.getTopics(geoType.getID(), new Hashtable(), mapId);
++        //System.out.println(&quot;&gt;&gt;&gt; &quot; + topics.size() +&quot; topics for map &quot; + mapTopic.getName() + &quot; of type : &quot; + mapTopic.getType());
++        System.out.println(&quot;&gt;&gt;&gt; &quot; + allTopics.size() +&quot; within current map&quot;);
++        //for(int t = 0; t &lt; allTopics.size(); t++)
++        for(int i = 0; i&lt; allTopics.size(); i++) {
++            BaseTopic topic = (BaseTopic) allTopics.get(i);
++            // System.out.println(&quot;    e: &quot; + topic.getName());
++            String geo  = createSlimGeoObject(topic, criterias, messages);
++            System.out.println(&quot;geo: &quot; + geo);
++            mapTopics.append(geo);
++            mapTopics.append(&quot;}&quot;);
++            if(allTopics.indexOf(topic) != allTopics.size() - 1) {
++                mapTopics.append(&quot;,&quot;);
++            }
++        }
++        mapTopics.append(&quot;]}&quot;);
++        result.append(mapTopics);
++        result.append(&quot;, \&quot;error\&quot;: &quot; + messages + &quot;}&quot;);
++        return result.toString();
++    }
++
++    // -------------------
++    // --- Utility Methods
++    // -------------------
++
++    private String createSlimGeoObject(BaseTopic topic, Vector criterias, StringBuffer messages)
++    {
++        StringBuffer object = new StringBuffer();
++        //
++        String latitude = as.getTopicProperty(topic, &quot;LAT&quot;);
++        String longnitude = as.getTopicProperty(topic, &quot;LONG&quot;);
++        if(latitude.equals(&quot;&quot;) &amp;&amp; longnitude.equals(&quot;&quot;))
++        {
++            latitude = &quot;0.0&quot;;
++            longnitude = &quot;0.0&quot;;
++        }
++        String name = topic.getName();
++        if (hasQuotationMarks(name)) {
++            name = convertHTMLForJSON(name);
++        }
++        object.append(&quot;{\&quot;name\&quot;: \&quot;&quot; + name + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;id\&quot;: \&quot;&quot; + topic.getID() + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;lat\&quot;: \&quot;&quot; + latitude + &quot;\&quot;,&quot;);
++        object.append(&quot;\&quot;long\&quot;: \&quot;&quot; + longnitude + &quot;\&quot;,&quot;);
++        // System.out.println(&quot;&gt;&gt;&gt; createCritCatList(&quot; + topic.getID()+&quot;) ...&quot;);
++        object.append(&quot;\&quot;criterias\&quot;: &quot; + createTopicCategorizations(topic.getID(), criterias));
++        object.append(&quot;}&quot;);
++        return object.toString();
++    }
++
++    /**
++     * Serializes TopicBean into JSON
++     *
++     * @param topic
++     * @param messages
++     * @return
++     */
++    private String createGeoObjectBean(BaseTopic topic, StringBuffer messages) {
++        StringBuffer bean = new StringBuffer();
++        //
++        TopicBean topicBean = as.createTopicBean(topic.getID(), 1);
++        bean.append(&quot;{\&quot;id\&quot;: \&quot;&quot; + topicBean.id + &quot;\&quot;,&quot;);
++        bean.append(&quot;\&quot;name\&quot;: \&quot;&quot; + topicBean.name + &quot;\&quot;,&quot;);
++        bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + topicBean.icon + &quot;\&quot;,&quot;);
++        bean.append(&quot;\&quot;properties\&quot;: [&quot;);
++        Vector properties = topicBean.fields;
++        for(int p = 0; p &lt; properties.size(); p++)
++        {
++            TopicBeanField field = (TopicBeanField)properties.get(p);
++            bean.append(&quot;{\&quot;type\&quot;: \&quot;&quot; + field.type + &quot;\&quot;, &quot;);
++            bean.append(&quot;\&quot;name\&quot;: \&quot;&quot; + field.name + &quot;\&quot;, &quot;);
++            bean.append(&quot;\&quot;label\&quot;: \&quot;&quot; + field.label + &quot;\&quot;, &quot;);
++            if(field.type == 0) {
++                String value = field.value;
++                if(hasQuotationMarks(value))
++                    // preparing java string for json
++                    value = convertHTMLForJSON(value);
++                    value = removeControlChars(value, field.name);
++                bean.append(&quot;\&quot;value\&quot;:  \&quot;&quot; + value + &quot;\&quot;&quot;);
++            } else {
++                Vector relatedFields = field.values;
++                for(int r = 0; r &lt; relatedFields.size(); r++)
++                {
++                    BaseTopic relatedTopic = (BaseTopic)relatedFields.get(r);
++                    bean.append(&quot;\&quot;values\&quot;: {&quot;);
++                    bean.append(&quot;\&quot;name\&quot;: \&quot;&quot; + relatedTopic.getName() + &quot;\&quot;,&quot;);
++                    // ### geoObject has it's own icon ?
++                    bean.append(&quot;\&quot;icon\&quot;: \&quot;&quot; + as.getTopicProperty(relatedTopic.getID(), 1, PROPERTY_ICON) + &quot;\&quot;}&quot;);
++                }
++                if(relatedFields.size() == 0)
++                    bean.append(&quot;\&quot;values\&quot;: {}&quot;);
++            }
++            if(properties.indexOf(field) == properties.size() - 1)
++                bean.append(&quot;}&quot;);
++            else
++                bean.append(&quot;},&quot;);
++        }
++        bean.append(&quot;]&quot;);
++        bean.append(&quot;}&quot;);
++        return bean.toString();
++    }
++
++    /**
++     * creates a list of categorizations for each slim topic
++     * checks for each criteria type if one is directly associated with the category
++     * 
++     * @param topicId
++     * @param workspaceId
++     * @return
++     */
++    private String createTopicCategorizations(String topicId, Vector criterias)
++    {
++        StringBuffer catList = new StringBuffer(&quot;[&quot;);
++        BaseTopic topic = cm.getTopic(topicId, 1);
++        for(int i = 0; i &lt; criterias.size(); i++)
++        {
++            BaseTopic criteria = (BaseTopic) criterias.get(i);
++            // which topics are related and are of type criteria
++            Vector categories = as.getRelatedTopics(topic.getID(), &quot;at-association&quot;, criteria.getID(), 2);
++            int andex;
++            if(categories.size() == 0)
++            {
++                catList.append(&quot;{\&quot;critId\&quot;: \&quot;&quot; + criteria.getID() + &quot;\&quot;, &quot;);
++                catList.append(&quot;\&quot;categories\&quot;: []&quot;);
++                andex = criterias.indexOf(criteria);
++                // awkyard
++                if(andex == criterias.size() - 1)
++                    catList.append(&quot;}]&quot;);
++                else
++                    catList.append(&quot;},&quot;);
++                continue;
++            }
++            catList.append(&quot;{\&quot;critId\&quot;: \&quot;&quot; + criteria.getID() + &quot;\&quot;, &quot;);
++            catList.append(&quot;\&quot;categories\&quot;: [&quot;);
++            for(int c = 0; c &lt; categories.size(); c++)
++            {
++                BaseTopic cat = (BaseTopic)categories.get(c);
++                int index = categories.indexOf(cat);
++                // awkyard
++                if(index == categories.size() - 1)
++                    catList.append(&quot;\&quot;&quot; + cat.getID() + &quot;\&quot;&quot;);
++                else
++                    catList.append(&quot;\&quot;&quot; + cat.getID() + &quot;\&quot;, &quot;);
++            }
++            int c = criterias.indexOf(criteria);
++            if(c == criterias.size() - 1)
++                catList.append(&quot;]}]&quot;);
++            else
++                catList.append(&quot;]},&quot;);
++        }
++
++        return catList.toString();
++    }
++
++    /**
++     * list of categorizations for one workspace
++     *
++     * @param workspaceId
++     * @return
++     */
++    private String createListOfCategorizations(String workspaceId)
++    {
++        StringBuffer objectList = new StringBuffer();
++        objectList.append(&quot;[&quot;);
++        Vector criterias = getKiezCriteriaTypes(workspaceId);
++        for(int i = 0; i &lt; criterias.size(); i++)
++        {
++            BaseTopic criteria = (BaseTopic) criterias.get(i);
++            objectList.append(&quot;{\&quot;critId\&quot;: \&quot;&quot; + criteria.getID() + &quot;\&quot;, &quot;);
++            objectList.append(&quot;\&quot;critName\&quot;: \&quot;&quot; + criteria.getName() + &quot;\&quot;, &quot;);
++            objectList.append(&quot;\&quot;categories\&quot;: [&quot;);
++            Vector categories = cm.getTopics(criteria.getID());
++            for(int c = 0; c &lt; categories.size(); c++)
++            {
++                objectList.append(&quot;{&quot;);
++                objectList.append(&quot;\&quot;catId\&quot;:&quot;);
++                BaseTopic cat = (BaseTopic)categories.get(c);
++                System.out.println(&quot;&gt;&gt;&gt;&gt; category(&quot; + cat.getName() +&quot; icon: &quot;+ as.getLiveTopic(cat).getIconfile());
++                objectList.append(&quot;\&quot;&quot; + cat.getID() + &quot;\&quot;, &quot;);
++                objectList.append(&quot;\&quot;catName\&quot;:&quot;);
++                objectList.append(&quot;\&quot;&quot; + cat.getName() + &quot;\&quot;, &quot;);
++                objectList.append(&quot;\&quot;catIcon\&quot;:&quot;);
++                objectList.append(&quot;\&quot;&quot; + as.getLiveTopic(cat).getIconfile() + &quot;\&quot;&quot;);
++
++                int index = categories.indexOf(cat);
++                if(index == categories.size() - 1) {
++                    objectList.append(&quot;}&quot;);
++                } else {
++                    objectList.append(&quot;},&quot;);
++                }
++            }
++
++            int andex = criterias.indexOf(criteria);
++            if(andex == criterias.size() - 1)
++                objectList.append(&quot;]}&quot;);
++            else
++                objectList.append(&quot;]},&quot;);
++        }
++        objectList.append(&quot;]&quot;);
++        // System.out.println(&quot;list is: &quot; + objectList);
++        return objectList.toString();
++    }
++
++    /**
++     * simply retrieves the BaseTopics assigned to a workspace which are used
++     * for navigation in web-frontends
++     *
++     * @param workspaceId
++     * @return
++     */
++    private Vector getKiezCriteriaTypes(String workspaceId)
++    {
++        Vector criterias = new Vector();
++        TypeTopic critType = as.type(&quot;tt-ka-kriterium&quot;, 1);
++        Vector subtypes = critType.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, &quot;at-uses&quot;, 2);
++        for(int i = 0; i &lt; workspacetypes.size(); i++)
++        {
++            BaseTopic topic = (BaseTopic)workspacetypes.get(i);
++            for(int a = 0; a &lt; subtypes.size(); a++)
++            {
++                String derivedOne = (String)subtypes.get(a);
++                if(derivedOne.equals(topic.getID()))
++                {
++                    //System.out.println(&quot;&gt;&gt;&gt; use criteria (&quot; + derivedOne + &quot;) &quot; + topic.getName());
++                    criterias.add(topic);
++                }
++            }
++
++        }
++
++        return criterias;
++    }
++
++    /**
++     * returns null if no topictype whihc is assigned to the given workspace, 
++     * is a subtype of &quot;GeoObjectTopic&quot;
++     * 
++     * @param workspaceId
++     * @return
++     */
++    private BaseTopic getWorkspaceGeoType(String workspaceId) {
++        //
++        TypeTopic geotype = as.type(TOPICTYPE_KIEZ_GEO, 1);
++        Vector subtypes = geotype.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, ASSOCTYPE_USES, 2);
++        int i;
++        for (i = 0; i &lt; workspacetypes.size(); i++) {
++            BaseTopic topic = (BaseTopic) workspacetypes.get(i);
++            int a;
++            for (a = 0; a &lt; subtypes.size(); a++) {
++                // System.out.println(&quot; counter: &quot; + a);
++                String derivedOne = (String) subtypes.get(a);
++                // System.out.println(&quot;    &quot; + derivedOne.getID() + &quot;:&quot; + derivedOne.getName());
++                if (derivedOne.equals(topic.getID())) {
++                    // System.out.println(&quot; found geoType &quot; + topic.getID() + &quot;:&quot; + topic.getName());
++                    return topic;
++                }
++            }
++        }
++        return null;
++    }
++
++    private boolean hasQuotationMarks(String value)
++    {
++        return value.indexOf(&quot;\&quot;&quot;) != -1;
++    }
++
++    private String removeControlChars(String value, String name) {
++        StringCharacterIterator iterator = new StringCharacterIterator(value);
++        StringBuffer result = new StringBuffer();
++        char character = iterator.current();
++        while( character != CharacterIterator.DONE) // character = iterator.next())
++        {
++            if (Character.isISOControl(character)) {
++                //System.out.println(&quot;*** skipping control character in &quot; + name + &quot;&quot; +
++                 //       &quot;: &quot; + Character.getNumericValue(character));
++            } else {
++                result.append(character);
++            }
++            character = iterator.next();
++        }
++        //value.replaceAll(&quot;\r&quot;, &quot;\\\\r&quot;);
++        //value.replaceAll(&quot;\n&quot;, &quot;\\\\n&quot;);
++        //value.replaceAll(&quot;\&quot;);
++        return result.toString();
++    }
++
++    private String convertHTMLForJSON(String html)
++    {
++        html = html.replaceAll(&quot;\&quot;&quot;, &quot;\\\\\&quot;&quot;);
++        return html;
++    }
++}
+
+Added: trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-04-17 01:00:40 UTC (rev 69)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GPSConverterTopic.java	2009-05-06 18:12:21 UTC (rev 70)
+@@ -0,0 +1,340 @@
++package de.kiezatlas.deepamehta.topics;
++
++import de.deepamehta.AmbiguousSemanticException;
++import de.kiezatlas.deepamehta.KiezAtlas;
++//
++import de.deepamehta.BaseTopic;
++import de.deepamehta.Directive;
++import de.deepamehta.service.ApplicationService;
++import de.deepamehta.service.CorporateDirectives;
++import de.deepamehta.service.CorporateCommands;
++import de.deepamehta.service.Session;
++import de.deepamehta.topics.LiveTopic;
++//
++import de.deepamehta.topics.TypeTopic;
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.net.URL;
++import java.net.URLConnection;
++import java.util.*;
++
++
++
++/**
++ * Kiezatlas 1.6.3&lt;br&gt;
++ * Requires DeepaMehta 2.0b8
++ * &lt;p&gt;
++ * Last functional change: 25.4.2008&lt;br&gt;
++ * J&ouml;rg Richter&lt;br&gt;
++ * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
++ */
++public class GPSConverterTopic extends LiveTopic implements KiezAtlas {
++
++
++
++	// *******************
++	// *** Constructor ***
++	// *******************
++
++
++
++	public GPSConverterTopic(BaseTopic topic, ApplicationService as) {
++		super(topic, as);
++	}
++
++
++
++	// **********************
++	// *** Defining Hooks ***
++	// **********************
++
++
++
++	// ------------------
++	// --- Life Cycle ---
++	// ------------------
++
++
++
++	public CorporateDirectives evoke(Session session, String topicmapID, String viewmode) {
++		return super.evoke(session, topicmapID, viewmode);
++	}
++
++
++
++	// --------------------------
++	// --- Providing Commands ---
++	// --------------------------
++
++
++
++	public CorporateCommands contextCommands(String topicmapID, String viewmode,
++								Session session, CorporateDirectives directives) {
++		CorporateCommands commands = new CorporateCommands(as);
++		int editorContext = as.editorContext(topicmapID);
++		//
++		commands.addNavigationCommands(this, editorContext, session);
++		commands.addSeparator();
++		// --- &quot;Load GPS Coordinates&quot; ---
++        commands.addCommand(ITEM_LOAD_COORDINATES, CMD_START_GEOCODING);
++		// --- standard topic commands ---
++		commands.addStandardCommands(this, editorContext, viewmode, session, directives);
++		//
++		return commands;
++	}
++
++
++
++	// --------------------------
++	// --- Executing Commands ---
++	// --------------------------
++
++
++
++	public CorporateDirectives executeCommand(String command, Session session, String topicmapID, String viewmode) {
++		CorporateDirectives directives = new CorporateDirectives();
++		StringTokenizer st = new StringTokenizer(command, COMMAND_SEPARATOR);
++		String cmd = st.nextToken();
++		if (cmd.equals(CMD_START_GEOCODING)) {
++            Vector workspaces = getAssignedWorkspaces();
++            StringBuffer htmlReport = new StringBuffer(&quot;&lt;html&gt;&lt;head&gt;&lt;title&gt;GPS Transform Report&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&quot;);
++                htmlReport.append(&quot;&lt;h4&gt;GPS Transform Report for &quot;+workspaces.size()+&quot; workspace/s&lt;h4/&gt;&quot;);
++            for (int i = 0; i&lt;workspaces.size(); i++) {
++                // for each workspace assigned to the GPSConverterTopic
++                BaseTopic workspace = (BaseTopic) workspaces.get(i);
++                htmlReport.append(&quot;&lt;hr&gt;&quot;);
++                htmlReport.append(&quot;Im Workspace: &lt;b&gt;&quot; + workspace.getName() + &quot;&lt;b/&gt;&lt;br/&gt;&quot;);
++                System.out.println(&quot;    searching on workspace (&quot;+i+&quot;/&quot;+workspaces.size()+&quot;): &quot; + workspace.getName() + &quot;:&quot; + workspace.getID());
++                BaseTopic geotype = getWorkspaceGeoType(workspace.getID());
++                if (geotype == null) {
++                    directives.add(DIRECTIVE_SHOW_MESSAGE, &quot;Please assign the GPSConverter Topic to a 'KiezAtlas' Workspace. No 'GeoObject' was found.&quot;, new Integer(NOTIFICATION_ERROR));
++                    return directives;
++                } else {
++                    Vector geos  = getAllGeoObjects(geotype.getID());
++                    htmlReport.append(&quot;sind insgesamt &quot; + geos.size() + &quot; &quot;+geotype.getName()+&quot; zu verarbeiten.&lt;br/&gt;&lt;p/&gt;&quot;);
++                    htmlReport.append(&quot;&quot;);
++                    // set report
++                    as.setTopicProperty(this, PROPERTY_DESCRIPTION, htmlReport.toString());
++                    int runs = 0;
++                    geos = updateAllGeoCoordinates(geos);
++                    scenarioloop:
++                    while (!geos.isEmpty()) {
++                        if (runs == 10) {
++                            // 10 retries to contact the geocoder again
++                            htmlReport.append(&quot;&lt;br&gt;Adressfehler sind bei insgesamt &lt;b&gt;&quot;+geos.size()+&quot;&lt;/b&gt; Objekten aufgetreten:&quot;);
++                            htmlReport.append(&quot;&lt;ul&gt;&quot;);
++                            for(int a = 0; a &lt; geos.size(); a++) {
++                                BaseTopic geo = (BaseTopic) geos.get(a);
++                                htmlReport.append(&quot;&lt;li&gt;Adressangabe: &quot; + getAddress(geo.getID()) +&quot;, &quot;+ geo.getName() + &quot;(&quot;+geo.getID()+&quot;)&lt;li/&gt;&quot;);
++                                //directives.add(DIRECTIVE_SHOW_MESSAGE,
++                                //        &quot;Die globalen Koordinaten zu folgendem Objekt konnten nicht aufgel&#246;st werden: &quot;
++                                //        + geo.getName() + &quot;:&quot;+ getAddress(geo.getID()) + &quot;. &quot; +
++                                //        &quot;Damit auch dieses Objekt Koordinaten enth&#228;lt, korrigieren Sie bitte die Anschrift und starten Sie den Konverter erneut.&quot;, new Integer(NOTIFICATION_WARNING));
++                                System.out.println(&quot;*** Fail with: &quot; + geo.getName() + &quot;(&quot;+geo.getID()+&quot;), Adressangabe: &quot;+ getAddress(geo.getID()));
++                            }
++                            htmlReport.append(&quot;&lt;/ul&gt;&quot;);
++                            htmlReport.append(&quot;&lt;br/&gt;Auch nach mehrmaligen Anfragen sind folgende Adressen nicht automatisch in GPS Koordinaten aufzul&#246;sen. Bitte &#252;berpr&#252;fen Sie die Schreibweise bzw. Korrektheit der Adressangaben im einzelnen.&quot;);
++                            break scenarioloop;
++                        } else {
++                            geos = updateAllGeoCoordinates(geos);
++                            System.out.println(&quot;\n*** updateAllCoordinates: &quot; + geos.size() + &quot; faulty objects / trying again&quot;);
++                        }
++                        runs++;
++                    }
++                    htmlReport.append(&quot;&lt;br&gt; Insgesamt &quot; + geos.size() + &quot; konvertiert.&quot;);
++                }
++
++            }
++            htmlReport.append(&quot;&lt;/body&gt;&lt;/html&gt;&quot;);
++            as.setTopicProperty(this, PROPERTY_DESCRIPTION, htmlReport.toString());
++		} else {
++			return super.executeCommand(command, session, topicmapID, viewmode);
++		}
++		return directives;
++	}
++
++
++
++	// --------------------------
++	// --- Utility Methods ---
++	// --------------------------
++
++
++
++    private Vector getAssignedWorkspaces() {
++        Vector workspaces = as.getRelatedTopics(this.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_WORKSPACE, 2);
++        // System.out.println(&quot;    workspaces found count: &quot; + workspaces.size());
++        return workspaces;
++    }
++
++
++    /**
++     * returns null if no topictype whihc is assigned to the given workspace, is a subtype of &quot;GeoObjectTopic&quot;
++     * @param workspaceId
++     * @return
++     */
++    private BaseTopic getWorkspaceGeoType(String workspaceId) {
++        //
++        TypeTopic geotype = as.type(TOPICTYPE_KIEZ_GEO, 1);
++        Vector subtypes = geotype.getSubtypeIDs();
++        Vector workspacetypes = as.getRelatedTopics(workspaceId, ASSOCTYPE_USES, 2);
++        int i;
++        // ### matching the id with object in vector
++        for (i = 0; i &lt; workspacetypes.size(); i++) {
++            BaseTopic topic = (BaseTopic) workspacetypes.get(i);
++            int a;
++            for (a = 0; a &lt; subtypes.size(); a++) {
++                // System.out.println(&quot; counter: &quot; + a);
++                String derivedOne = (String) subtypes.get(a);
++                // System.out.println(&quot;    &quot; + derivedOne.getID() + &quot;:&quot; + derivedOne.getName());
++                if (derivedOne.equals(topic.getID())) {
++                    System.out.println(&quot; GPSConverterTopic runs now on all instances of type &quot; + topic.getID() + &quot;:&quot; + topic.getName());
++                    return topic;
++                }
++                // Vector derivedTopics = cm.getRelatedTopics(TOPICTYPE_KIEZ_GEO, ASSOCTYPE_DERIVATION, 2) ;
++            }
++            // System.out.println(&quot;It's just a related TopicType named &quot; + topic.getID() + &quot;:&quot; + topic.getName());
++        }
++        return null;
++    }
++
++    private Vector getAllGeoObjects(String typeID) {
++        // Hashtable props;
++        Vector geoObjects = cm.getTopics(typeID);
++        System.out.println(&quot;    found &quot; + geoObjects.size() + &quot; topics of type (&quot; + typeID + &quot;): &quot; );
++        return geoObjects;
++    }
++
++    // ---
++
++	private String getAddress(String topicID) {
++		StringBuffer address = new StringBuffer();
++        try {
++            // Related Address Topic
++            BaseTopic add = as.getRelatedTopic(topicID, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);     // emptyAllowed=true
++            if (add != null) {
++                // Streetname and Housenumber
++                address.append(add.getName());
++            } else {
++                return &quot;&quot;;
++            }
++            // Postal Code of Address
++            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
++            // Get Old City Property
++            String cityProp = as.getTopicProperty(topicID, 1, PROPERTY_CITY);
++            // Related City
++            BaseTopic city = as.getRelatedTopic(add.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
++            if (city != null) {
++                address.append(&quot; &quot; + city.getName());
++            } else if (cityProp != null &amp;&amp; !cityProp.equals(&quot;&quot;)) {
++                address.append(&quot; &quot; + cityProp);
++                //System.out.println(&quot;    # FallBack to Old City Prop: &quot; + address );
++            }
++            return address.toString();
++			// as.getRelatedTopic(id, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
++		} catch (AmbiguousSemanticException e) {
++			// Related Address Topic
++            BaseTopic add = e.getDefaultTopic();
++            if (add != null) {
++                // Streetname and Housenumber
++                address.append(add.getName());
++            } else {
++                return &quot;&quot;;
++            }
++            // Postal Code of Address
++            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
++            // Get Old City Property
++            String cityProp = as.getTopicProperty(topicID, 1, PROPERTY_CITY);
++            // Related City
++            BaseTopic city = as.getRelatedTopic(add.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
++            if (city != null) {
++                address.append(&quot; &quot; + city.getName());
++            } else if (cityProp != null &amp;&amp; !cityProp.equals(&quot;&quot;)) {
++                address.append(&quot; &quot; + cityProp);
++                //System.out.println(&quot;    # FallBack to Old City Prop: &quot; + address );
++            }
++            System.out.println(&quot;*** GPSConverterTopic.getAddress(): AmbigiousSemanticExc. took &quot; + address.toString());
++            return address.toString();
++		}
++	}
++
++
++    private Vector updateAllGeoCoordinates(Vector geoObjects) {
++        Vector faultyObjects = new Vector();
++        // ### CorporateWebSettings
++        // String key = as.getGoogleKey();
++        Hashtable requested = new Hashtable(geoObjects.size());
++        int i;
++        for (i = 0; i &lt; geoObjects.size(); i++) {
++            StringBuffer requestUrl = new StringBuffer(&quot;<A HREF="http://maps.google.com/maps/geo?">http://maps.google.com/maps/geo?</A>&quot;);
++            BaseTopic geoObject = (BaseTopic) geoObjects.get(i);
++            String address =  getAddress(geoObject.getID());
++            // System.out.println(&quot;    took &quot; + cityProp + &quot; as city for address&quot;);
++            
++            if (address.equals(&quot;&quot;)) {
++                System.out.println(&quot;*** missing address for GeoObject: &quot; + geoObject.getName());
++                if (!faultyObjects.contains(geoObject)) {
++                    faultyObjects.add(geoObject);
++                }
++            }
++            requestUrl.append(&quot;q=&quot;);
++            // requested. put and remove address
++            requestUrl.append(convertAddressForRequest(address));
++            requestUrl.append(&quot;&amp;output=csv&quot; +
++                    &quot;&amp;oe=utf8&amp;&quot; +
++                    &quot;sensor=false&quot; +
++                    &quot;&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&quot; +
++                    &quot;&amp;gl=de&quot;);
++            try {
++                String cachedCoords = (String) requested.get(address.toString());
++                // System.out.println(&quot;cachedCoords: &quot; + cachedCoords);
++                if(cachedCoords != null &amp;&amp; !cachedCoords.equals(&quot;&quot;)) {
++                    // skipping requests to already known address
++                    // System.out.println(&quot;*** &quot; +cachedCoords +&quot; known for: &quot; + address +&quot;, skipping&quot;);
++                } else {
++                    URL url = new URL(requestUrl.toString());
++                    URLConnection con = url.openConnection();
++                    BufferedReader in = new BufferedReader(
++                                        new InputStreamReader(
++                                        con.getInputStream()));
++                    String inputLine;
++                    while ((inputLine = in.readLine()) != null) {
++                        //System.out.println(inputLine);
++                        String[] points = inputLine.split(&quot;,&quot;);
++                        if (points[2].equals(&quot;0&quot;) &amp;&amp; points[3].equals(&quot;0&quot;)) {
++                            if (!faultyObjects.contains(geoObject)) {
++                                faultyObjects.add(geoObject);
++                            }
++                            // System.out.println(&quot;*** Fail with loading: &quot;+address.toString()+&quot; (&quot;+geoObject.getID()+&quot;): &quot;);
++                        } else {
++                            requested.put(address.toString(), points[2] + &quot;:&quot; + points[3]);
++                            as.setTopicProperty(geoObject, PROPERTY_GPS_LAT, points[2]);
++                            as.setTopicProperty(geoObject, PROPERTY_GPS_LONG, points[3]);
++                            System.out.println(&quot;    saving: &quot; + requested.get(address.toString()) + &quot; for: &quot;+ address);
++
++                        }
++                    }
++                    in.close();
++                }
++            } catch (IOException e) {
++                e.printStackTrace();
++                if (!faultyObjects.contains(geoObject)) {
++                    faultyObjects.add(geoObject);
++                }
++            }
++        }
++        return faultyObjects;
++    }
++
++//    private getAddress(BaseTopic topic) {
++//
++//    }
++
++    private String convertAddressForRequest(String address) {
++        char blank = &quot; &quot;.charAt(0);
++        char plus = &quot;+&quot;.charAt(0);
++        return address.replace(blank, plus);
++    }
++
++}
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-04-17 01:00:40 UTC (rev 69)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2009-05-06 18:12:21 UTC (rev 70)
+@@ -19,6 +19,11 @@
+ 
+ import java.awt.Point;
+ import java.awt.geom.Point2D;
++import java.io.BufferedReader;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.net.URL;
++import java.net.URLConnection;
+ import java.util.Enumeration;
+ import java.util.Hashtable;
+ import java.util.StringTokenizer;
+@@ -73,6 +78,7 @@
+ 
+ 
+ 	public CorporateDirectives evoke(Session session, String topicmapID, String viewmode) {
++        setGPSCoordinates();
+ 		setProperty(PROPERTY_LOCKED_GEOMETRY, SWITCH_ON);
+ 		setProperty(PROPERTY_PASSWORD, DEFAULT_PASSWORD);
+ 		setProperty(PROPERTY_LAST_MODIFIED, DeepaMehtaUtils.getDate());
+@@ -327,6 +333,50 @@
+ 
+ 	// ---
+ 
++    	private String getStringAddress(String topicID) {
++		StringBuffer address = new StringBuffer();
++        try {
++            // Related Address Topic
++            BaseTopic add = as.getRelatedTopic(topicID, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);     // emptyAllowed=true
++            if (add != null) {
++                // Streetname and Housenumber
++                address.append(add.getName());
++            } else {
++                return &quot;&quot;;
++            }
++            // Postal Code of Address
++            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
++            // Get Old City Property
++            String cityProp = as.getTopicProperty(topicID, 1, PROPERTY_CITY);
++            // Related City
++            BaseTopic city = as.getRelatedTopic(add.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
++            if (city != null) {
++                address.append(&quot; &quot; + city.getName());
++            } else if (cityProp != null &amp;&amp; !cityProp.equals(&quot;&quot;)) {
++                address.append(&quot; &quot; + cityProp);
++                System.out.println(&quot;    # FallBack to Old City Prop: &quot; + address );
++            }
++            return address.toString();
++			// as.getRelatedTopic(id, ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
++		} catch (AmbiguousSemanticException e) {
++			// Related Address Topic
++            BaseTopic add = e.getDefaultTopic();
++            if (add != null) {
++                // Streetname and Housenumber
++                address.append(add.getName());
++            } else {
++                return &quot;&quot;;
++            }
++            // Postal Code of Address
++            address.append(&quot;, &quot; + as.getTopicProperty(add, PROPERTY_POSTAL_CODE));
++            // and City
++            address.append(&quot; &quot; + getCity());
++            System.out.println(&quot;*** GPSConverterTopic.getAddress(): AmbigiousSemanticExc. took &quot; + address.toString());
++            return address.toString();
++
++		}
++	}
++
+ 	public BaseTopic getAddress() {
+ 		try {
+ 			return as.getRelatedTopic(getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_ADDRESS, 2, true);		// emptyAllowed=true
+@@ -346,7 +396,7 @@
+ 			if (!city.equals(&quot;&quot;)) {
+ 				return city;
+ 			} else if (address != null) {
+-				BaseTopic town = as.getRelatedTopic(address.getID(), ASSOCTYPE_ASSOCIATION, &quot;tt-city&quot;, 2, true);
++				BaseTopic town = as.getRelatedTopic(address.getID(), ASSOCTYPE_ASSOCIATION, TOPICTYPE_CITY, 2, true);
+ 				if (town != null) {
+ 					city = town.getName();
+ 					return city;
+@@ -515,4 +565,64 @@
+ 		//
+ 		return commentBeans;
+ 	}
++
++    private String[] getGPSCoordinates(String givenAdress) {
++        //
++        StringBuffer requestUrl = new StringBuffer(&quot;<A HREF="http://maps.google.com/maps/geo?">http://maps.google.com/maps/geo?</A>&quot;);
++        requestUrl.append(&quot;q=&quot;);
++        requestUrl.append(convertAddressForRequest(givenAdress));
++        // requested. put and remove address
++        requestUrl.append(&quot;&amp;output=csv&amp;oe=utf8&amp;sensor=false&amp;key=ABQIAAAAyg-5-YjVJ1InfpWX9gsTuxRa7xhKv6UmZ1sBua05bF3F2fwOehRUiEzUjBmCh76NaeOoCu841j1qnQ&amp;gl=de&quot;);
++        try {
++            URL url = new URL(requestUrl.toString());
++            URLConnection con = url.openConnection();
++            BufferedReader in = new BufferedReader(
++                                new InputStreamReader(
++                                con.getInputStream()));
++            String inputLine;
++            while ((inputLine = in.readLine()) != null) {
++                //System.out.println(inputLine);
++                String[] points = inputLine.split(&quot;,&quot;);
++                if (points[2].equals(&quot;0&quot;) &amp;&amp; points[3].equals(&quot;0&quot;)) {
++                    //faultyObjects.add(geoObject);
++                    // ### exception thrown
++                    System.out.println(&quot;    geoCoder is lazy, could not evoke GeoObject (&quot;+this.getID()+&quot;) with coordinates: &quot;);
++                } else {
++                    // requested.put(address, points[2] +&quot;:&quot;+points[3]);
++                    //System.out.println(&quot;    caching coordinates: &quot; + requested.get(address) + &quot; for: &quot;+ address);
++                    return points;
++                }
++            }
++            in.close();
++        } catch (IOException e) {
++            e.printStackTrace();
++            return new String[2];
++        }
++        // never returned
++        return null;
++    }
++
++    public String toJSONString() {
++        StringBuffer object = new StringBuffer();
++        object.append(&quot;{x: 1, y: 2, name: MyName, [{critID: &lt;myCritId&gt;}, {critID: &lt;myCritId2&gt;}]}&quot;);
++        return object.toString();
++    }
++
++    private void setGPSCoordinates() {
++        String address = getStringAddress(this.getID());
++        // ### alternatively fetch city property
++        String[] point = getGPSCoordinates(address);
++        // if addres already known, take the cache
++        // if points are empty, geocoder was lazy
++        as.setTopicProperty(this, PROPERTY_GPS_LAT, point[0]);
++        as.setTopicProperty(this, PROPERTY_GPS_LONG, point[1]);
++        System.out.println(&quot;GeoObjectTopic.setGPSCoordinates(): successfull to &quot; + point[0].toString() +&quot;,&quot; + point[1].toString() +&quot; for address:&quot; + address);
++    }
++
++    private String convertAddressForRequest(String address) {
++        char blank = &quot; &quot;.charAt(0);
++        char plus = &quot;+&quot;.charAt(0);
++        return address.replace(blank, plus);
++    }
++
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000059.html">[Kiezatlas-svn] r71 - in trunk: libs pages	src/de/kiezatlas/deepamehta src/de/kiezatlas/deepamehta/topics
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63">[ date ]</a>
+              <a href="thread.html#63">[ thread ]</a>
+              <a href="subject.html#63">[ subject ]</a>
+              <a href="author.html#63">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

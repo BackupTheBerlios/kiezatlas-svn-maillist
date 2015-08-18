@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r41 - trunk/src/de/kiezatlas/deepamehta/topics
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-March/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r41%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200803252148.m2PLmWDd026719%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r41 - trunk/src/de/kiezatlas/deepamehta/topics</H1>
+    <B>jri at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r41%20-%20trunk/src/de/kiezatlas/deepamehta/topics&In-Reply-To=%3C200803252148.m2PLmWDd026719%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r41 - trunk/src/de/kiezatlas/deepamehta/topics">jri at mail.berlios.de
+       </A><BR>
+    <I>Tue Mar 25 22:48:32 CET 2008</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33">[ date ]</a>
+              <a href="thread.html#33">[ thread ]</a>
+              <a href="subject.html#33">[ subject ]</a>
+              <a href="author.html#33">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: jri
+Date: 2008-03-25 22:48:30 +0100 (Tue, 25 Mar 2008)
+New Revision: 41
+
+Modified:
+   trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+   trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java
+Log:
+Adapted to API change introduced by DeepaMehta revision 310.
+(utility method LiveTopic.setTopicData() renamed to setProperty())
+IMPORTANT: Requires DeepaMehta revision 310 or later. You must update.
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-02-01 13:13:59 UTC (rev 40)
++++ trunk/src/de/kiezatlas/deepamehta/topics/GeoObjectTopic.java	2008-03-25 21:48:30 UTC (rev 41)
+@@ -25,9 +25,9 @@
+ /**
+  * 
+  * Kiez-Atlas 1.5&lt;br&gt;
+- * Requires DeepaMehta 2.0b8-pre2
++ * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last change: 10.10.2007&lt;br&gt;
++ * Last change: 25.3.2008&lt;br&gt;
+  * Malte Rei&#223;ig&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">mre at deepamehta.de</A>
+  * 
+@@ -67,8 +67,8 @@
+ 
+ 
+ 	public CorporateDirectives evoke(Session session, String topicmapID, String viewmode) {
+-		setTopicData(PROPERTY_LOCKED_GEOMETRY, SWITCH_ON);
+-		setTopicData(PROPERTY_PASSWORD, DEFAULT_PASSWORD);
++		setProperty(PROPERTY_LOCKED_GEOMETRY, SWITCH_ON);
++		setProperty(PROPERTY_PASSWORD, DEFAULT_PASSWORD);
+ 		return super.evoke(session, topicmapID, viewmode);
+ 	}
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java	2008-02-01 13:13:59 UTC (rev 40)
++++ trunk/src/de/kiezatlas/deepamehta/topics/YADEPointTopic.java	2008-03-25 21:48:30 UTC (rev 41)
+@@ -22,10 +22,10 @@
+ 
+ 
+ /**
+- * Kiez-Atlas 1.4.1&lt;br&gt;
+- * Requires DeepaMehta 2.0b8-pre2
++ * Kiez-Atlas 1.5&lt;br&gt;
++ * Requires DeepaMehta 2.0b8
+  * &lt;p&gt;
+- * Last functional change: 11.9.2007&lt;br&gt;
++ * Last functional change: 25.3.2008&lt;br&gt;
+  * J&ouml;rg Richter&lt;br&gt;
+  * <A HREF="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">jri at freenet.de</A>
+  */
+@@ -58,7 +58,7 @@
+ 
+ 
+ 	public CorporateDirectives evoke(Session session, String topicmapID, String viewmode) {
+-		setTopicData(PROPERTY_LOCKED_GEOMETRY, SWITCH_ON);
++		setProperty(PROPERTY_LOCKED_GEOMETRY, SWITCH_ON);
+ 		return super.evoke(session, topicmapID, viewmode);
+ 	}
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#33">[ date ]</a>
+              <a href="thread.html#33">[ thread ]</a>
+              <a href="subject.html#33">[ subject ]</a>
+              <a href="author.html#33">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

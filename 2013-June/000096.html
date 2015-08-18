@@ -1,0 +1,546 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r112 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2013-June/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r112%20-%20in%20trunk%3A%20pages/be.de%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C20130630215208.839FB55B0C%40scm.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r112 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at scm.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r112%20-%20in%20trunk%3A%20pages/be.de%0A%09src/de/kiezatlas/deepamehta&In-Reply-To=%3C20130630215208.839FB55B0C%40scm.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r112 - in trunk: pages/be.de	src/de/kiezatlas/deepamehta">maltito at scm.berlios.de
+       </A><BR>
+    <I>Sun Jun 30 23:52:08 CEST 2013</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#96">[ date ]</a>
+              <a href="thread.html#96">[ thread ]</a>
+              <a href="subject.html#96">[ subject ]</a>
+              <a href="author.html#96">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2013-06-30 23:52:07 +0200 (Sun, 30 Jun 2013)
+New Revision: 112
+
+Modified:
+   trunk/pages/be.de/AlternativeAtlas.jsp
+   trunk/pages/be.de/BerlinAtlas.jsp
+   trunk/pages/be.de/kiezatlas.js
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+Log:
+Introducing 3 new customizations:
+
+- Familiennacht: Alternative Map Interface (AJAX) can render 2nd graphic (Sidebar)
+- LOR-Migration: All links to the updated LOR-Pages are automatically (via Regex) updated (on a per request base)
+- Googles Geo Location Input field was deactivated (due to a policy debate provoked by deploying OpenLayers)
+
+Modified: trunk/pages/be.de/AlternativeAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/AlternativeAtlas.jsp	2013-03-12 21:35:08 UTC (rev 111)
++++ trunk/pages/be.de/AlternativeAtlas.jsp	2013-06-30 21:52:07 UTC (rev 112)
+@@ -3,21 +3,21 @@
+ 	BaseTopic map = (BaseTopic) session.getAttribute(&quot;map&quot;);
+ 	BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspace&quot;);
+ 	String mapTopics = (String) session.getAttribute(&quot;mapTopics&quot;);
+-  String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
+-  String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
+-  String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
+-  String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
+-  String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
++	String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
++	String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
++	String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
++	String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
++	String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
+ 	String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
+ 	String catIds = (String) session.getAttribute(&quot;categories&quot;);
+-  String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
++	String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
+-  // String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
+-  String basePath = &quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;;
+-  //
+-  String title = &quot;Kiezatlas Stadtplan - &quot; + map.getName();
++	// String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
++	String basePath = &quot;<A HREF="http://www.kiezatlas.de">http://www.kiezatlas.de</A>&quot;;
++	//
++	String title = &quot;Kiezatlas Stadtplan - &quot; + map.getName();
+ %&gt;
+ &lt;% startMaps(session, out); %&gt;
+ &lt;head&gt;
+@@ -152,13 +152,13 @@
+       &lt;div id=&quot;kaheader&quot;&gt;
+ 
+ 		    &lt;div id=&quot;focusInput&quot;&gt;
+-		      &lt;form id=&quot;autoLocateInputField&quot; action=&quot;javascript:focusRequest()&quot;&gt;
+-            &lt;label for=&quot;streetNameField&quot;&gt;In der N&auml;he von&lt;/label&gt;
+-            &lt;input id=&quot;streetNameField&quot; type=&quot;text&quot; size=&quot;18&quot; placeholder=&quot;Stra&szlig;enname / Hnr.&quot;/&gt;
+-            &lt;a href=&quot;javascript:focusRequest()&quot; class=&quot;go-focus&quot;&gt;OK&lt;/a&gt;
+-            &lt;label for=&quot;streetNameField&quot;&gt;im&lt;/label&gt;
+-            &lt;span id=&quot;mapName&quot;&gt;&lt;/span&gt;
+-		      &lt;/form&gt;
++                &lt;form id=&quot;autoLocateInputField&quot;&gt;
++                    &lt;label for=&quot;streetNameField&quot;&gt;In der N&auml;he von&lt;/label&gt;
++                    &lt;input id=&quot;streetNameField&quot; disabled=&quot;true&quot; type=&quot;text&quot; size=&quot;18&quot; placeholder=&quot;Stra&szlig;enname / Hnr.&quot;/&gt;
++                    &lt;a class=&quot;go-focus&quot;&gt;OK&lt;/a&gt;
++                    &lt;label for=&quot;streetNameField&quot;&gt;im&lt;/label&gt;
++                    &lt;span id=&quot;mapName&quot;&gt;&lt;/span&gt;
++                &lt;/form&gt;
+ 		    &lt;/div&gt;
+ 
+         &lt;div id=&quot;cityMapDialog&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;/div&gt;
+
+Modified: trunk/pages/be.de/BerlinAtlas.jsp
+===================================================================
+--- trunk/pages/be.de/BerlinAtlas.jsp	2013-03-12 21:35:08 UTC (rev 111)
++++ trunk/pages/be.de/BerlinAtlas.jsp	2013-06-30 21:52:07 UTC (rev 112)
+@@ -3,23 +3,23 @@
+ 	BaseTopic map = (BaseTopic) session.getAttribute(&quot;map&quot;);
+ 	BaseTopic workspace = (BaseTopic) session.getAttribute(&quot;workspace&quot;);
+ 	String mapTopics = (String) session.getAttribute(&quot;mapTopics&quot;);
+-  String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
+-  String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
+-  String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
+-  String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
+-  String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
++	String workspaceCriterias = (String) session.getAttribute(&quot;workspaceCriterias&quot;);
++	String workspaceImprint = (String) session.getAttribute(&quot;workspaceImprint&quot;);
++	String workspaceLogo = (String) session.getAttribute(&quot;workspaceLogo&quot;);
++	String mapAlias = (String) session.getAttribute(&quot;mapAlias&quot;);
++	String workspaceHomepage = (String) session.getAttribute(&quot;workspaceHomepage&quot;);
+ 	String searchTerm = (String) session.getAttribute(&quot;searchTerm&quot;);
+ 	String originId = (String) session.getAttribute(&quot;originId&quot;);
+ 	String topicId = (String) session.getAttribute(&quot;topicId&quot;);
+ 	String catIds = (String) session.getAttribute(&quot;categories&quot;);
+-  String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
++	String baseLayer = (String) session.getAttribute(&quot;baseLayer&quot;);
+ 	Integer critIndex = (Integer) session.getAttribute(&quot;critIndex&quot;);
+-  // String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
+-  String basePath = &quot;<A HREF="http://www.berlin.de/atlas">http://www.berlin.de/atlas</A>&quot;;
+-  // String basePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
+-  String resourcePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
+-  //
+-  String title = &quot;&quot; + map.getName() + &quot; im Kiezatlas&quot;;
++	// String basePath = &quot;<A HREF="http://localhost:8080/kiezatlas">http://localhost:8080/kiezatlas</A>&quot;;
++	String basePath = &quot;<A HREF="http://www.berlin.de/atlas">http://www.berlin.de/atlas</A>&quot;;
++	// String basePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
++	String resourcePath = &quot;<A HREF="http://www.kiezatlas.de/maps/embed/012">http://www.kiezatlas.de/maps/embed/012</A>&quot;;
++	//
++	String title = &quot;&quot; + map.getName() + &quot; im Kiezatlas&quot;;
+ 
+ %&gt;
+ &lt;% startMaps(session, out); %&gt;
+@@ -154,13 +154,13 @@
+     &lt;div id=&quot;kiezatlas&quot; style=&quot;visibility: hidden;&quot;&gt;
+       &lt;div id=&quot;kaheader&quot;&gt;
+ 		    &lt;div id=&quot;focusInput&quot;&gt;
+-		      &lt;form id=&quot;autoLocateInputField&quot; action=&quot;javascript:focusRequest()&quot;&gt;
+-            &lt;label for=&quot;streetNameField&quot;&gt;In der N&auml;he von&lt;/label&gt;
+-            &lt;input id=&quot;streetNameField&quot; type=&quot;text&quot; size=&quot;18&quot; placeholder=&quot;Stra&szlig;enname / Hnr.&quot;/&gt;
+-            &lt;a href=&quot;javascript:focusRequest()&quot; class=&quot;go-focus&quot;&gt;OK&lt;/a&gt;
+-            &lt;label for=&quot;streetNameField&quot;&gt;im&lt;/label&gt;
+-            &lt;span id=&quot;mapName&quot;&gt;&lt;/span&gt;
+-		      &lt;/form&gt;
++                &lt;form id=&quot;autoLocateInputField&quot;&gt;
++                    &lt;label for=&quot;streetNameField&quot;&gt;In der N&auml;he von&lt;/label&gt;
++                    &lt;input id=&quot;streetNameField&quot; disabled=&quot;true&quot; type=&quot;text&quot; size=&quot;18&quot; placeholder=&quot;Stra&szlig;enname / Hnr.&quot;/&gt;
++                    &lt;a class=&quot;go-focus&quot;&gt;OK&lt;/a&gt;
++                    &lt;label for=&quot;streetNameField&quot;&gt;im&lt;/label&gt;
++                    &lt;span id=&quot;mapName&quot;&gt;&lt;/span&gt;
++                &lt;/form&gt;
+ 		    &lt;/div&gt;
+         &lt;div id=&quot;cityMapDialog&quot; style=&quot;visibility: hidden;&quot;&gt;&lt;/div&gt;
+ 		    &lt;div id=&quot;searchInput&quot;&gt;
+
+Modified: trunk/pages/be.de/kiezatlas.js
+===================================================================
+--- trunk/pages/be.de/kiezatlas.js	2013-03-12 21:35:08 UTC (rev 111)
++++ trunk/pages/be.de/kiezatlas.js	2013-06-30 21:52:07 UTC (rev 112)
+@@ -980,6 +980,7 @@
+     hideProgressFromSideBar();
+     resultHandler.empty();
+     var imgSrc = getImageSource(givenTopic);
++    var akteurImg = getAkteurImageSource(givenTopic);
+     if (imgSrc != &quot;undefined&quot;) {
+       imgSrc = IMAGES_URL + imgSrc;
+       // var imgWidth = jQuery(&quot;#sideBar&quot;).css(&quot;width&quot;);
+@@ -990,7 +991,8 @@
+     var cityName = getTopicCity(givenTopic);
+     var street = getTopicAddress(givenTopic);
+     var originId = getTopicOriginId(givenTopic);
+-    if (cityName == &quot; Berlin&quot; || cityName == &quot;Berlin&quot; || onBerlinDe) { // ### FIXME sloppy
++    if (cityName == &quot; Berlin&quot; || cityName == &quot;Berlin&quot; || onBerlinDe || topicId == &quot;t-1223527&quot;) { // ### FIXME sloppy
++      if (topicId == &quot;t-1223527&quot;) cityName = &quot;Berlin&quot;
+       var postalCode = getTopicPostalCode(givenTopic);
+       var target = street + &quot;%20&quot; + postalCode + &quot;%20&quot; + cityName;
+       var publicTransportURL = &quot;<A HREF="http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=">http://www.fahrinfo-berlin.de/fahrinfo/bin/query.exe/d?Z=</A>&quot; + target + &quot;&amp;REQ0JourneyStopsZA1=2&amp;start=1&quot;;
+@@ -1026,6 +1028,7 @@
+     givenTopic = stripFieldsContaining(givenTopic, &quot;Description&quot;);
+     givenTopic = stripFieldsContaining(givenTopic, &quot;Timestamp&quot;);
+     givenTopic = stripFieldsContaining(givenTopic, &quot;OriginId&quot;);
++    givenTopic = stripFieldsContaining(givenTopic, &quot;Akteur Logo&quot;);
+     var propertyList = '&lt;p&gt;'; //&lt;table width=&quot;100%&quot; cellpadding=&quot;2&quot; border=&quot;0&quot;&gt;&lt;tbody&gt;';
+     for (var i=0; i &lt; givenTopic.properties.length; i++) {
+       // propertyList += '&lt;tr&gt;';
+@@ -1076,6 +1079,10 @@
+       }
+       propertyList += '&lt;/p&gt;';
+     }
++    if (akteurImg != &quot;undefined&quot;) {
++      akteurImg = IMAGES_URL + akteurImg;
++      propertyList += '&lt;br/&gt;&lt;img src=&quot;'+akteurImg+'&quot;/&gt;';
++    }
+     resultHandler.append(propertyList);
+     //
+     if (!dontUpdateHistoryState) {
+@@ -2557,6 +2564,15 @@
+     return &quot;undefined&quot;;
+   }
+ 
++  function getAkteurImageSource(topic) {
++    for (var i=0; i &lt; topic.properties.length; i++) {
++      if (topic.properties[i].name == &quot;Akteur Logo&quot; &amp;&amp; topic.properties[i].value != &quot;&quot;) {
++        return topic.properties[i].value;
++      }
++    }
++    return &quot;undefined&quot;;
++  }
++
+   function getTopicPostalCode(topic) {
+     for (var i=0; i &lt; topic.properties.length; i++) {
+       if (topic.properties[i].name == &quot;Address / Postal Code&quot;) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2013-03-12 21:35:08 UTC (rev 111)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2013-06-30 21:52:07 UTC (rev 112)
+@@ -19,6 +19,7 @@
+ import de.deepamehta.service.CorporateDirectives;
+ import de.deepamehta.service.Session;
+ import de.deepamehta.service.TopicBean;
++import de.deepamehta.service.TopicBeanField;
+ import de.deepamehta.service.web.DeepaMehtaServlet;
+ import de.deepamehta.service.web.RequestParameter;
+ import de.deepamehta.service.web.WebSession;
+@@ -28,6 +29,8 @@
+ 
+ import de.kiezatlas.deepamehta.topics.CityMapTopic;
+ import de.kiezatlas.deepamehta.topics.GeoObjectTopic;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
+ 
+ 
+ 
+@@ -63,15 +66,15 @@
+ 				}
+ 				//
+ 				String alias = pathInfo.substring(1);
+-        BaseTopic map = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
++				BaseTopic map = CityMapTopic.lookupCityMap(alias, true, as); // throwIfNotFound=true
+ 				setCityMap(map, session);
+-        if (!CityMapTopic.isProtected(map, as)) {
+-          //
+-          initCityMap(session);
+-          return PAGE_FRAMESET;
+-        } else {
+-          return PAGE_MAP_LOGIN;
+-        }
++				if (!CityMapTopic.isProtected(map, as)) {
++					//
++					initCityMap(session);
++					return PAGE_FRAMESET;
++				} else {
++					return PAGE_MAP_LOGIN;
++				}
+ 			} catch (DeepaMehtaException e) {
+ 				System.out.println(&quot;*** BrowseServlet.performAction(): &quot; + e);
+ 				session.setAttribute(&quot;error&quot;, e.getMessage());
+@@ -86,18 +89,19 @@
+ 			return PAGE_ERROR;
+ 		}
+ 		//
+-    if (action.equals(ACTION_TRY_LOGIN)) {
+-      String password = params.getValue(&quot;password&quot;);
+-      if (CityMapTopic.passwordCorrect(getCityMap(session), as, password)) {
+-        initCityMap(session);
+-        return PAGE_FRAMESET;
+-      } else {
+-        return PAGE_MAP_LOGIN;
+-      }
+-    } else if (action.equals(ACTION_INIT_FRAME)) {
++		if (action.equals(ACTION_TRY_LOGIN)) {
++			String password = params.getValue(&quot;password&quot;);
++			if (CityMapTopic.passwordCorrect(getCityMap(session), as, password)) {
++				initCityMap(session);
++				return PAGE_FRAMESET;
++			} else {
++				return PAGE_MAP_LOGIN;
++			}
++		} else if (action.equals(ACTION_INIT_FRAME)) {
+ 			String frame = params.getValue(&quot;frame&quot;);
++			// initialize frames
+ 			if (frame.equals(FRAME_LEFT)) {
+-        return PAGE_CITY_MAP;
++				return PAGE_CITY_MAP;
+ 			} else if (frame.equals(FRAME_RIGHT)) {
+ 				// list categories of 1st search criteria, if there is a criteria at all
+ 				if (getCriterias(session).length &gt; 0) {
+@@ -151,10 +155,13 @@
+ 			return PAGE_GEO_LIST;
+ 		// info
+ 		} else if (action.equals(ACTION_SHOW_GEO_INFO)) {
+-      // ### should also set the current HotspotMarker (e.g. after searchByCategory)
++		// ### should also set the current HotspotMarker (e.g. after searchByCategory)
+ 			String geoID = params.getValue(&quot;id&quot;);
+ 			setSelectedGeo(geoID, session);
+ 			TopicBean topicBean = as.createTopicBean(geoID, 1);
++			if (topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO).indexOf(&quot;lor/analysen/&quot;) != -1) {
++				topicBean = prepareNewLorPageLink(topicBean);
++			}
+ 			session.setAttribute(&quot;topicBean&quot;, topicBean);
+ 			String imagePath = as.getCorporateWebBaseURL() + FILESERVER_IMAGES_PATH;
+ 			session.setAttribute(&quot;imagePath&quot;, imagePath);
+@@ -216,40 +223,40 @@
+ 			String instTypeID = getInstitutionType(session).getID();
+ 			String searchMode = getSearchMode(session);
+ 			Vector insts;
+-      Vector taggedInsts;
+-      Hashtable propertyFilter;
+-      // enable the rendering of enumeration
+-      session.setAttribute(&quot;enumerationFlag&quot;, true);
++			Vector taggedInsts;
++			Hashtable propertyFilter;
++			// enable the rendering of enumeration
++			session.setAttribute(&quot;enumerationFlag&quot;, true);
+ 			if (searchMode.equals(SEARCHMODE_BY_NAME)) {
+ 				insts = cm.getViewTopics(mapID, 1, instTypeID, getSearchValue(session));
+-        if (!getSearchValue(session).equals(&quot;&quot;)) {
+-          propertyFilter = new Hashtable();
+-          propertyFilter.put(PROPERTY_TAGFIELD, getSearchValue(session));
+-          taggedInsts = cm.getTopics(getInstitutionType(session).getID(), propertyFilter, mapID);
+-          for (int k = 0; k &lt; taggedInsts.size(); k++) {
+-            BaseTopic taggedTopic = (BaseTopic) taggedInsts.get(k);
+-            Vector pts = cm.getViewTopics(mapID, 1, instTypeID, taggedTopic.getName());
+-            System.out.println(&quot;newSearchMode fetched additionally &quot; + pts.size() + &quot; tagged Institutions byName!&quot;);
+-            if (pts.size() &gt;= 1) {
+-              if (!insts.contains(pts.get(0))) {
+-                insts.add(pts.get(0));
+-                System.out.println(&quot;newSearchMode added fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
+-              } else {
+-                System.out.println(&quot;newSearchMode skipped fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
+-              }
+-            } // insts.add(new PresentableTopic(topic, new Point()));
+-          }
+-          session.setAttribute(&quot;taggedInstitutions&quot;, taggedInsts);
+-        }
++				if (!getSearchValue(session).equals(&quot;&quot;)) {
++				propertyFilter = new Hashtable();
++				propertyFilter.put(PROPERTY_TAGFIELD, getSearchValue(session));
++				taggedInsts = cm.getTopics(getInstitutionType(session).getID(), propertyFilter, mapID);
++				for (int k = 0; k &lt; taggedInsts.size(); k++) {
++					BaseTopic taggedTopic = (BaseTopic) taggedInsts.get(k);
++					Vector pts = cm.getViewTopics(mapID, 1, instTypeID, taggedTopic.getName());
++					System.out.println(&quot;newSearchMode fetched additionally &quot; + pts.size() + &quot; tagged Institutions byName!&quot;);
++					if (pts.size() &gt;= 1) {
++					if (!insts.contains(pts.get(0))) {
++						insts.add(pts.get(0));
++						System.out.println(&quot;newSearchMode added fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
++					} else {
++						System.out.println(&quot;newSearchMode skipped fetched PresentableTopic =&gt; &quot; + ((BaseTopic)pts.get(0)).getName() + &quot; !byName&quot;);
++					}
++					} // insts.add(new PresentableTopic(topic, new Point()));
++				}
++				session.setAttribute(&quot;taggedInstitutions&quot;, taggedInsts);
++				}
+ 				// hotspots
+ 				setHotspots(insts, ICON_HOTSPOT, session);
+-        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
++				session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;);
+ 			} else {
+ 				String catID = params.getValue(&quot;id&quot;);
+ 				insts = cm.getRelatedViewTopics(mapID, 1, catID, ASSOCTYPE_ASSOCIATION, instTypeID, 1);	// ### copy in setCategoryHotspots()
+ 				// hotspots + return the index of the current CatID in the multi-dimensional hotspot vector
+ 				int catIndex = setSearchedCategoryHotspots(session, catID);
+-        session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
++				session.setAttribute(&quot;selectedCatId&quot;, &quot;&quot;+catIndex+&quot;&quot;);
+ 			}
+ 			session.setAttribute(&quot;institutions&quot;, insts);
+ 			// categories &amp; addresses
+@@ -289,17 +296,17 @@
+ 	// *****************
+ 
+ 
+-  private void initCityMap(Session session) {
+-      initInstitutaionType(session);	// relies on city map
+-      initSearchCriterias(session);	// relies on city map
+-      initShapeTypes(session);		// relies on city map
+-      initStylesheet(session);		// relies on city map
+-      initSiteLogo(session);			// relies on city map
+-      initSiteLinks(session);			// relies on city map
+-      initSelectedCatAttribute(session);
+-      //
+-      updateShapes(session);			// relies on shape types;
+-  }
++	private void initCityMap(Session session) {
++		initInstitutaionType(session);	// relies on city map
++		initSearchCriterias(session);	// relies on city map
++		initShapeTypes(session);		// relies on city map
++		initStylesheet(session);		// relies on city map
++		initSiteLogo(session);			// relies on city map
++		initSiteLinks(session);			// relies on city map
++		initSelectedCatAttribute(session);
++		//
++		updateShapes(session);			// relies on shape types;
++	}
+ 
+ 	private void toggle(Vector topicIDs, String topicID) {
+ 		if (topicIDs.contains(topicID)) {
+@@ -443,7 +450,6 @@
+ 		if (homepageLink != null) {
+ 			String homepageURL = as.getTopicProperty(homepageLink, PROPERTY_URL);
+ 			session.setAttribute(&quot;homepageURL&quot;, homepageURL);
+-			System.out.println(&quot;&gt;&gt;&gt; \&quot;homepageURL\&quot; stored in session: \&quot;&quot; + homepageURL + &quot;\&quot;&quot;);
+ 		} else {
+ 			// ### session.setAttribute(&quot;homepageURL&quot;, &quot;&quot;);
+ 			System.out.println(&quot;*** NO HOMEPAGE LINK FOUND (there is no webpage topic assigned to the Kiez-Atlas workspace)&quot;);
+@@ -453,14 +459,12 @@
+ 		if (impressumLink != null) {
+ 			String impressumURL = as.getTopicProperty(impressumLink, PROPERTY_URL);
+ 			session.setAttribute(&quot;impressumURL&quot;, impressumURL);
+-			System.out.println(&quot;&gt;&gt;&gt; \&quot;impressumURL\&quot; stored in session: \&quot;&quot; + impressumURL + &quot;\&quot;&quot;);
+ 		} else {
+ 			// ### session.setAttribute(&quot;impressumLink&quot;, &quot;&quot;);
+ 			System.out.println(&quot;*** NO IMPRESSUM LINK FOUND (there is no webpage topic assigned to the Kiez-Atlas workspace)&quot;);
+ 		}
+-    String webAlias = as.getTopicProperty(getCityMap(session), PROPERTY_WEB_ALIAS);
+-    session.setAttribute(&quot;webAlias&quot;, webAlias);
+-    System.out.println(&quot;&gt;&gt;&gt; \&quot;webAlias\&quot; stored in session: \&quot;&quot; + webAlias + &quot;\&quot;&quot;);
++		String webAlias = as.getTopicProperty(getCityMap(session), PROPERTY_WEB_ALIAS);
++		session.setAttribute(&quot;webAlias&quot;, webAlias);
+ 	}
+ 
+ 	private void setSelectedGeo(String geoID, Session session) {
+@@ -549,7 +553,7 @@
+ 		Vector presentables = new Vector(topics);
+ 		presentables.insertElementAt(as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH + icon, 0);
+ 		hotspots.addElement(presentables);
+-		// 
++		//
+ 		makeCluster(hotspots, cluster);
+ 		session.setAttribute(&quot;cluster&quot;, cluster);
+ 		session.setAttribute(&quot;hotspots&quot;, hotspots);
+@@ -710,6 +714,29 @@
+ 		}
+ 	}
+ 
++	private TopicBean prepareNewLorPageLink(TopicBean topicBean) {
++		// start migrating all links in the system to the new lor-pages
++		String lorId = null;
++		String adminInfo = topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO);
++		Pattern pattern = Pattern.compile(&quot;(&lt;a href=\&quot;\\D+)(/analysen/)(\\d+)(.pdf)(\\D+)(target=\&quot;_blank\&quot;&gt;)(\\D+)(&lt;/a&gt;)&quot;);
++		Matcher matcher = pattern.matcher(adminInfo);
++		while (matcher.find()) {
++			Pattern idPattern = Pattern.compile(&quot;(\\d+)&quot;);
++			Matcher idMatch = idPattern.matcher(matcher.group());
++			while (idMatch.find()) { lorId = idMatch.group(); }
++			if (lorId != null) {
++				String before = adminInfo.substring(0, matcher.start());
++				String link = &quot;&lt;a href=\&quot;<A HREF="http://jugendserver.spinnenwerk.de/~lor/seiten/2012/06/?lor=">http://jugendserver.spinnenwerk.de/~lor/seiten/2012/06/?lor=</A>&quot;
++					+ lorId + &quot;\&quot; target=\&quot;_blank\&quot;&gt;Sozialdaten Planungsraum&lt;/a&gt;&quot;;
++				String after = adminInfo.substring(matcher.end());
++				adminInfo = before + link + after;
++				TopicBeanField adminField = topicBean.getField(KiezAtlas.PROPERTY_ADMINISTRATION_INFO);
++				adminField.value = adminInfo; // migration sucessfull
++			}
++		}
++		return topicBean;
++	}
++
+ 	// ---
+ 
+ 	private BaseTopic getCityMap(Session session) {
+
+Modified: trunk/src/de/kiezatlas/deepamehta/KiezServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2013-03-12 21:35:08 UTC (rev 111)
++++ trunk/src/de/kiezatlas/deepamehta/KiezServlet.java	2013-06-30 21:52:07 UTC (rev 112)
+@@ -499,6 +499,9 @@
+ 		StringBuffer bean = new StringBuffer();
+ 		//
+ 		TopicBean topicBean = as.createTopicBean(topic.getID(), 1);
++		if (topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO).indexOf(&quot;lor/analysen/&quot;) != -1) {
++			topicBean = prepareNewLorPageLink(topicBean);
++		}
+ 		removeCredentialInformation(topicBean);
+ 		String topicName = removeQuotationMarksFromNames(topicBean.name);
+ 		bean.append(&quot;{\&quot;id\&quot;: \&quot;&quot; + topicBean.id + &quot;\&quot;,&quot;);
+@@ -544,6 +547,29 @@
+ 		return bean.toString();
+ 	}
+ 
++	private TopicBean prepareNewLorPageLink(TopicBean topicBean) {
++		// start migrating all links in the system to the new lor-pages
++		String lorId = null;
++		String adminInfo = topicBean.getValue(KiezAtlas.PROPERTY_ADMINISTRATION_INFO);
++		Pattern pattern = Pattern.compile(&quot;(&lt;a href=\&quot;\\D+)(/analysen/)(\\d+)(.pdf)(\\D+)(target=\&quot;_blank\&quot;&gt;)(\\D+)(&lt;/a&gt;)&quot;);
++		Matcher matcher = pattern.matcher(adminInfo);
++		while (matcher.find()) {
++			Pattern idPattern = Pattern.compile(&quot;(\\d+)&quot;);
++			Matcher idMatch = idPattern.matcher(matcher.group());
++			while (idMatch.find()) { lorId = idMatch.group(); }
++			if (lorId != null) {
++				String before = adminInfo.substring(0, matcher.start());
++				String link = &quot;&lt;a href=\&quot;<A HREF="http://jugendserver.spinnenwerk.de/~lor/seiten/2012/06/?lor=">http://jugendserver.spinnenwerk.de/~lor/seiten/2012/06/?lor=</A>&quot;
++					+ lorId + &quot;\&quot; target=\&quot;_blank\&quot;&gt;Sozialdaten Planungsraum&lt;/a&gt;&quot;;
++				String after = adminInfo.substring(matcher.end());
++				adminInfo = before + link + after;
++				TopicBeanField adminField = topicBean.getField(KiezAtlas.PROPERTY_ADMINISTRATION_INFO);
++				adminField.value = adminInfo; // migration sucessfull
++			}
++		}
++		return topicBean;
++	}
++
+ 	private TopicBean removeCredentialInformation(TopicBean topicBean) {
+ 		topicBean.removeFieldsContaining(PROPERTY_PASSWORD);
+ 		topicBean.removeFieldsContaining(PROPERTY_OWNER_ID);
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#96">[ date ]</a>
+              <a href="thread.html#96">[ thread ]</a>
+              <a href="subject.html#96">[ subject ]</a>
+              <a href="author.html#96">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>

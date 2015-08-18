@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Kiezatlas-svn] r35 - in trunk: pages src/de/kiezatlas/deepamehta
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/kiezatlas-svn/2008-January/index.html" >
+   <LINK REL="made" HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r35%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200801081612.m08GClLj028844%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000028.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Kiezatlas-svn] r35 - in trunk: pages src/de/kiezatlas/deepamehta</H1>
+    <B>maltito at mail.berlios.de</B> 
+    <A HREF="mailto:kiezatlas-svn%40lists.berlios.de?Subject=Re%3A%20%5BKiezatlas-svn%5D%20r35%20-%20in%20trunk%3A%20pages%20src/de/kiezatlas/deepamehta&In-Reply-To=%3C200801081612.m08GClLj028844%40sheep.berlios.de%3E"
+       TITLE="[Kiezatlas-svn] r35 - in trunk: pages src/de/kiezatlas/deepamehta">maltito at mail.berlios.de
+       </A><BR>
+    <I>Tue Jan  8 17:12:47 CET 2008</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000028.html">[Kiezatlas-svn] r36 - trunk/config/default
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27">[ date ]</a>
+              <a href="thread.html#27">[ thread ]</a>
+              <a href="subject.html#27">[ subject ]</a>
+              <a href="author.html#27">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: maltito
+Date: 2008-01-08 17:12:36 +0100 (Tue, 08 Jan 2008)
+New Revision: 35
+
+Modified:
+   trunk/pages/CityMap.jsp
+   trunk/pages/frameset.jsp
+   trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+   trunk/src/de/kiezatlas/deepamehta/Cluster.java
+Log:
+1) Inserted Metatag for Correct Encoding in Latin1
+2) ContextMenus on Clusters work also with Great Maps after Scrolling
+3) Icon is displayed correctly
+
+Modified: trunk/pages/CityMap.jsp
+===================================================================
+--- trunk/pages/CityMap.jsp	2007-12-17 17:40:57 UTC (rev 34)
++++ trunk/pages/CityMap.jsp	2008-01-08 16:12:36 UTC (rev 35)
+@@ -6,24 +6,56 @@
+ 	&lt;link href=&quot;../pages/kiezatlas.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;&gt;
+ 	&lt;!--[if lt IE 7]&gt;
+ 	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/pngfix.js&quot;&gt;&lt;/script&gt;
++	&lt;script defer type=&quot;text/javascript&quot; src=&quot;../pages/fixed.js&quot;&gt;&lt;/script&gt;
+ 	&lt;![endif]--&gt;
+ 	&lt;script type=&quot;text/javascript&quot;&gt;
+-		var hidden = true;
++		var currentActiveMenu = &quot;&quot;;
++		var YOffset = 0;
++		var XOffset = 0;
+ 		function showMenu(id) {
+-			var currentMenu = &quot;clusterMenu&quot;+id;
+-			if (hidden) {
+-				if (document.getElementById) {
+-					document.getElementById(currentMenu).style.visibility = 'visible';
+-					hidden=false;
+-				}
+-			} else {
+-				if (document.getElementById) {
+-					document.getElementById(currentMenu).style.visibility = 'hidden';
+-					hidden=true;
+-				}
++			
++			if (currentActiveMenu != &quot;&quot;) {
++				hideMenu(currentActiveMenu);
+ 			}
+ 			
++			if (document.getElementById) {
++				var currentMenu = &quot;clusterMenu&quot;+id;
++				originalPosition = id.split(&quot;.&quot;);
++				var xPosition = parseInt(originalPosition[0]);
++				var yPosition = parseInt(originalPosition[1]);
++				
++				document.getElementById(currentMenu).style.top = yPosition - independentY();
++				document.getElementById(currentMenu).style.left = xPosition - independentX();
++				document.getElementById(currentMenu).style.visibility = 'visible';
++				currentActiveMenu = id;
++			}
++			
+ 		}
++		
++		function hideMenu(id) {
++			if (document.getElementById) {
++				var currentMenu = &quot;clusterMenu&quot;+id;
++				document.getElementById(currentMenu).style.visibility = 'hidden';
++				currentActiveMenu = &quot;&quot;;
++			}
++		}
++		//helper called for browser independency
++		function independentY() {
++			if (navigator.appName == &quot;Microsoft Internet Explorer&quot;) {
++				return document.body.scrollTop;
++			} else {
++				return window.pageYOffset;
++			}
++		}
++		
++		function independentX() {
++			if (navigator.appName == &quot;Microsoft Internet Explorer&quot;) {
++					return document.body.scrollLeft;
++			} else {
++					return window.pageXOffset;
++			}
++		}		
++
+ 	&lt;/script&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+@@ -61,7 +93,7 @@
+ 				PresentableTopic inst = (PresentableTopic) e2.nextElement();
+ 				Point p = inst.getGeometry();
+ 				// marker
+-				// marker and hotspot can't overlap exactly, caus of the new icons don't fit in the old convention of 20x20px
++				// marker and hotspot can't overlap exactly, cause of the new icons don't fit in the old convention of 20x20px chel
+ 				if (selectedInst != null &amp;&amp; selectedInst.geoID.equals(inst.getID())) {
+ 					out.println(&quot;&lt;img src=\&quot;../images/marker.gif\&quot; style=\&quot;position:absolute; top:&quot; +
+ 						(p.y - 18) + &quot;px; left:&quot; + (p.x - 18) + &quot;px;\&quot;&gt;&quot;);
+@@ -73,7 +105,7 @@
+ 					(p.x - 7) + &quot;px;\&quot; alt=\&quot;&quot; + inst.getName() + &quot;\&quot; title=\&quot;&quot; + inst.getName() + &quot;\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
+ 			}
+ 		}
+-		//cluster
++		//cluster icons
+ 		e = cluster.elements();
+ 		while (e.hasMoreElements()) {
+ 			//entered vector of cluster
+@@ -82,15 +114,33 @@
+ 			Vector presentables = myCluster.getPresentables();
+ 			Enumeration e2 = presentables.elements();
+ 			String iconPath = myCluster.getIcon();
+-			out.println(&quot;&lt;span onMouseOver=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot;&gt;&lt;img src=\&quot;&quot;+iconPath+&quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 10) + &quot;px; left:&quot; + (p.x - 10) + &quot;px;\&quot; alt=\&quot;Cluster\&quot; border=\&quot;0\&quot;&gt;&lt;/span&gt;&quot;);
+-			out.println(&quot;&lt;div id=\&quot;clusterMenu&quot;+p.x+&quot;.&quot;+p.y+&quot;\&quot; onMouseOut=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot; style=\&quot;position:fixed; visibility:hidden; border:1px; dashed black; padding:5px; top:&quot;+ (p.y -10) + &quot;px; left:&quot; + (p.x + 10)+ &quot;px; overflow:visible; background-color:#b0b0ea;\&quot;&gt;&quot;);
++			out.println(&quot;&lt;a href=\&quot;#\&quot; onMouseOver=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot;&gt;&lt;img src=\&quot;&quot;+iconPath+&quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 10) + &quot;px; left:&quot; + (p.x - 10) + &quot;px;\&quot; alt=\&quot;Cluster\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++			//out.println(&quot;&lt;div id=\&quot;clusterMenu&quot;+p.x+&quot;.&quot;+p.y+&quot;\&quot; onMouseOut=\&quot;hideMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot; style=\&quot;position:fixed; visibility:hidden; border:1px; dashed black; padding:5px; top:&quot;+ (p.y -10) + &quot;px; left:&quot; + (p.x + 10)+ &quot;px; overflow:visible; background-color:#b0b0ea;\&quot;&gt;&quot;);
++			//while(e2.hasMoreElements()) {
++			//	PresentableTopic currentTopic = (PresentableTopic) e2.nextElement();
++			//	out.println(&quot;&lt;a href=\&quot;javascript:top.frames.right.location.href='controller?action=&quot; +
++			//			KiezAtlas.ACTION_SHOW_GEO_INFO + &quot;&amp;id=&quot; + currentTopic.getID() + &quot;'\&quot; onMouseOver=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot;&gt;&quot;+currentTopic.getName()+&quot;&lt;/a&gt;&lt;/br&gt;&quot;);
++			//}
++			//out.println(&quot;&lt;/div&gt;&quot;);
++		}
++		
++		//cluster menus are rendered in an extra loop after the cluster images for optic reasons
++		e = cluster.elements();
++		while (e.hasMoreElements()) {
++			//entered vector of cluster
++			Cluster myCluster = (Cluster) e.nextElement();
++			Point p = myCluster.getPoint();
++			Vector presentables = myCluster.getPresentables();
++			Enumeration e2 = presentables.elements();
++			//String iconPath = myCluster.getIcon();
++			//out.println(&quot;&lt;a href=\&quot;#\&quot; onMouseOver=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot;&gt;&lt;img src=\&quot;&quot;+iconPath+&quot;\&quot; style=\&quot;position:absolute; top:&quot; + (p.y - 10) + &quot;px; left:&quot; + (p.x - 10) + &quot;px;\&quot; alt=\&quot;Cluster\&quot; border=\&quot;0\&quot;&gt;&lt;/a&gt;&quot;);
++			out.println(&quot;&lt;div id=\&quot;clusterMenu&quot;+p.x+&quot;.&quot;+p.y+&quot;\&quot; onMouseOut=\&quot;hideMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot; style=\&quot;position:fixed; visibility:hidden; border:1px; dashed black; padding:5px; top:&quot;+ (p.y -10) + &quot;px; left:&quot; + (p.x + 10) + &quot;px; white-space:nowrap; overflow:visible; background-color:#b0b0ea;\&quot;&gt;&quot;);
+ 			while(e2.hasMoreElements()) {
+ 				PresentableTopic currentTopic = (PresentableTopic) e2.nextElement();
+ 				out.println(&quot;&lt;a href=\&quot;javascript:top.frames.right.location.href='controller?action=&quot; +
+-						KiezAtlas.ACTION_SHOW_GEO_INFO + &quot;&amp;id=&quot; + currentTopic.getID() + &quot;'\&quot; font-color=\&quot;black\&quot; font-style=\&quot;none\&quot; font-size=\&quot;10px\&quot;&gt;&quot;+currentTopic.getName()+&quot;&lt;/a&gt;&lt;/br&gt;&quot;);
++						KiezAtlas.ACTION_SHOW_GEO_INFO + &quot;&amp;id=&quot; + currentTopic.getID() + &quot;'\&quot; onMouseOver=\&quot;showMenu('&quot;+p.x+&quot;.&quot;+p.y+&quot;')\&quot;&gt;&quot;+currentTopic.getName()+&quot;&lt;/a&gt;&lt;/br&gt;&quot;);
+ 			}
+ 			out.println(&quot;&lt;/div&gt;&quot;);
+-				
+ 		}
+ 
+ 		// --- shape display switches ---
+
+Modified: trunk/pages/frameset.jsp
+===================================================================
+--- trunk/pages/frameset.jsp	2007-12-17 17:40:57 UTC (rev 34)
++++ trunk/pages/frameset.jsp	2008-01-08 16:12:36 UTC (rev 35)
+@@ -1,6 +1,7 @@
+ &lt;%@ include file=&quot;KiezAtlas.jsp&quot; %&gt;
+ &lt;html&gt;
+ &lt;head&gt;
++&lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=iso-8859-1&quot;&gt;
+ 	&lt;title&gt;Kiezatlas&lt;/title&gt;
+ &lt;/head&gt;
+ 
+
+Modified: trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2007-12-17 17:40:57 UTC (rev 34)
++++ trunk/src/de/kiezatlas/deepamehta/BrowseServlet.java	2008-01-08 16:12:36 UTC (rev 35)
+@@ -60,7 +60,6 @@
+ 					setCityMap(CityMapTopic.lookupCityMap(kiez, true, as), session);	// throwIfNotFound=true
+ 				} else {
+ 					//
+-					
+ 					session.setAttribute(&quot;topicBean&quot;, null);
+ 					setCityMap(CityMapTopic.lookupCityMap(alias, true, as), session);	// throwIfNotFound=true
+ 				}
+@@ -439,6 +438,7 @@
+ 		session.setAttribute(&quot;cluster&quot;, cluster);
+ 		session.setAttribute(&quot;hotspots&quot;, hotspots);
+ 		System.out.println(&quot;&gt; \&quot;hotspots\&quot; stored in session: &quot; + topics.size() + &quot; institutions&quot;);
++		System.out.println(&quot;&gt; \&quot;clusters\&quot; &quot;+cluster.size()+&quot; stored in session&quot;);
+ 	}
+ 
+ 	// ---
+@@ -468,12 +468,12 @@
+ 					// es gibt noch kein cluster oder es wurde kein passendes gefunden also suchen, nach dem ersten auftreten von dem gleichen Point in allen hotspots
+ 					PresentableTopic foundPT = findPT(currentPT, hotspots);
+ 					if ( foundPT != null ){
+-						// create Cluster, with two points
+-						clusters.add(new Cluster(currentPT, foundPT));
++						// create Cluster, with two points, and the respective dm server icon path
++						clusters.add(new Cluster(currentPT, foundPT, as.getCorporateWebBaseURL() + FILESERVER_ICONS_PATH));
+ 					}
+ 				}
+ 			}
+-			System.out.println(&quot;fetched &quot;+clusters.size()+&quot; Clusters &quot;+ clusters.toString());
++			//System.out.println(&quot;&gt; \&quot;clusters\&quot;: &quot;+clusters.toString());
+ 		}
+ 	}
+ 	
+
+Modified: trunk/src/de/kiezatlas/deepamehta/Cluster.java
+===================================================================
+--- trunk/src/de/kiezatlas/deepamehta/Cluster.java	2007-12-17 17:40:57 UTC (rev 34)
++++ trunk/src/de/kiezatlas/deepamehta/Cluster.java	2008-01-08 16:12:36 UTC (rev 35)
+@@ -11,11 +11,11 @@
+ 	private String icon;
+ 	private Vector presentables = new Vector();
+ 	
+-	public Cluster (PresentableTopic presentableOne, PresentableTopic presentableTwo) {
++	public Cluster (PresentableTopic presentableOne, PresentableTopic presentableTwo, String clusterIconPath) {
+ 		
+ 		// first object is the point of this cluster
+ 		p = presentableOne.getGeometry();
+-		icon = &quot;../../dm-images/icons/application.gif&quot;;
++		icon = clusterIconPath + &quot;redball-bigger.gif&quot;;
+ 		presentables.add(presentableOne);
+ 		presentables.add(presentableTwo);
+ 				
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000028.html">[Kiezatlas-svn] r36 - trunk/config/default
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27">[ date ]</a>
+              <a href="thread.html#27">[ thread ]</a>
+              <a href="subject.html#27">[ subject ]</a>
+              <a href="author.html#27">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/kiezatlas-svn">More information about the Kiezatlas-svn
+mailing list</a><br>
+</body></html>
